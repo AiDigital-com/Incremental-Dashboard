@@ -1,3 +1,269 @@
-/* App-specific styles go here.
-   Design system provides all base styles via style.css.
-   Use CSS variables from the theme (--bg, --surface, --text, --accent, etc.) */
+/* App-specific styles — uses DS CSS variables throughout */
+
+/* ── Dashboard layout ────────────────────────────────────────────────────── */
+
+.id-dashboard {
+  padding: 28px 32px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.id-dashboard__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.id-dashboard__title-wrap { flex: 1; min-width: 0; }
+
+.id-dashboard__title-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 4px 0;
+}
+
+.id-dashboard__title-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.id-dashboard__title-edit {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.id-dashboard__title-btn:hover .id-dashboard__title-edit { opacity: 1; }
+
+.id-dashboard__title-input {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--surface);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: inherit;
+  padding: 4px 12px;
+  outline: none;
+  width: 100%;
+  max-width: 420px;
+}
+
+.id-dashboard__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── KPI tiles ───────────────────────────────────────────────────────────── */
+
+.id-dashboard__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .id-dashboard__kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Campaign table ──────────────────────────────────────────────────────── */
+
+.id-dashboard__table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto;
+  background: var(--surface);
+}
+
+.id-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.id-table th {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.id-table__row td {
+  border-bottom: 1px solid var(--border);
+  padding: 5px 8px;
+  vertical-align: middle;
+}
+
+.id-table__row:last-child td { border-bottom: none; }
+
+/* Status left-border accent */
+.id-table__row--on_track { border-left: 3px solid var(--success); }
+.id-table__row--at_risk  { border-left: 3px solid #f6ad55; }
+.id-table__row--behind   { border-left: 3px solid var(--error); }
+
+/* Inline edit inputs */
+.id-table__cell-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 4px 6px;
+  width: 100%;
+  min-width: 90px;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.id-table__cell-input:hover  { border-color: var(--border); }
+.id-table__cell-input:focus  { border-color: var(--accent-border); background: var(--surface); outline: none; }
+
+.id-table__cell-input--num {
+  min-width: 60px;
+  max-width: 80px;
+  text-align: right;
+}
+
+.id-table__cell-input--kpi-label {
+  min-width: 64px;
+  max-width: 96px;
+}
+
+.id-table__num-cell {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.id-table__suffix {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.id-table__delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s;
+}
+
+.id-table__row:hover .id-table__delete { opacity: 1; }
+.id-table__delete:hover { color: var(--error); }
+
+.id-table__empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 32px;
+  text-align: center;
+}
+
+/* ── Status badges ───────────────────────────────────────────────────────── */
+
+.id-status-badge {
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.id-status-badge--on_track { background: rgba(72, 187, 120, 0.15); color: var(--success); }
+.id-status-badge--at_risk  { background: rgba(246, 173, 85, 0.15);  color: #f6ad55; }
+.id-status-badge--behind   { background: rgba(252, 129, 129, 0.15); color: var(--error); }
+
+/* ── Footer / Add button ─────────────────────────────────────────────────── */
+
+.id-dashboard__footer {
+  display: flex;
+  padding-bottom: 8px;
+}
+
+.id-btn-add {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.id-btn-add:hover { background: var(--accent); color: #fff; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.id-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.id-empty__content {
+  text-align: center;
+  max-width: 380px;
+}
+
+.id-empty__content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.id-empty__content p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.id-empty__btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 28px;
+  transition: opacity 0.15s;
+}
+
+.id-empty__btn:hover { opacity: 0.85; }

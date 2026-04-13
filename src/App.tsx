@@ -8,19 +8,21 @@
  * 4. AppContent renders inside AppShell's children render-prop as Fragment <>.
  * 5. main.tsx: <App /> with NO props. ClerkProvider wraps App.
  */
-import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react'
-import { AppShell, ChatPanel, Sidebar, useJobStatus, useSessionPersistence } from '@AiDigital-com/design-system'
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
+import { AppShell, Sidebar, useSessionPersistence } from '@AiDigital-com/design-system'
 import type { SupabaseClient, SidebarItem } from '@AiDigital-com/design-system'
 import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
+import { IncrementalDashboard } from './components/IncrementalDashboard'
+import type { Campaign } from './components/IncrementalDashboard'
 import './App.css'
 
 // ── App Config ────────────────────────────────────────────────────────────────
-const APP_NAME = 'incremental-dashboard'  // tool ID for access control + logging
-const APP_TITLE = 'Incremental Dashboard' // shown in header
-const SESSION_TABLE = 'id_sessions'       // Supabase table name
-const TITLE_FIELD = 'brand_name'          // column used for sidebar item labels
-const ACTIVITY_LABEL = 'Session'          // "Audit" | "Session" | "Scan" | "Review"
+const APP_NAME = 'incremental-dashboard'
+const APP_TITLE = 'Incremental Dashboard'
+const SESSION_TABLE = 'id_sessions'
+const TITLE_FIELD = 'brand_name'
+const ACTIVITY_LABEL = 'Plan'
 
 const supabaseConfig = import.meta.env.VITE_SUPABASE_URL ? {
   url: import.meta.env.VITE_SUPABASE_URL as string,
@@ -34,9 +36,8 @@ interface AppSession extends SidebarItem {
 }
 
 export default function App() {
-  const { userId, getToken } = useAuth()
+  const { userId } = useAuth()
 
-  // Sidebar state lifted here so sidebar + content can share it
   const [sidebarItems, setSidebarItems] = useState<AppSession[]>([])
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -94,7 +95,6 @@ export default function App() {
           authFetch={authFetch}
           supabase={supabase}
           userId={userId}
-          getToken={getToken}
           activeSessionId={activeSessionId}
           setActiveSessionId={setActiveSessionId}
           setLoadingId={setLoadingId}
@@ -113,7 +113,6 @@ interface AppContentProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>
   supabase: SupabaseClient | null
   userId: string | null | undefined
-  getToken: () => Promise<string | null>
   activeSessionId: string | null
   setActiveSessionId: Dispatch<SetStateAction<string | null>>
   setLoadingId: Dispatch<SetStateAction<string | null>>
@@ -127,16 +126,15 @@ interface AppContentProps {
 }
 
 function AppContent({
-  authFetch, supabase, userId, getToken,
+  authFetch, supabase, userId,
   activeSessionId, setActiveSessionId, setLoadingId, setRefreshKey,
   handlersRef, setSidebarSupabase,
 }: AppContentProps) {
-  const [messages, setMessages] = useState<any[]>([])
-  const [streaming, setStreaming] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [planName, setPlanName] = useState('New Plan')
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
 
   // Expose supabase to sidebar
-  useEffect(() => { setSidebarSupabase(supabase); }, [supabase, setSidebarSupabase])
+  useEffect(() => { setSidebarSupabase(supabase) }, [supabase, setSidebarSupabase])
 
   // Session persistence — MUST pass all 4 args: (supabase, authFetch, userId, config)
   const session = useSessionPersistence(supabase, authFetch, userId, {
@@ -144,9 +142,8 @@ function AppContent({
     app: APP_NAME,
     titleField: TITLE_FIELD,
     mergeConfig: { objectFields: ['intake_summary'] },
-    defaultFields: { status: 'chatting' },
+    defaultFields: { status: 'active' },
     mergeEndpoint: '/.netlify/functions/save-session',
-    sessionsEndpoint: '/.netlify/functions/get-sessions',
   })
 
   // Wire sidebar handlers
@@ -160,48 +157,63 @@ function AppContent({
         if (!data) return
         session.loadSession(id)
         setActiveSessionId(id)
-        if (data.messages) setMessages(data.messages)
+        const summary = data.intake_summary as { campaigns?: Campaign[] } | null
+        setCampaigns(summary?.campaigns ?? [])
+        setPlanName((data[TITLE_FIELD] as string) || 'New Plan')
       },
       onNew: () => {
-        session.newSession()
-        setMessages([])
-        setActiveSessionId(null)
-        setError(null)
+        const newId = session.newSession()
+        setActiveSessionId(newId)
+        setCampaigns([])
+        setPlanName('New Plan')
+        session.setField(TITLE_FIELD, 'New Plan')
+        // Defer sidebar refresh to allow DB insert to complete
+        setTimeout(() => setRefreshKey(k => k + 1), 1000)
       },
       onDelete: async (id: string) => {
-        session.deleteSession(id)
+        await session.deleteSession(id)
+        if (activeSessionId === id) {
+          setActiveSessionId(null)
+          setCampaigns([])
+          setPlanName('New Plan')
+        }
         setRefreshKey(k => k + 1)
       },
     }
-  }, [supabase, session, setActiveSessionId, setLoadingId, setRefreshKey])
+  }, [supabase, session, activeSessionId, setActiveSessionId, setLoadingId, setRefreshKey])
 
-  // TODO: Replace with SSE orchestrator hook (see useOrchestrator in NM/PE/LRR)
-  async function handleSend(text: string) {
-    const userMsg = { id: crypto.randomUUID(), role: 'user' as const, content: text }
-    setMessages(prev => [...prev, userMsg])
-    session.addMessage(userMsg)
-    setStreaming(true)
+  function handleCampaignsChange(updated: Campaign[]) {
+    setCampaigns(updated)
+    session.mergeFields({ intake_summary: { campaigns: updated } })
+  }
 
-    // TODO: Wire up SSE streaming to /.netlify/functions/orchestrator
-    setTimeout(() => {
-      const reply = { id: crypto.randomUUID(), role: 'assistant' as const, content: 'Placeholder — wire your orchestrator.' }
-      setMessages(prev => [...prev, reply])
-      session.addMessage(reply)
-      setStreaming(false)
-    }, 1000)
+  function handlePlanNameChange(name: string) {
+    setPlanName(name)
+    session.setField(TITLE_FIELD, name)
+    setRefreshKey(k => k + 1)
+  }
+
+  if (!activeSessionId) {
+    return (
+      <div className="id-empty">
+        <div className="id-empty__content">
+          <h2>Incremental Dashboard</h2>
+          <p>Track campaign KPIs, incremental lift, and goal performance across your media plan.</p>
+          <button className="id-empty__btn" onClick={() => handlersRef.current.onNew()}>
+            + New Plan
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <>
-      <ChatPanel
-        messages={messages}
-        streaming={streaming}
-        error={error}
-        onSend={handleSend}
-        welcomeTitle="Incremental Dashboard"
-        welcomeDescription="Your workspace. Start a session to begin."
-        placeholder="Type a message..."
-      />
-    </>
+    <IncrementalDashboard
+      sessionId={activeSessionId}
+      planName={planName}
+      campaigns={campaigns}
+      onPlanNameChange={handlePlanNameChange}
+      onCampaignsChange={handleCampaignsChange}
+    />
   )
 }
