@@ -1,156 +1,179 @@
-# AIDigital Labs — [App Name]
+# Incremental Dashboard — Sheldon's App
 
-> App-specific context for Claude Code.
+> Claude Code onboarding for the Incremental Dashboard. Read this first, every session.
+> For full portfolio context, all API keys, env vars, and Supabase schema — read `CLAUDE.md`
+> in the **private** `AIDigital-Labs-Design-System` repo (Boris can grant access).
 
-## App Info
+## App Overview
 
 | Field | Value |
 |-------|-------|
-| App | [App Name] |
-| URL | https://[slug].apps.aidigitallabs.com |
-| Repo | `AiDigital-com/[RepoName]` |
-| Netlify Site ID | `[site-id]` |
-| Purpose | [Brief description] |
+| App | Incremental Dashboard |
+| Owner | Sheldon Bickel |
+| URL (production) | https://incrementaldashboard.apps.aidigitallabs.com |
+| URL (staging) | https://develop--aidigital-incremental.netlify.app |
+| Repo | `AiDigital-com/Incremental-Dashboard` |
+| GitHub user | sheldonbickel-strategy (Admin) |
+| Netlify Site ID | `5ef32e18-0962-44fa-b499-26cdbaf3008a` |
+| Netlify site name | aidigital-incremental |
+| Purpose | Sheldon's custom dashboard — blank canvas with standard AIDigital Labs components |
+| Supabase table | `id_sessions` (needs to be created — see below) |
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, Vite, TypeScript |
+| Frontend | React 19, Vite 6, TypeScript |
 | Auth | Clerk (@clerk/react, @clerk/backend) |
-| Database | Supabase PostgreSQL (@supabase/supabase-js) — RLS + Realtime |
-| AI | LLM Wrapper via DS (`createLLMProvider`) — Gemini/Claude/OpenAI/xAI |
-| Backend | Netlify Functions (AI agents only — CRUD via PostgREST) |
-| Hosting | Netlify (static + serverless) |
-| Design System | @AiDigital-com/design-system v7.39+ |
+| Database | Supabase PostgreSQL (@supabase/supabase-js) |
+| AI | Google Gemini via @google/genai v1.46.0+ |
+| Backend | Netlify Functions |
+| Design System | @AiDigital-com/design-system v7.45.1 |
+| Hosting | Netlify (branch deploys enabled for `main` + `develop`) |
 
-## Architecture
+## What's Already Built
+
+The scaffold is complete. Do NOT rebuild AppShell, auth, Clerk, or sidebar from scratch.
 
 ```
 src/
-  main.tsx              <- Entry: ClerkProvider + applyTheme + resolveTheme
-  App.tsx               <- AppShell wrapper + domain logic + supabaseConfig
+  main.tsx          -- ClerkProvider + applyTheme + resolveTheme + HelpPage routing
+  App.tsx           -- AppShell + Sidebar + useSessionPersistence + session CRUD
+  App.css           -- (empty, add custom styles here)
+  index.css         -- (base styles)
   pages/
-    HelpPage.tsx        <- Public help page (no auth)
-  components/           <- App-specific components
-  hooks/
-    useOrchestrator.ts  <- Chat orchestration (SSE streaming)
-  lib/
-    types.ts            <- Domain types
+    HelpPage.tsx    -- Public help page at /help
 netlify/
-  functions/
-    _shared/
-      auth.ts           <- requireAuth + requireAuthOrEmbed (Clerk/embed/API key)
-      supabase.ts       <- Supabase service-role client (Proxy pattern)
-      logger.ts         <- createLogger from design system
-      access.ts         <- checkAccess/recordUsage wrapper
-    api-status.mts      <- MCP/API status endpoint (uses DS handleApiStatus)
-    orchestrator.mts    <- Chat AI agent (Gemini SSE streaming)
-    init-user.mts       <- User upsert (fallback for RPC)
-    admin-accounts.mts  <- Admin panel data
-netlify.toml            <- Build config + redirects (/help, SPA fallback)
+  functions/        -- (empty, add orchestrator + Netlify Functions here)
+netlify.toml        -- Build config + redirects
+package.json        -- All deps installed (DS 7.45.1, Clerk, Supabase, Gemini)
+.npmrc              -- GitHub Packages auth configured
 ```
 
-## Key Patterns
+### What App.tsx Already Has
 
-- **Supabase Direct:** Client-side CRUD uses `supabase` (from AppShell context), not Netlify Functions
-- **authFetch:** Only for Netlify Functions (AI agents, background jobs)
-- **Help Page:** Rendered at `/help` without auth, using `HelpPage` component from design system
-- **Theme:** `resolveTheme()` auto-selects theme based on URL/domain
-- **Sidebar Bridge:** Use React context to share state between sidebar (rendered by AppShell) and main content
+- `AppShell` with `appTitle="Incremental Dashboard"`, `activityLabel="Session"`, `helpUrl="/help"`
+- `Sidebar` wired to `id_sessions` table — new, select, delete sessions
+- `useSessionPersistence` — auto-saves messages + session fields to Supabase
+- `ChatPanel` with placeholder orchestrator (returns hardcoded reply — replace with SSE)
+- Constants at top: `APP_NAME`, `APP_TITLE`, `SESSION_TABLE`, `TITLE_FIELD`, `ACTIVITY_LABEL`
+
+## What Still Needs Doing
+
+**Step 1 — Define the product**
+Ask Sheldon (or Boris) what this dashboard should do before writing any features.
+
+**Step 2 — Create the Supabase table**
+The app references `id_sessions` which does not exist yet. Get the Supabase credentials
+from the private DS repo CLAUDE.md, then run in the Supabase SQL Editor:
+
+```sql
+create table id_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null,
+  brand_name text,
+  status text default 'chatting',
+  messages jsonb default '[]',
+  intake_summary jsonb,
+  deleted_by_user boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+alter table id_sessions enable row level security;
+create policy "Users own their sessions"
+  on id_sessions for all
+  using (user_id = requesting_user_id());
+```
+
+Run on both production (`njwzbptrhgznozpndcxf`) and staging (`rqpvrikighrlgjxzkqde`).
+
+**Step 3 — Wire the orchestrator**
+Replace the placeholder in App.tsx `handleSend` with a real SSE call to
+`/.netlify/functions/orchestrator`. Reference pattern:
+`netlify/functions/orchestrator.mts` in `AI-Labs-Neuromarketing-Audit`.
 
 ## Environment Variables
 
-**All shared env vars are set at Netlify team level** (account: `aidigital-operating-llc`).
-New sites inherit them automatically. No manual setup needed for:
-- `NPM_TOKEN`, `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
-- `GEMINI_API_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+All shared vars are pre-set at Netlify team level — no manual Netlify setup needed.
+Available automatically in all deploys: Clerk keys, Gemini key, Supabase keys, NPM_TOKEN.
 
-Only add site-level vars for app-specific config (e.g., `ADMIN_EMAILS`).
+For local `.env.local` — get the actual values from the private DS repo CLAUDE.md,
+section "Local .env.local Template". The `.env.example` in this repo shows the variable names.
 
-## New App Setup Checklist
+## Development Workflow
 
-1. Clone this template and rename
-2. Create GitHub repo under `AiDigital-com` org
-3. Create Netlify site via API under `aidigital-operating-llc` account
-4. **Link Netlify site to GitHub repo** (CRITICAL for auto-deploy):
-   ```
-   PATCH https://api.netlify.com/api/v1/sites/{site_id}
-   Body: { "repo": {
-     "provider": "github",
-     "repo": "AiDigital-com/{REPO_NAME}",
-     "branch": "main",
-     "cmd": "npm run build",
-     "dir": "dist",
-     "installation_id": 120161952
-   }}
-   ```
-5. **Create `develop` branch** and enable branch deploys on Netlify site
-6. Env vars are automatic (team-level) — staging Supabase for branch-deploy, prod for production
-7. Customize AppShell props (appTitle, activityLabel, helpUrl)
-8. Replace placeholder sidebar with app-specific sidebar
-9. Implement orchestrator with Gemini SSE streaming
-10. Build domain-specific logic on `develop` branch
-11. Run E2E staging tests, then merge to `main` for production deploy
+No localhost testing. All testing on staging branch deploys.
 
-## SDLC & Deploy Process
+| Environment | Branch | URL |
+|-------------|--------|-----|
+| Staging | `develop` | https://develop--aidigital-incremental.netlify.app |
+| Production | `main` | https://incrementaldashboard.apps.aidigitallabs.com |
 
-**IMPORTANT: Follow this process for ALL changes. No exceptions.**
+1. All work on `develop` branch
+2. Push to `develop` — staging auto-deploys in ~2-3 min
+3. Verify deploy reaches `ready` before testing
+4. When ready to ship: merge `develop` to `main`
 
-### Environments
-
-| Environment | Branch | Supabase | URLs |
-|-------------|--------|----------|------|
-| Local dev | any | staging (rqpvrikighrlgjxzkqde) | localhost:5173 |
-| Staging | `develop` | staging (rqpvrikighrlgjxzkqde) | develop--{site}.netlify.app |
-| Production | `main` | production (njwzbptrhgznozpndcxf) | {app}.apps.aidigitallabs.com |
-
-### Workflow
-
-1. **All work on `develop` branch** — never push directly to `main`
-2. **Push to develop** → staging auto-deploys with staging Supabase
-3. **E2E testing optional** during development (run at discretion)
-4. **"Ship it" triggers mandatory pipeline:**
-   - Pre-deploy: E2E smoke + workflow on staging (must pass)
-   - Merge develop → main
-   - Post-deploy: E2E smoke + workflow on production (must pass)
-   - Auto-update: developer docs, user guides, screenshots, CLAUDE.md, memory
-
-### E2E Commands (run from Design System repo)
+### Git Push (Windows Git Bash)
 
 ```bash
-npm run test:staging:smoke     # staging smoke tests
-npm run test:staging:full      # staging smoke + workflow
-npm run test:prod:smoke        # production smoke tests
-npm run test:prod:full         # production smoke + workflow
+export PATH="/c/Program Files/nodejs:$PATH"
+git checkout develop
+
+# Embedded token required on Windows due to tty limitations
+# Get the GitHub OAuth token from the private DS repo CLAUDE.md
+git push https://AiDigital-com:{GITHUB_TOKEN}@github.com/AiDigital-com/Incremental-Dashboard.git develop
 ```
 
-### Clean Sweep Protocol
+### Verify deploy after push
 
-End every session with Clean Sweep protocol. After major feature work, run the Clean Sweep from the DS repo to sync docs, templates, and CLAUDE.md across the portfolio.
+```bash
+curl -s "https://api.netlify.com/api/v1/sites/5ef32e18-0962-44fa-b499-26cdbaf3008a/deploys?per_page=1" \
+  -H "Authorization: Bearer {NETLIFY_TOKEN}" | \
+  node -e "const c=[]; process.stdin.on('data',x=>c.push(x)); process.stdin.on('end',()=>{const d=JSON.parse(c.join('')); console.log(d[0].state, d[0].branch)})"
+```
 
-### Gemini Model Policy
+(Get the Netlify token from the private DS repo CLAUDE.md — reference_credentials.md in memory.)
 
-- **Never use Gemini models prior to 3.0.** All legacy 2.x models are deprecated.
-- **gemini-3-flash-preview** — orchestrator (chat), visualizer parallel extraction
-- **gemini-3.1-pro-preview** — deep audit agents, background report generation
-- SDK: `@google/genai` must be v1.46.0+
+## Design System
 
-### Hotfixes
+Package: `@AiDigital-com/design-system` — installed at v7.45.1.
 
-For critical production issues: push directly to `main`, then backmerge to `develop`.
+Key imports already used in this app:
+```typescript
+import { AppShell, ChatPanel, Sidebar, useJobStatus, useSessionPersistence } from '@AiDigital-com/design-system'
+```
+
+Rules:
+- Check DS first before building any custom component
+- Read the DS source before using any component — understand every prop
+- DS changes require Boris's approval — they affect all 15+ apps
+
+## AI / Gemini Rules
+
+- Never use Gemini models prior to 3.0
+- `gemini-3-flash-preview` — chat / streaming orchestrator
+- `gemini-3.1-pro-preview` — analysis / scoring
+- SDK: `@google/genai` v1.46.0+ (already in package.json)
 
 ## Standing Instructions
 
-- Execute all bash commands, git commits, pushes, API calls, and deploys without asking for confirmation
+- Execute all bash commands, git commits, pushes, and deploys without asking for confirmation
 - Always use `Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>` in commits
-- Work on `develop` branch by default unless told otherwise
-- For full portfolio architecture (all apps, env vars, API keys), see `CLAUDE.md` in `AIDigital-Labs-Design-System`
+- Work on `develop` branch by default
+- After every push, verify the Netlify deploy reaches `ready` before moving on
+- Run `npm run build` before committing — zero TypeScript errors required
 
-## Development Environment
+## Coding Conventions
 
-- **OS:** Windows 11
-- **Shell:** Git Bash (use Unix paths with forward slashes)
-- **PATH:** Always set `export PATH="/c/Program Files/nodejs:$PATH"` before npm commands
-- **Git push:** Use credential-embedded URL due to tty limitations
+- CSS: BEM naming; `aidl-` prefix for DS, custom prefix for app-specific styles
+- Components: one directory per component (`ComponentName/ComponentName.tsx` + `index.ts`)
+- State: `useReducer` for complex state, `useState` for simple
+- No `as any` at DS boundaries — fix the type, do not suppress the error
+- All times displayed in ET (convert from UTC before showing)
+
+## Reference Patterns
+
+For SSE orchestrator streaming: `AI-Labs-Neuromarketing-Audit/netlify/functions/orchestrator.mts`
+For background job pattern: `AI-Labs-Neuromarketing-Audit/netlify/functions/api-submit.mts`
+For job status hook: `AIDigital-Labs-Design-System/src/hooks/useJobStatus.ts`
