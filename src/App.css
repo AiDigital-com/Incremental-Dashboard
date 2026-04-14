@@ -497,8 +497,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
-  gap: 56px;
+  /* Asymmetric vertical padding shifts visual center upward */
+  padding: 12px 24px 100px;
+  gap: 36px;
   /* Extend behind AppShell header using negative margin */
   margin: -1px;
 }
@@ -562,8 +563,9 @@
   border: 1.5px solid var(--card-color);
   border-radius: 20px;
   width: 340px;
-  min-height: 300px;
-  padding: 90px 60px;
+  /* Fixed height so all cards are identical regardless of label line-count */
+  height: 300px;
+  padding: 0 60px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -656,13 +658,17 @@
 
 .id-home__card-label {
   font-family: 'Barlow Semi Condensed', sans-serif;
-  font-weight: 700;
+  font-weight: 300;
   font-size: 2.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #ffffff;
   line-height: 1.15;
   text-align: center;
+  /* Reserve 2-line height so all labels occupy the same vertical space
+     regardless of whether they wrap (keeps side-card visual balance) */
+  display: block;
+  min-height: calc(2 * 1.15 * 2.8rem);
 }
 
 .id-home__card-desc {
