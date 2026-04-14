@@ -20,21 +20,21 @@ const VIEWS: {
     label: 'Executive View',
     sub: 'Regional performance heat map',
     color: '#0009DC',
-    glow: 'rgba(0, 9, 220, 0.55)',
+    glow: 'rgba(0, 9, 220, 0.65)',
   },
   {
     id: 'gd',
     label: 'Growth Director View',
     sub: 'Campaign performance by director',
     color: '#AEF33E',
-    glow: 'rgba(174, 243, 62, 0.55)',
+    glow: 'rgba(174, 243, 62, 0.65)',
   },
   {
     id: 'client',
     label: 'Client View',
     sub: 'Campaign overview by client',
     color: '#FF7CF5',
-    glow: 'rgba(255, 124, 245, 0.55)',
+    glow: 'rgba(255, 124, 245, 0.65)',
   },
 ]
 
@@ -49,10 +49,10 @@ export function HomePage({ onViewSelect }: Props) {
       </div>
 
       <div className="id-home__cards">
-        {VIEWS.map(v => (
+        {VIEWS.map((v, i) => (
           <button
             key={v.id}
-            className="id-home__card"
+            className={`id-home__card id-home__card--${i}`}
             style={{ '--card-color': v.color, '--card-glow': v.glow } as React.CSSProperties}
             onClick={() => onViewSelect(v.id)}
           >

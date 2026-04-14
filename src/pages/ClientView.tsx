@@ -1,11 +1,17 @@
 // ── Client View (placeholder) ─────────────────────────────────────────────────
-// Full implementation pending client view spec.
 
-export function ClientView() {
+interface Props {
+  onBack: () => void
+}
+
+export function ClientView({ onBack }: Props) {
   return (
     <div className="id-dashboard">
 
       <div className="id-dashboard__header">
+        <button className="id-back-btn" onClick={onBack}>
+          ← Back
+        </button>
         <div className="id-dashboard__title-wrap">
           <h2 className="id-dashboard__title-text">Client View</h2>
         </div>

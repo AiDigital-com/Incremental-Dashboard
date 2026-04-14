@@ -22,6 +22,7 @@ interface Props {
   campaigns: Campaign[]
   onPlanNameChange: (name: string) => void
   onCampaignsChange: (campaigns: Campaign[]) => void
+  onBack?: () => void
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -91,7 +92,7 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncrementalDashboard({ planName, campaigns }: Props) {
+export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
 
   // Only show campaigns at or above goal
@@ -122,6 +123,11 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
 
       {/* Header */}
       <div className="id-dashboard__header">
+        {onBack && (
+          <button className="id-back-btn" onClick={onBack}>
+            ← Back
+          </button>
+        )}
         <div className="id-dashboard__title-wrap">
           <h2 className="id-dashboard__title-text">{planName}</h2>
         </div>

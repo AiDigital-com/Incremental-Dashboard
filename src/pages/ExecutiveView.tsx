@@ -1,4 +1,5 @@
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import { useState } from 'react'
+import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
 
 // ── Geo data ──────────────────────────────────────────────────────────────────
 
@@ -7,19 +8,20 @@ const GEO_URL = '/states-10m.json'
 // ── Region definitions ────────────────────────────────────────────────────────
 
 const REGION_COLORS: Record<string, string> = {
-  Northeast: '#0009DC',  // Yves Klein Blue
-  Southeast: '#AEF33E',  // Lime
-  Midwest:   '#FF7CF5',  // Pink
-  Central:   '#38b6ff',  // Neon Azure
-  West:      '#8263FF',  // Violet Pulse
+  Northeast: '#0009DC',
+  Southeast: '#AEF33E',
+  Midwest:   '#FF7CF5',
+  Central:   '#38b6ff',
+  West:      '#8263FF',
 }
 
-const REGION_LABELS: Record<string, string> = {
-  Northeast: 'Northeast',
-  Southeast: 'Southeast',
-  Midwest:   'Midwest',
-  Central:   'Central',
-  West:      'West',
+// Geographic centroids for region name labels [longitude, latitude]
+const REGION_CENTROIDS: Record<string, [number, number]> = {
+  Northeast: [-74,   44.5],
+  Southeast: [-83,   31.5],
+  Midwest:   [-89.5, 44.5],
+  Central:   [-100,  35  ],
+  West:      [-119,  45  ],
 }
 
 // All 50 states assigned to a region (House excluded from visual per spec)
@@ -51,65 +53,71 @@ const STATE_REGIONS: Record<string, string> = {
   Utah: 'West', Washington: 'West', Wyoming: 'West',
 }
 
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface Props {
+  onBack: () => void
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ExecutiveView() {
+export function ExecutiveView({ onBack }: Props) {
+  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null)
+
   return (
     <div className="id-exec">
 
+      {/* Header */}
       <div className="id-exec__header">
-        <h2 className="id-exec__title">Executive View</h2>
-        <p className="id-exec__subtitle">Regional incremental performance — United States</p>
+        <button className="id-back-btn" onClick={onBack}>
+          ← Back
+        </button>
+        <div>
+          <h2 className="id-exec__title">Executive View</h2>
+          <p className="id-exec__subtitle">Regional incremental performance — United States</p>
+        </div>
       </div>
 
+      {/* Map */}
       <div className="id-exec__map-wrap">
         <ComposableMap
           projection="geoAlbersUsa"
           style={{ width: '100%', height: '100%' }}
         >
-          <defs>
-            {Object.entries(REGION_COLORS).map(([region, color]) => (
-              <filter key={region} id={`glow-${region}`} x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                <feColorMatrix in="blur" type="matrix"
-                  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-                  result="glow"
-                />
-                <feMerge>
-                  <feMergeNode in="glow" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-                {/* Reference color to avoid lint warning */}
-                <feFlood floodColor={color} floodOpacity="0" result="colorRef" />
-              </filter>
-            ))}
-          </defs>
-
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map(geo => {
                 const stateName: string = geo.properties?.name ?? ''
                 const region = STATE_REGIONS[stateName]
-                const color = region ? REGION_COLORS[region] : '#444'
+                const color = region ? REGION_COLORS[region] : '#2a2a3a'
+                const isRegionHovered = !!region && hoveredRegion === region
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
+                    onMouseEnter={() => region && setHoveredRegion(region)}
+                    onMouseLeave={() => setHoveredRegion(null)}
                     style={{
+                      // Both default and hover use the same style —
+                      // regional highlight is driven by React state, not CSS :hover
                       default: {
-                        fill: region ? `${color}38` : '#1a1a1a',
-                        stroke: region ? `${color}bb` : '#333',
-                        strokeWidth: 0.6,
-                        filter: region ? `drop-shadow(0 0 5px ${color}99)` : 'none',
+                        fill: isRegionHovered ? `${color}70` : `${color}38`,
+                        stroke: isRegionHovered ? color : `${color}99`,
+                        strokeWidth: isRegionHovered ? 1 : 0.5,
+                        filter: isRegionHovered
+                          ? `drop-shadow(0 0 12px ${color}cc)`
+                          : `drop-shadow(0 0 4px ${color}66)`,
                         outline: 'none',
-                        transition: 'fill 0.15s, filter 0.15s',
+                        transition: 'fill 0.15s, stroke 0.15s, filter 0.15s',
                       },
                       hover: {
-                        fill: region ? `${color}66` : '#222',
-                        stroke: region ? color : '#555',
-                        strokeWidth: 1,
-                        filter: region ? `drop-shadow(0 0 10px ${color}cc)` : 'none',
+                        fill: isRegionHovered ? `${color}70` : `${color}38`,
+                        stroke: isRegionHovered ? color : `${color}99`,
+                        strokeWidth: isRegionHovered ? 1 : 0.5,
+                        filter: isRegionHovered
+                          ? `drop-shadow(0 0 12px ${color}cc)`
+                          : `drop-shadow(0 0 4px ${color}66)`,
                         outline: 'none',
                         cursor: 'default',
                       },
@@ -120,21 +128,57 @@ export function ExecutiveView() {
               })
             }
           </Geographies>
+
+          {/* Region name labels — always visible */}
+          {Object.entries(REGION_CENTROIDS).map(([region, coords]) => {
+            const color = REGION_COLORS[region]
+            const isHovered = hoveredRegion === region
+            return (
+              <Marker key={region} coordinates={coords}>
+                <text
+                  textAnchor="middle"
+                  dy="-4"
+                  style={{
+                    fontFamily: "'Barlow Semi Condensed', sans-serif",
+                    fontWeight: 700,
+                    fontSize: isHovered ? '11px' : '9px',
+                    fill: isHovered ? color : `${color}cc`,
+                    letterSpacing: '0.14em',
+                    filter: isHovered ? `drop-shadow(0 0 6px ${color})` : 'none',
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                    transition: 'font-size 0.15s, fill 0.15s',
+                  }}
+                >
+                  {region.toUpperCase()}
+                </text>
+              </Marker>
+            )
+          })}
         </ComposableMap>
       </div>
 
       {/* Legend */}
       <div className="id-exec__legend">
-        {Object.entries(REGION_LABELS).map(([region, label]) => (
-          <div key={region} className="id-exec__legend-item">
+        {Object.entries(REGION_COLORS).map(([region, color]) => (
+          <div
+            key={region}
+            className={`id-exec__legend-item${hoveredRegion === region ? ' id-exec__legend-item--hovered' : ''}`}
+            onMouseEnter={() => setHoveredRegion(region)}
+            onMouseLeave={() => setHoveredRegion(null)}
+          >
             <span
               className="id-exec__legend-dot"
               style={{
-                background: REGION_COLORS[region],
-                boxShadow: `0 0 8px ${REGION_COLORS[region]}`,
+                background: color,
+                boxShadow: hoveredRegion === region
+                  ? `0 0 10px ${color}, 0 0 4px ${color}`
+                  : `0 0 6px ${color}`,
               }}
             />
-            <span className="id-exec__legend-label">{label}</span>
+            <span className="id-exec__legend-label" style={{ color: hoveredRegion === region ? color : undefined }}>
+              {region}
+            </span>
           </div>
         ))}
       </div>

@@ -304,18 +304,6 @@ Object.values(REGION_GDS).flat().forEach((gd, i) => {
   GD_CAMPAIGNS[gd] = GD_CAMPAIGN_PATTERNS[i % GD_CAMPAIGN_PATTERNS.length]
 })
 
-// ── Nav sidebar (back button) ─────────────────────────────────────────────────
-
-function NavSidebar({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="sidebar sidebar--nav">
-      <button className="id-nav-back" onClick={onBack}>
-        ‹ Back
-      </button>
-    </div>
-  )
-}
-
 // ── Root component ────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -334,10 +322,8 @@ export default function App() {
     ? `${selectedRegion} Region`
     : 'Campaign Overview'
 
-  // Sidebar varies by view
-  const sidebar = currentView === 'home'
-    ? undefined
-    : currentView === 'gd'
+  // Sidebar: only GD view uses the filter sidebar; all others have no sidebar
+  const sidebar = currentView === 'gd'
     ? (
       <AppSidebar
         selectedRegion={selectedRegion}
@@ -346,7 +332,7 @@ export default function App() {
         onGDChange={setSelectedGD}
       />
     )
-    : <NavSidebar onBack={() => setCurrentView('home')} />
+    : undefined
 
   return (
     <AppShell
@@ -362,7 +348,7 @@ export default function App() {
           case 'home':
             return <HomePage onViewSelect={setCurrentView} />
           case 'executive':
-            return <ExecutiveView />
+            return <ExecutiveView onBack={() => setCurrentView('home')} />
           case 'gd':
             return (
               <IncrementalDashboard
@@ -371,10 +357,11 @@ export default function App() {
                 campaigns={visibleCampaigns}
                 onPlanNameChange={() => {}}
                 onCampaignsChange={() => {}}
+                onBack={() => setCurrentView('home')}
               />
             )
           case 'client':
-            return <ClientView />
+            return <ClientView onBack={() => setCurrentView('home')} />
         }
       }}
     </AppShell>
