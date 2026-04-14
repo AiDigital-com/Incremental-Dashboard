@@ -5,9 +5,13 @@ import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'
 import type { Campaign } from './components/IncrementalDashboard'
 import { AppSidebar, REGION_GDS } from './components/AppSidebar/AppSidebar'
+import { HomePage } from './pages/HomePage'
+import { ExecutiveView } from './pages/ExecutiveView'
+import { ClientView } from './pages/ClientView'
 import './App.css'
 
 // ── App Config ────────────────────────────────────────────────────────────────
+
 const APP_TITLE = 'Incremental Dashboard'
 
 const supabaseConfig = import.meta.env.VITE_SUPABASE_URL ? {
@@ -16,7 +20,12 @@ const supabaseConfig = import.meta.env.VITE_SUPABASE_URL ? {
   createClient: createClient as any,
 } : undefined
 
+// ── View type ─────────────────────────────────────────────────────────────────
+
+export type AppView = 'home' | 'executive' | 'gd' | 'client'
+
 // ── Placeholder campaign data (replaced by API when ready) ───────────────────
+
 const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   {
     id: '1',
@@ -280,8 +289,8 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
 ]
 
-// ── GD → campaign ID mapping (placeholder; API will supply real assignments) ──
-// Pattern rotates across GDs: each index maps to a campaign subset.
+// ── GD → campaign ID mapping ──────────────────────────────────────────────────
+
 const GD_CAMPAIGN_PATTERNS: string[][] = [
   ['1', '3', '7', '9', '10'],
   ['2', '4', '11', '13', '14'],
@@ -295,9 +304,22 @@ Object.values(REGION_GDS).flat().forEach((gd, i) => {
   GD_CAMPAIGNS[gd] = GD_CAMPAIGN_PATTERNS[i % GD_CAMPAIGN_PATTERNS.length]
 })
 
+// ── Nav sidebar (back button) ─────────────────────────────────────────────────
+
+function NavSidebar({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="sidebar sidebar--nav">
+      <button className="id-nav-back" onClick={onBack}>
+        ‹ Back
+      </button>
+    </div>
+  )
+}
+
 // ── Root component ────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [currentView, setCurrentView] = useState<AppView>('home')
   const [selectedRegion, setSelectedRegion] = useState('')
   const [selectedGD, setSelectedGD] = useState('')
 
@@ -312,6 +334,20 @@ export default function App() {
     ? `${selectedRegion} Region`
     : 'Campaign Overview'
 
+  // Sidebar varies by view
+  const sidebar = currentView === 'home'
+    ? undefined
+    : currentView === 'gd'
+    ? (
+      <AppSidebar
+        selectedRegion={selectedRegion}
+        selectedGD={selectedGD}
+        onRegionChange={setSelectedRegion}
+        onGDChange={setSelectedGD}
+      />
+    )
+    : <NavSidebar onBack={() => setCurrentView('home')} />
+
   return (
     <AppShell
       appTitle={APP_TITLE}
@@ -319,24 +355,28 @@ export default function App() {
       auth={{ SignIn, UserButton, useAuth }}
       supabaseConfig={supabaseConfig}
       helpUrl="/help"
-      sidebar={
-        <AppSidebar
-          selectedRegion={selectedRegion}
-          selectedGD={selectedGD}
-          onRegionChange={setSelectedRegion}
-          onGDChange={setSelectedGD}
-        />
-      }
+      sidebar={sidebar}
     >
-      {() => (
-        <IncrementalDashboard
-          sessionId="demo"
-          planName={planName}
-          campaigns={visibleCampaigns}
-          onPlanNameChange={() => {}}
-          onCampaignsChange={() => {}}
-        />
-      )}
+      {() => {
+        switch (currentView) {
+          case 'home':
+            return <HomePage onViewSelect={setCurrentView} />
+          case 'executive':
+            return <ExecutiveView />
+          case 'gd':
+            return (
+              <IncrementalDashboard
+                sessionId="demo"
+                planName={planName}
+                campaigns={visibleCampaigns}
+                onPlanNameChange={() => {}}
+                onCampaignsChange={() => {}}
+              />
+            )
+          case 'client':
+            return <ClientView />
+        }
+      }}
     </AppShell>
   )
 }

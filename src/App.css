@@ -21,6 +21,10 @@
   gap: 10px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 300;
+  /* Fill aidl-app-main flex column — enables static pagination */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -151,7 +155,11 @@
   border: 1px solid rgba(0, 9, 220, 0.1);
   border-radius: 6px;
   overflow-x: auto;
+  overflow-y: auto;
   background: #F9F9F9;
+  /* Expand to fill remaining space — pushes pagination to bottom */
+  flex: 1;
+  min-height: 0;
 }
 
 [data-theme="dark"] .id-dashboard__table-wrap,
@@ -321,6 +329,8 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  /* Always anchored at bottom of dashboard flex column */
+  flex-shrink: 0;
 }
 
 .id-pagination__info {
@@ -464,3 +474,232 @@
 
 [data-theme="dark"] .sidebar__select-chevron,
 .dark .sidebar__select-chevron { color: #AEF33E; }
+
+/* ── Homepage ────────────────────────────────────────────────────────────── */
+
+.id-home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 52px;
+}
+
+.id-home__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.id-home__title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 2.6rem;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: #0009DC;
+  line-height: 1;
+  margin: 0;
+}
+
+[data-theme="dark"] .id-home__title,
+.dark .id-home__title { color: #AEF33E; }
+
+.id-home__subtitle {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: #888;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.id-home__cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.id-home__card {
+  background: #F9F9F9;
+  border: 1.5px solid var(--card-color);
+  border-radius: 14px;
+  padding: 44px 40px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  outline: none;
+}
+
+.id-home__card:hover {
+  box-shadow: 0 0 28px var(--card-glow), 0 0 6px var(--card-glow);
+  transform: translateY(-3px);
+  background: #fff;
+}
+
+[data-theme="dark"] .id-home__card,
+.dark .id-home__card {
+  background: var(--surface, #111);
+}
+
+[data-theme="dark"] .id-home__card:hover,
+.dark .id-home__card:hover {
+  background: var(--surface2, #1a1a1a);
+}
+
+.id-home__card-label {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--card-color);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.id-home__card-desc {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.76rem;
+  color: #888;
+  text-align: center;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .id-home__card-desc,
+.dark .id-home__card-desc { color: #aaa; }
+
+/* ── Nav sidebar (back button) ───────────────────────────────────────────── */
+
+.sidebar--nav {
+  width: 44px;
+  min-width: 44px;
+  align-items: center;
+  padding-top: 12px;
+}
+
+.id-nav-back {
+  background: none;
+  border: none;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 4px;
+  border-radius: 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.id-nav-back:hover { color: #0009DC; }
+[data-theme="dark"] .id-nav-back:hover,
+.dark .id-nav-back:hover { color: #AEF33E; }
+
+/* ── Executive View ──────────────────────────────────────────────────────── */
+
+.id-exec {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px 14px;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.id-exec__header {
+  flex-shrink: 0;
+}
+
+.id-exec__title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #0009DC;
+  margin: 0;
+  line-height: 1.1;
+}
+
+[data-theme="dark"] .id-exec__title,
+.dark .id-exec__title { color: #AEF33E; }
+
+.id-exec__subtitle {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.76rem;
+  color: #888;
+  margin: 3px 0 0;
+}
+
+.id-exec__map-wrap {
+  flex: 1;
+  min-height: 0;
+  background: #07070f;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 9, 220, 0.15);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .id-exec__map-wrap,
+.dark .id-exec__map-wrap {
+  border-color: rgba(174, 243, 62, 0.12);
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────────── */
+
+.id-exec__legend {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 0 0 4px;
+}
+
+.id-exec__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.id-exec__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.id-exec__legend-label {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #444;
+}
+
+[data-theme="dark"] .id-exec__legend-label,
+.dark .id-exec__legend-label { color: #aaa; }

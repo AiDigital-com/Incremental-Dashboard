@@ -17,8 +17,11 @@
     "@supabase/supabase-js": "^2.99.2",
     "html2pdf.js": "^0.14.0",
     "marked": "^15.0.12",
+    "prop-types": "^15.8.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-simple-maps": "^3.0.0",
+    "us-atlas": "^3.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
