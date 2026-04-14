@@ -10,7 +10,7 @@ const GEO_URL = '/states-10m.json'
 
 const REGION_COLORS: Record<string, string> = {
   Northeast: '#0009DC',
-  Southeast: '#AEF33E',
+  Southeast: '#4E9018',
   Midwest:   '#FF7CF5',
   Central:   '#38b6ff',
   West:      '#8263FF',
