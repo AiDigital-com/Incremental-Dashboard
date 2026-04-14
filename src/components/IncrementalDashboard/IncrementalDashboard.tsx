@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface Campaign {
@@ -21,6 +23,10 @@ interface Props {
   onPlanNameChange: (name: string) => void
   onCampaignsChange: (campaigns: Campaign[]) => void
 }
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 10
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,10 +59,11 @@ function daysLeft(endDate: string): number {
   return Math.max(0, Math.round((end.getTime() - now.getTime()) / 86_400_000))
 }
 
+// Download always exports ALL active campaigns regardless of current page
 function downloadCSV(campaigns: Campaign[], filename: string) {
   const headers = [
     'Client Name', 'Campaign Name', 'Start Date', 'End Date', 'Current Budget',
-    'KPI', 'KPI Value', 'Performance vs. Goal (x)', 'Incremental Revenue ($)', 'Days Left in Flight',
+    'KPI', 'KPI Value', 'Performance vs. Goal (x)', 'Incremental Availability ($)', 'Days Left in Flight',
   ]
   const rows = campaigns.map(c => [
     c.clientName,
@@ -85,14 +92,27 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function IncrementalDashboard({ planName, campaigns }: Props) {
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Only show campaigns at or above goal
   const activeCampaigns = campaigns.filter(c => c.performanceMultiplier >= 1.0)
 
-  // ── Summary metrics ──────────────────────────────────────────────────────
-  const totalBudget = activeCampaigns.reduce((s, c) => s + (c.budget || 0), 0)
+  // Reset to page 1 whenever the campaign set changes (filter change)
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [campaigns])
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(activeCampaigns.length / PAGE_SIZE))
+  const pagedCampaigns = activeCampaigns.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  )
+
+  // ── Summary metrics (across ALL active campaigns, not just current page) ──
+  const totalBudget      = activeCampaigns.reduce((s, c) => s + (c.budget || 0), 0)
   const totalIncremental = activeCampaigns.reduce((s, c) => s + (c.incrementalDollars || 0), 0)
-  const avgDaysLeft = activeCampaigns.length
+  const avgDaysLeft      = activeCampaigns.length
     ? Math.round(activeCampaigns.reduce((s, c) => s + daysLeft(c.endDate), 0) / activeCampaigns.length)
     : 0
 
@@ -106,6 +126,7 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
           <h2 className="id-dashboard__title-text">{planName}</h2>
         </div>
         <div className="id-dashboard__header-actions">
+          {/* Download always exports all active campaigns across all pages */}
           <button
             className="id-download-btn"
             onClick={() => downloadCSV(activeCampaigns, planName)}
@@ -127,7 +148,7 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
           <span className="id-kpi-tile__value">{activeCampaigns.length}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Total Incremental Revenue</span>
+          <span className="id-kpi-tile__label">Total Incremental Availability</span>
           <span className="id-kpi-tile__value">{formatBudget(totalIncremental)}</span>
         </div>
         <div className="id-kpi-tile">
@@ -145,11 +166,11 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
               <th>Campaign Name</th>
               <th>Start Date</th>
               <th>End Date</th>
-              <th>Current Budget</th>
+              <th>Budget</th>
               <th>KPI</th>
               <th>Performance vs. Goal</th>
-              <th>Incremental Revenue</th>
-              <th>Days Left in Flight</th>
+              <th>Incremental Availability</th>
+              <th>Days Left</th>
             </tr>
           </thead>
           <tbody>
@@ -160,7 +181,7 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
                 </td>
               </tr>
             )}
-            {activeCampaigns.map(c => {
+            {pagedCampaigns.map(c => {
               const remaining = daysLeft(c.endDate)
               return (
                 <tr key={c.id} className="id-table__row">
@@ -200,6 +221,44 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination — bottom right */}
+      {totalPages > 1 && (
+        <div className="id-pagination">
+          <span className="id-pagination__info">
+            {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, activeCampaigns.length)} of {activeCampaigns.length}
+          </span>
+          <div className="id-pagination__controls">
+            <button
+              className="id-pagination__btn"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              aria-label="Previous page"
+            >
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                className={`id-pagination__btn${currentPage === page ? ' id-pagination__btn--active' : ''}`}
+                onClick={() => setCurrentPage(page)}
+                aria-label={`Page ${page}`}
+                aria-current={currentPage === page ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              className="id-pagination__btn"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              aria-label="Next page"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )
