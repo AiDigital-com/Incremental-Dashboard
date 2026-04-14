@@ -490,8 +490,10 @@
 }
 
 .id-home {
-  /* Force dark — not theme-dependent */
-  background: #07070d;
+  /* Force dark — not theme-dependent, with matching 30% dot grid */
+  background-color: #07070d;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.30) 1px, transparent 1px);
+  background-size: 32px 32px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -798,7 +800,7 @@
 .id-exec__map-wrap {
   flex: 1;
   min-height: 0;
-  background: #07070f;
+  background: transparent;
   border-radius: 8px;
   border: 1px solid rgba(0, 9, 220, 0.15);
   overflow: hidden;

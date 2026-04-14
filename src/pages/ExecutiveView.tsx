@@ -148,6 +148,10 @@ export function ExecutiveView({ onBack }: Props) {
                     fontWeight: 700,
                     fontSize: isHovered ? '33px' : '27px',
                     fill: isHovered ? color : `${color}cc`,
+                    /* White outline so label is legible on any map bg */
+                    stroke: 'rgba(255, 255, 255, 0.90)',
+                    strokeWidth: '4',
+                    paintOrder: 'stroke fill',
                     letterSpacing: '0.14em',
                     filter: isHovered ? `drop-shadow(0 0 6px ${color})` : 'none',
                     pointerEvents: 'none',

@@ -5,10 +5,22 @@ body {
   font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   font-size: var(--font-size-base, 15px);
   line-height: var(--line-height, 1.6);
-  background: var(--bg);
+  /* Dark mode: DS --bg base + 30% dot grid */
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.30) 1px, transparent 1px);
+  background-size: 32px 32px;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
-  transition: background 0.4s ease-in, color 0.4s ease-in;
+  transition: background-color 0.4s ease-in, color 0.4s ease-in;
+}
+
+/* Light mode: white base + dark 30% dot grid */
+[data-theme="light"] body,
+body[data-theme="light"],
+.light body {
+  background-color: #ffffff;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.22) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 #root { min-height: 100vh; display: flex; flex-direction: column; }
