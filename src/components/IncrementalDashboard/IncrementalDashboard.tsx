@@ -196,9 +196,9 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
 
                   <td className="id-table__budget">{formatBudget(c.budget)}</td>
 
-                  <td>
-                    <span className="id-table__kpi-label">{c.kpiLabel}</span>
-                    <span className="id-table__kpi-value">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
+                  <td className="id-table__kpi">
+                    <span className="id-table__kpi-chip">{c.kpiLabel}</span>
+                    <span className="id-table__kpi-num">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
                   </td>
 
                   <td>
