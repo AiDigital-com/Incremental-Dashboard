@@ -198,13 +198,15 @@ export function ExecutiveView({ onBack }: Props) {
                         fontSize: isHovered ? '33px' : '27px',
                         fill: isHovered ? color : `${color}cc`,
                         stroke: 'rgba(255, 255, 255, 0.90)',
-                        strokeWidth: '4',
+                        strokeWidth: '2',
                         paintOrder: 'stroke fill',
                         letterSpacing: '0.14em',
-                        filter: isHovered ? `drop-shadow(0 0 6px ${color})` : 'none',
+                        filter: isHovered
+                          ? `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 4px rgba(255,255,255,0.55))`
+                          : 'drop-shadow(0 0 3px rgba(255,255,255,0.35))',
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        transition: 'font-size 0.15s, fill 0.15s',
+                        transition: 'font-size 0.15s, fill 0.15s, filter 0.15s',
                       }}
                     >
                       {region.toUpperCase()}

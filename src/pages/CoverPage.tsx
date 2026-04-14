@@ -116,10 +116,9 @@ export function CoverPage({ onComplete }: Props) {
         ))}
       </div>
 
-      {/* Divider + prompt */}
+      {/* Divider */}
       <div className={`id-cover__footer ${phase === 'complete' ? 'id-cover__footer--visible' : ''}`}>
         <div className="id-cover__line" />
-        <span className="id-cover__prompt">click to enter</span>
       </div>
     </div>
   )

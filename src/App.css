@@ -765,10 +765,9 @@
   gap: 12px;
   min-height: 0;
   overflow: hidden;
-  max-width: 1280px;
-  width: 100%;
-  margin: 0 auto;
-  /* Aurora mesh gradient — dark left → deep purple → blue → teal right */
+  /* Extend behind AppShell header/border — matches .id-home treatment */
+  margin: -1px;
+  /* Aurora mesh gradient — full-bleed left→right */
   background:
     radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
     radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
