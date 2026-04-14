@@ -3,6 +3,7 @@
 export interface Campaign {
   id: string
   name: string
+  clientName: string
   startDate: string               // 'YYYY-MM-DD'
   endDate: string                 // 'YYYY-MM-DD'
   budget: number                  // current budget in dollars
@@ -10,7 +11,7 @@ export interface Campaign {
   kpiValue: number                // current KPI value
   kpiUnit: string                 // '%', 'x', '$'
   performanceMultiplier: number   // ratio vs goal (1.25 = exceeding by 1.25x)
-  incrementalAvailability: number // 0–100
+  incrementalDollars: number      // estimated incremental revenue in dollars
 }
 
 interface Props {
@@ -43,18 +44,22 @@ function formatKpi(value: number, unit: string): string {
   return `${value.toFixed(2)}x`
 }
 
-function perfStatus(m: number): 'above' | 'near' | 'below' {
-  if (m >= 1.0) return 'above'
-  if (m >= 0.85) return 'near'
-  return 'below'
+function daysLeft(endDate: string): number {
+  if (!endDate) return 0
+  const [y, m, d] = endDate.split('-').map(Number)
+  const end = new Date(y, m - 1, d)
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  return Math.max(0, Math.round((end.getTime() - now.getTime()) / 86_400_000))
 }
 
 function downloadCSV(campaigns: Campaign[], filename: string) {
   const headers = [
-    'Campaign Name', 'Start Date', 'End Date', 'Current Budget',
-    'KPI', 'KPI Value', 'Performance vs. Goal (x)', 'Incremental Availability (%)',
+    'Client Name', 'Campaign Name', 'Start Date', 'End Date', 'Current Budget',
+    'KPI', 'KPI Value', 'Performance vs. Goal (x)', 'Incremental Revenue ($)', 'Days Left in Flight',
   ]
   const rows = campaigns.map(c => [
+    c.clientName,
     c.name,
     c.startDate,
     c.endDate,
@@ -62,7 +67,8 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
     c.kpiLabel,
     `${c.kpiValue}${c.kpiUnit}`,
     c.performanceMultiplier.toFixed(2),
-    c.incrementalAvailability,
+    c.incrementalDollars,
+    daysLeft(c.endDate),
   ])
   const csv = [headers, ...rows]
     .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
@@ -80,11 +86,14 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 
 export function IncrementalDashboard({ planName, campaigns }: Props) {
 
+  // Only show campaigns at or above goal
+  const activeCampaigns = campaigns.filter(c => c.performanceMultiplier >= 1.0)
+
   // ── Summary metrics ──────────────────────────────────────────────────────
-  const totalBudget = campaigns.reduce((s, c) => s + (c.budget || 0), 0)
-  const onTrackCount = campaigns.filter(c => c.performanceMultiplier >= 1).length
-  const avgIncremental = campaigns.length
-    ? Math.round(campaigns.reduce((s, c) => s + (c.incrementalAvailability || 0), 0) / campaigns.length)
+  const totalBudget = activeCampaigns.reduce((s, c) => s + (c.budget || 0), 0)
+  const totalIncremental = activeCampaigns.reduce((s, c) => s + (c.incrementalDollars || 0), 0)
+  const avgDaysLeft = activeCampaigns.length
+    ? Math.round(activeCampaigns.reduce((s, c) => s + daysLeft(c.endDate), 0) / activeCampaigns.length)
     : 0
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -99,8 +108,8 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
         <div className="id-dashboard__header-actions">
           <button
             className="id-download-btn"
-            onClick={() => downloadCSV(campaigns, planName)}
-            disabled={campaigns.length === 0}
+            onClick={() => downloadCSV(activeCampaigns, planName)}
+            disabled={activeCampaigns.length === 0}
           >
             ↓ Download
           </button>
@@ -114,21 +123,16 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
           <span className="id-kpi-tile__value">{formatBudget(totalBudget)}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">On Track</span>
-          <span
-            className="id-kpi-tile__value"
-            style={onTrackCount === campaigns.length && campaigns.length > 0 ? { color: 'var(--success)' } : undefined}
-          >
-            {onTrackCount} / {campaigns.length}
-          </span>
+          <span className="id-kpi-tile__label">Campaigns On Track</span>
+          <span className="id-kpi-tile__value">{activeCampaigns.length}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Avg Incremental Availability</span>
-          <span className="id-kpi-tile__value">{avgIncremental}%</span>
+          <span className="id-kpi-tile__label">Total Incremental Revenue</span>
+          <span className="id-kpi-tile__value">{formatBudget(totalIncremental)}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Total Campaigns</span>
-          <span className="id-kpi-tile__value">{campaigns.length}</span>
+          <span className="id-kpi-tile__label">Avg Days Left in Flight</span>
+          <span className="id-kpi-tile__value">{avgDaysLeft}d</span>
         </div>
       </div>
 
@@ -137,27 +141,31 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
         <table className="id-table">
           <thead>
             <tr>
+              <th>Client Name</th>
               <th>Campaign Name</th>
               <th>Start Date</th>
               <th>End Date</th>
               <th>Current Budget</th>
               <th>KPI</th>
               <th>Performance vs. Goal</th>
-              <th>Incremental Availability</th>
+              <th>Incremental Revenue</th>
+              <th>Days Left in Flight</th>
             </tr>
           </thead>
           <tbody>
-            {campaigns.length === 0 && (
+            {activeCampaigns.length === 0 && (
               <tr>
-                <td colSpan={7} className="id-table__empty">
-                  No campaigns match the selected filters.
+                <td colSpan={9} className="id-table__empty">
+                  No qualifying campaigns match the selected filters.
                 </td>
               </tr>
             )}
-            {campaigns.map(c => {
-              const status = perfStatus(c.performanceMultiplier)
+            {activeCampaigns.map(c => {
+              const remaining = daysLeft(c.endDate)
               return (
-                <tr key={c.id} className={`id-table__row id-table__row--${status}`}>
+                <tr key={c.id} className="id-table__row">
+
+                  <td className="id-table__client">{c.clientName}</td>
 
                   <td className="id-table__name">{c.name}</td>
 
@@ -173,22 +181,17 @@ export function IncrementalDashboard({ planName, campaigns }: Props) {
                   </td>
 
                   <td>
-                    <span className={`id-perf-badge id-perf-badge--${status}`}>
-                      {c.performanceMultiplier.toFixed(2)}x
-                      {status === 'above' && ' above goal'}
-                      {status === 'near'  && ' near goal'}
-                      {status === 'below' && ' below goal'}
+                    <span className="id-perf-badge id-perf-badge--above">
+                      {c.performanceMultiplier.toFixed(2)}x above goal
                     </span>
                   </td>
 
-                  <td>
-                    <div className="id-incr-bar-wrap">
-                      <div
-                        className="id-incr-bar"
-                        style={{ width: `${c.incrementalAvailability}%` }}
-                      />
-                      <span className="id-incr-pct">{c.incrementalAvailability}%</span>
-                    </div>
+                  <td className="id-table__incremental">
+                    {formatBudget(c.incrementalDollars)}
+                  </td>
+
+                  <td className="id-table__days">
+                    {remaining > 0 ? `${remaining}d` : 'Ended'}
                   </td>
 
                 </tr>

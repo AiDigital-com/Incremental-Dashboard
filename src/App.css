@@ -1,4 +1,9 @@
-/* App-specific styles — uses DS CSS variables throughout */
+/* App-specific styles — AI Digital Brand Book 2024 */
+
+/* ── Brand tokens ────────────────────────────────────────────────────────────
+   Yves Klein Blue: #0009DC   Lime: #AEF33E
+   Silver Haze:     #F9F9F9   Midnight Charcoal: #080808
+   ─────────────────────────────────────────────────────────────────────────── */
 
 /* ── Hide DS chrome we don't need ───────────────────────────────────────────── */
 .aidl-trial-banner { display: none !important; }
@@ -7,12 +12,14 @@
 
 .id-dashboard {
   padding: 28px 32px;
-  max-width: 1200px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -28,12 +35,23 @@
 .id-dashboard__title-wrap { flex: 1; min-width: 0; }
 
 .id-dashboard__title-text {
-  font-size: 1.5rem;
+  font-family: 'Barlow Semi Condensed', 'Barlow', sans-serif;
   font-weight: 700;
-  color: var(--text);
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #080808;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.1;
 }
+
+/* Dark mode override */
+@media (prefers-color-scheme: dark) {
+  .id-dashboard__title-text { color: #F9F9F9; }
+}
+
+[data-theme="dark"] .id-dashboard__title-text,
+.dark .id-dashboard__title-text { color: #F9F9F9; }
 
 .id-dashboard__header-actions {
   display: flex;
@@ -45,21 +63,23 @@
 /* ── Download button ─────────────────────────────────────────────────────── */
 
 .id-download-btn {
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  border-radius: 8px;
-  color: var(--accent);
+  background: #0009DC;
+  border: none;
+  border-radius: 4px;
+  color: #F9F9F9;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Barlow Semi Condensed', sans-serif;
   font-size: 0.85rem;
-  font-weight: 600;
-  padding: 8px 18px;
-  transition: background 0.15s, color 0.15s;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  transition: background 0.15s, opacity 0.15s;
   white-space: nowrap;
 }
 
-.id-download-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
-.id-download-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.id-download-btn:hover:not(:disabled) { background: #000ab8; }
+.id-download-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── Summary tiles ───────────────────────────────────────────────────────── */
 
@@ -74,37 +94,73 @@
 }
 
 .id-kpi-tile {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
+  background: #F9F9F9;
+  border: 1px solid rgba(0, 9, 220, 0.12);
+  border-radius: 6px;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
+
+.id-kpi-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: #0009DC;
+}
+
+[data-theme="dark"] .id-kpi-tile,
+.dark .id-kpi-tile {
+  background: var(--surface, #111);
+  border-color: rgba(174, 243, 62, 0.15);
+}
+
+[data-theme="dark"] .id-kpi-tile::before,
+.dark .id-kpi-tile::before { background: #AEF33E; }
 
 .id-kpi-tile__label {
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: #0009DC;
 }
 
+[data-theme="dark"] .id-kpi-tile__label,
+.dark .id-kpi-tile__label { color: #AEF33E; }
+
 .id-kpi-tile__value {
-  color: var(--text);
-  font-size: 1.6rem;
+  font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  line-height: 1.1;
+  font-size: 1.9rem;
+  letter-spacing: 0.01em;
+  color: #080808;
+  line-height: 1;
 }
+
+[data-theme="dark"] .id-kpi-tile__value,
+.dark .id-kpi-tile__value { color: #F9F9F9; }
 
 /* ── Campaign table ──────────────────────────────────────────────────────── */
 
 .id-dashboard__table-wrap {
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid rgba(0, 9, 220, 0.1);
+  border-radius: 6px;
   overflow-x: auto;
-  background: var(--surface);
+  background: #F9F9F9;
+}
+
+[data-theme="dark"] .id-dashboard__table-wrap,
+.dark .id-dashboard__table-wrap {
+  background: var(--surface, #111);
+  border-color: rgba(174, 243, 62, 0.12);
 }
 
 .id-table {
@@ -114,107 +170,135 @@
 }
 
 .id-table th {
-  background: var(--surface2, var(--surface));
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  padding: 10px 16px;
+  background: #080808;
+  border-bottom: 2px solid #0009DC;
+  color: #F9F9F9;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  padding: 12px 16px;
   text-align: left;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .id-table__row td {
-  border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 9, 220, 0.07);
+  padding: 13px 16px;
   vertical-align: middle;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  color: #080808;
 }
+
+[data-theme="dark"] .id-table__row td,
+.dark .id-table__row td { color: #F9F9F9; border-bottom-color: rgba(249, 249, 249, 0.08); }
 
 .id-table__row:last-child td { border-bottom: none; }
 
-.id-table__row--above { border-left: 3px solid var(--success); }
-.id-table__row--near  { border-left: 3px solid #f6ad55; }
-.id-table__row--below { border-left: 3px solid var(--error); }
+.id-table__row:hover td { background: rgba(0, 9, 220, 0.03); }
 
-.id-table__name   { font-weight: 500; color: var(--text); white-space: nowrap; }
-.id-table__date   { color: var(--text-muted); white-space: nowrap; font-size: 0.82rem; }
-.id-table__budget { font-weight: 600; white-space: nowrap; }
+[data-theme="dark"] .id-table__row:hover td,
+.dark .id-table__row:hover td { background: rgba(174, 243, 62, 0.04); }
+
+.id-table__client {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #0009DC;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .id-table__client,
+.dark .id-table__client { color: #AEF33E; }
+
+.id-table__name   { font-weight: 400; color: #080808; white-space: nowrap; }
+.id-table__date   { color: #555; white-space: nowrap; font-size: 0.82rem; }
+.id-table__budget { font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; white-space: nowrap; letter-spacing: 0.02em; }
+.id-table__incremental { font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; white-space: nowrap; letter-spacing: 0.02em; color: #0009DC; }
+.id-table__days   { font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; white-space: nowrap; letter-spacing: 0.03em; }
+
+[data-theme="dark"] .id-table__name,
+.dark .id-table__name { color: #F9F9F9; }
+[data-theme="dark"] .id-table__date,
+.dark .id-table__date { color: #aaa; }
+[data-theme="dark"] .id-table__incremental,
+.dark .id-table__incremental { color: #AEF33E; }
 
 .id-table__kpi-label {
   display: block;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: #0009DC;
 }
+
+[data-theme="dark"] .id-table__kpi-label,
+.dark .id-table__kpi-label { color: #AEF33E; }
 
 .id-table__kpi-value {
   display: block;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: #080808;
 }
+
+[data-theme="dark"] .id-table__kpi-value,
+.dark .id-table__kpi-value { color: #F9F9F9; }
 
 /* ── Performance badge ───────────────────────────────────────────────────── */
 
 .id-perf-badge {
-  border-radius: 12px;
+  border-radius: 3px;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
   white-space: nowrap;
   display: inline-block;
 }
 
-.id-perf-badge--above { background: rgba(72, 187, 120, 0.15);  color: var(--success); }
-.id-perf-badge--near  { background: rgba(246, 173, 85, 0.15);  color: #f6ad55; }
-.id-perf-badge--below { background: rgba(252, 129, 129, 0.15); color: var(--error); }
-
-/* ── Incremental availability bar ────────────────────────────────────────── */
-
-.id-incr-bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 120px;
+.id-perf-badge--above {
+  background: #AEF33E;
+  color: #080808;
 }
 
-.id-incr-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--accent);
-  flex-shrink: 0;
-  opacity: 0.7;
-  max-width: 80px;
-  transition: width 0.3s ease;
-}
+.id-perf-badge--near  { background: rgba(246, 173, 85, 0.18); color: #b07a10; }
+.id-perf-badge--below { background: rgba(220, 0, 0, 0.1);     color: #cc0000; }
 
-.id-incr-pct {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-}
+/* ── Empty state ─────────────────────────────────────────────────────────── */
 
 .id-table__empty {
-  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  color: #888;
   font-size: 0.875rem;
-  padding: 32px;
+  padding: 40px;
   text-align: center;
 }
 
 /* ── Sidebar filters ─────────────────────────────────────────────────────── */
 
 .sidebar__section-title {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: #0009DC;
 }
+
+[data-theme="dark"] .sidebar__section-title,
+.dark .sidebar__section-title { color: #AEF33E; }
 
 .sidebar__filters {
   padding: 12px 12px 16px;
@@ -230,12 +314,16 @@
 }
 
 .sidebar__filter-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: #0009DC;
 }
+
+[data-theme="dark"] .sidebar__filter-label,
+.dark .sidebar__filter-label { color: #AEF33E; }
 
 .sidebar__select-wrap {
   position: relative;
@@ -245,11 +333,12 @@
   width: 100%;
   appearance: none;
   -webkit-appearance: none;
-  background: var(--surface2, var(--surface));
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--text);
-  font-family: inherit;
+  background: #F9F9F9;
+  border: 1px solid rgba(0, 9, 220, 0.2);
+  border-radius: 4px;
+  color: #080808;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
   font-size: 0.82rem;
   padding: 7px 28px 7px 10px;
   outline: none;
@@ -257,11 +346,21 @@
   transition: border-color 0.15s;
 }
 
-.sidebar__filter-select:focus  { border-color: var(--accent-border); }
+.sidebar__filter-select:focus  { border-color: #0009DC; }
 .sidebar__filter-select:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
+
+[data-theme="dark"] .sidebar__filter-select,
+.dark .sidebar__filter-select {
+  background: var(--surface2, var(--surface));
+  border-color: rgba(174, 243, 62, 0.2);
+  color: #F9F9F9;
+}
+
+[data-theme="dark"] .sidebar__filter-select:focus,
+.dark .sidebar__filter-select:focus { border-color: #AEF33E; }
 
 .sidebar__select-chevron {
   position: absolute;
@@ -269,7 +368,10 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.65rem;
-  color: var(--text-muted);
+  color: #0009DC;
   pointer-events: none;
   user-select: none;
 }
+
+[data-theme="dark"] .sidebar__select-chevron,
+.dark .sidebar__select-chevron { color: #AEF33E; }
