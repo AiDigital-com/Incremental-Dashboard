@@ -477,28 +477,16 @@
 
 /* ── Homepage — forced dark mode ─────────────────────────────────────────── */
 
-/* Swirl-in keyframes — each card launches from a different direction and spins
-   rapidly (4 full rotations = 1440°) before snapping to its natural position. */
-@keyframes swirl-in-0 {
-  0%   { transform: translate(-180vw, -60vh) rotate(-1440deg) scale(0.05); opacity: 0; }
-  25%  { opacity: 1; }
-  75%  { transform: translate(20px, 12px) rotate(-40deg) scale(1.08); }
-  88%  { transform: translate(-6px, -4px) rotate(6deg) scale(0.97); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+/* Carousel entry animation */
+@keyframes home-carousel-enter {
+  from { opacity: 0; transform: translateY(22px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-@keyframes swirl-in-1 {
-  0%   { transform: translate(0, -180vh) rotate(1440deg) scale(0.05); opacity: 0; }
-  25%  { opacity: 1; }
-  75%  { transform: translate(0, 18px) rotate(35deg) scale(1.08); }
-  88%  { transform: translate(0, -5px) rotate(-5deg) scale(0.97); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-}
-@keyframes swirl-in-2 {
-  0%   { transform: translate(180vw, -60vh) rotate(-1440deg) scale(0.05); opacity: 0; }
-  25%  { opacity: 1; }
-  75%  { transform: translate(-20px, 12px) rotate(-40deg) scale(1.08); }
-  88%  { transform: translate(6px, -4px) rotate(6deg) scale(0.97); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+
+/* Moving orb traces the card border on hover */
+@keyframes orbit-card {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
 }
 
 .id-home {
@@ -544,30 +532,34 @@
   margin: 0;
 }
 
-.id-home__cards {
+/* ── Carousel wrapper ────────────────────────────────────────────────────── */
+
+.id-home__carousel {
   display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  animation: home-carousel-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ── Individual card animations (applied via nth-child) ── */
-.id-home__card--0 {
-  animation: swirl-in-0 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0s both;
+/* ── Cards stage ─────────────────────────────────────────────────────────── */
+
+.id-home__cards {
+  position: relative;
+  width: 800px;
+  max-width: calc(100vw - 160px);
+  height: 310px;
+  overflow: visible;
 }
-.id-home__card--1 {
-  animation: swirl-in-1 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
-}
-.id-home__card--2 {
-  animation: swirl-in-2 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
-}
+
+/* ── Individual card ─────────────────────────────────────────────────────── */
 
 .id-home__card {
-  /* Dark card surface */
+  position: absolute;
+  top: 0;
+  left: 50%;
   background: rgba(255, 255, 255, 0.04);
   border: 1.5px solid var(--card-color);
   border-radius: 20px;
-  /* 2.5x the original 220px × ~130px card */
   width: 340px;
   min-height: 300px;
   padding: 90px 60px;
@@ -577,18 +569,88 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  transition: box-shadow 0.22s ease, transform 0.22s ease, background 0.22s ease;
   outline: none;
+  /* Permanent ambient glow */
+  box-shadow:
+    0 0 28px var(--card-glow-subtle),
+    0 0 8px var(--card-glow-subtle),
+    inset 0 0 14px rgba(255, 255, 255, 0.02);
+  /* Smooth transitions for cycling + hover */
+  transition:
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    background 0.25s ease;
 }
 
-.id-home__card:hover {
+/* ── Orbit orb — moving glow that traces the border on hover ─────────────── */
+
+.id-home__card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, var(--card-color) 0%, transparent 65%);
   box-shadow:
-    0 0 40px var(--card-glow),
-    0 0 10px var(--card-glow),
-    inset 0 0 20px rgba(255, 255, 255, 0.03);
-  transform: translateY(-5px) scale(1.02);
+    0 0 10px 5px var(--card-glow),
+    0 0 24px 10px var(--card-glow);
+  /* Path traces the 340×300 card border with 20px corner radius */
+  offset-path: path('M 20,0 L 320,0 Q 340,0 340,20 L 340,280 Q 340,300 320,300 L 20,300 Q 0,300 0,280 L 0,20 Q 0,0 20,0 Z');
+  offset-rotate: 0deg;
+  animation: orbit-card 3.5s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.id-home__card:hover::after {
+  opacity: 1;
+}
+
+/* ── Card positions ──────────────────────────────────────────────────────── */
+
+.id-home__card--center {
+  transform: translateX(-50%) scale(1) translateY(0);
+  z-index: 3;
+  opacity: 1;
+}
+
+.id-home__card--center:hover {
+  transform: translateX(-50%) scale(1.03) translateY(-6px);
+  box-shadow:
+    0 0 54px var(--card-glow),
+    0 0 16px var(--card-glow),
+    inset 0 0 20px rgba(255, 255, 255, 0.04);
   background: rgba(255, 255, 255, 0.07);
 }
+
+.id-home__card--left {
+  transform: translateX(calc(-50% - 280px)) scale(0.76) translateY(32px);
+  z-index: 2;
+  opacity: 0.62;
+}
+
+.id-home__card--left:hover {
+  transform: translateX(calc(-50% - 280px)) scale(0.80) translateY(24px);
+  opacity: 0.82;
+}
+
+.id-home__card--right {
+  transform: translateX(calc(-50% + 280px)) scale(0.76) translateY(32px);
+  z-index: 2;
+  opacity: 0.62;
+}
+
+.id-home__card--right:hover {
+  transform: translateX(calc(-50% + 280px)) scale(0.80) translateY(24px);
+  opacity: 0.82;
+}
+
+/* ── Card content ────────────────────────────────────────────────────────── */
 
 .id-home__card-label {
   font-family: 'Barlow Semi Condensed', sans-serif;
@@ -608,6 +670,41 @@
   color: rgba(255, 255, 255, 0.4);
   text-align: center;
   line-height: 1.5;
+}
+
+/* ── Nav arrows ──────────────────────────────────────────────────────────── */
+
+.id-home__nav {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 0 3px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+  outline: none;
+}
+
+.id-home__nav:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.38);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.id-home__nav:active {
+  transform: scale(0.94);
 }
 
 /* ── Back button (inline in each view header) ────────────────────────────── */
