@@ -146,7 +146,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
       {/* Summary tiles */}
       <div className="id-dashboard__kpis">
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Total Budget</span>
+          <span className="id-kpi-tile__label">Total Active Budget</span>
           <span className="id-kpi-tile__value">{formatBudget(totalBudget)}</span>
         </div>
         <div className="id-kpi-tile">
