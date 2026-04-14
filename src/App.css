@@ -513,7 +513,7 @@
 .id-home__title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 900;
-  font-size: 2.8rem;
+  font-size: 5.5rem;
   letter-spacing: -0.025em;
   text-transform: uppercase;
   /* Always Lime on the forced-dark background */
@@ -525,7 +525,7 @@
 .id-home__subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 300;
-  font-size: 0.88rem;
+  font-size: 1.7rem;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -557,7 +557,8 @@
   position: absolute;
   top: 0;
   left: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  /* Opaque tinted background derived from the card's own color */
+  background: color-mix(in srgb, var(--card-color) 25%, #04040a);
   border: 1.5px solid var(--card-color);
   border-radius: 20px;
   width: 340px;
@@ -570,11 +571,11 @@
   justify-content: center;
   gap: 14px;
   outline: none;
-  /* Permanent ambient glow */
+  /* Full glow always on — matches old hover intensity */
   box-shadow:
-    0 0 28px var(--card-glow-subtle),
-    0 0 8px var(--card-glow-subtle),
-    inset 0 0 14px rgba(255, 255, 255, 0.02);
+    0 0 54px var(--card-glow),
+    0 0 16px var(--card-glow),
+    inset 0 0 20px rgba(255, 255, 255, 0.04);
   /* Smooth transitions for cycling + hover */
   transition:
     transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
@@ -593,10 +594,11 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, var(--card-color) 0%, transparent 65%);
+  /* Solid circle — glow begins right at its edge with no gap */
+  background: var(--card-color);
   box-shadow:
-    0 0 10px 5px var(--card-glow),
-    0 0 24px 10px var(--card-glow);
+    0 0 6px 0px var(--card-glow),
+    0 0 12px 1px var(--card-glow);
   /* Path traces the 340×300 card border with 20px corner radius */
   offset-path: path('M 20,0 L 320,0 Q 340,0 340,20 L 340,280 Q 340,300 320,300 L 20,300 Q 0,300 0,280 L 0,20 Q 0,0 20,0 Z');
   offset-rotate: 0deg;
@@ -622,32 +624,32 @@
 .id-home__card--center:hover {
   transform: translateX(-50%) scale(1.03) translateY(-6px);
   box-shadow:
-    0 0 54px var(--card-glow),
-    0 0 16px var(--card-glow),
-    inset 0 0 20px rgba(255, 255, 255, 0.04);
-  background: rgba(255, 255, 255, 0.07);
+    0 0 80px var(--card-glow),
+    0 0 24px var(--card-glow),
+    inset 0 0 28px rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--card-color) 38%, #04040a);
 }
 
 .id-home__card--left {
-  transform: translateX(calc(-50% - 280px)) scale(0.76) translateY(32px);
+  transform: translateX(calc(-50% - 290px)) scale(0.50) translateY(72px);
   z-index: 2;
-  opacity: 0.62;
+  opacity: 0.42;
 }
 
 .id-home__card--left:hover {
-  transform: translateX(calc(-50% - 280px)) scale(0.80) translateY(24px);
-  opacity: 0.82;
+  transform: translateX(calc(-50% - 290px)) scale(0.54) translateY(60px);
+  opacity: 0.60;
 }
 
 .id-home__card--right {
-  transform: translateX(calc(-50% + 280px)) scale(0.76) translateY(32px);
+  transform: translateX(calc(-50% + 290px)) scale(0.50) translateY(72px);
   z-index: 2;
-  opacity: 0.62;
+  opacity: 0.42;
 }
 
 .id-home__card--right:hover {
-  transform: translateX(calc(-50% + 280px)) scale(0.80) translateY(24px);
-  opacity: 0.82;
+  transform: translateX(calc(-50% + 290px)) scale(0.54) translateY(60px);
+  opacity: 0.60;
 }
 
 /* ── Card content ────────────────────────────────────────────────────────── */
