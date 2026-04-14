@@ -562,8 +562,12 @@
   position: absolute;
   top: 0;
   left: 50%;
-  /* Opaque tinted background derived from the card's own color */
-  background: color-mix(in srgb, var(--card-color) 25%, #04040a);
+  /* Aurora mesh gradient — matches Executive View background */
+  background:
+    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
+    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
+    #050510;
   border: 1.5px solid var(--card-color);
   border-radius: 20px;
   width: 340px;
@@ -633,7 +637,11 @@
     0 0 80px var(--card-glow),
     0 0 24px var(--card-glow),
     inset 0 0 28px rgba(255, 255, 255, 0.06);
-  background: color-mix(in srgb, var(--card-color) 38%, #04040a);
+  background:
+    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.85) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.92) 0%, transparent 52%),
+    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.95) 0%, transparent 56%),
+    #050510;
 }
 
 .id-home__card--left {
@@ -847,8 +855,8 @@
 }
 
 .id-exec__legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   flex-shrink: 0;
   transition: box-shadow 0.15s;
@@ -857,7 +865,7 @@
 .id-exec__legend-label {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  font-size: 0.65rem;
+  font-size: 1.3rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #999;
@@ -879,7 +887,7 @@
 /* ── Regional metrics panel ──────────────────────────────────────────────── */
 
 .id-exec__metrics {
-  width: 200px;
+  width: 232px;
   flex-shrink: 0;
   background: rgba(5, 5, 20, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -887,14 +895,15 @@
   padding: 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   backdrop-filter: blur(8px);
+  overflow-y: auto;
 }
 
 .id-exec__metrics-title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 700;
-  font-size: 0.58rem;
+  font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.35);
@@ -903,14 +912,19 @@
   margin-bottom: 4px;
 }
 
+.id-exec__metric-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .id-exec__metric-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 6px;
+  gap: 9px;
+  padding: 6px 8px;
   border-radius: 6px;
   transition: background 0.15s;
-  cursor: default;
+  cursor: pointer;
 }
 
 .id-exec__metric-row--hovered {
@@ -918,8 +932,8 @@
 }
 
 .id-exec__metric-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
   transition: box-shadow 0.15s;
@@ -930,15 +944,16 @@
   flex-direction: column;
   gap: 1px;
   min-width: 0;
+  flex: 1;
 }
 
 .id-exec__metric-region {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.80);
   transition: color 0.15s;
   white-space: nowrap;
 }
@@ -946,9 +961,73 @@
 .id-exec__metric-value {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 400;
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.40);
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
   white-space: nowrap;
+}
+
+.id-exec__metric-chevron {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
+  line-height: 1;
+}
+
+/* ── Expandable client list ──────────────────────────────────────────────── */
+
+.id-exec__metric-expansion {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+}
+
+.id-exec__metric-expansion--open {
+  max-height: 300px;
+  opacity: 1;
+}
+
+.id-exec__metric-client-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 8px 5px 26px;
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
+  margin: 1px 0 1px 14px;
+}
+
+.id-exec__metric-client-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.id-exec__metric-client-name {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-exec__metric-client-amount {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 0.76rem;
+  flex-shrink: 0;
+}
+
+.id-exec__metric-client-gd {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.32);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Content column (map + legend) */

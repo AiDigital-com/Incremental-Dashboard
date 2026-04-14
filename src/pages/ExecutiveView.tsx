@@ -36,6 +36,40 @@ const REGION_INCREMENTAL: Record<string, string> = {
   House:     '$341K',
 }
 
+// Top 3 clients per region (placeholder data)
+const REGION_TOP_CLIENTS: Record<string, { gd: string; client: string; incremental: string }[]> = {
+  Northeast: [
+    { gd: 'James Okafor',   client: 'Prism Health',      incremental: '$144K' },
+    { gd: 'Sarah Mitchell', client: 'Apex Retail Group',  incremental: '$142K' },
+    { gd: 'Sarah Mitchell', client: 'Beacon Financial',   incremental: '$87K'  },
+  ],
+  Southeast: [
+    { gd: 'Marcus Webb', client: 'Luminary Studios',  incremental: '$98K' },
+    { gd: 'Marcus Webb', client: 'Westfield Group',   incremental: '$61K' },
+    { gd: 'Marcus Webb', client: 'TerraVerde Foods',  incremental: '$28K' },
+  ],
+  Midwest: [
+    { gd: 'Priya Sharma', client: 'Summit Healthcare', incremental: '$156K' },
+    { gd: 'Priya Sharma', client: 'Crescent Energy',   incremental: '$110K' },
+    { gd: 'Priya Sharma', client: 'Horizon Media',     incremental: '$98K'  },
+  ],
+  Central: [
+    { gd: 'Tyler Brooks', client: 'Caliber Auto',      incremental: '$129K' },
+    { gd: 'Tyler Brooks', client: 'Voyager Insurance',  incremental: '$68K'  },
+    { gd: 'Tyler Brooks', client: 'Sterling Hotels',    incremental: '$42K'  },
+  ],
+  West: [
+    { gd: 'Elena Vasquez', client: 'Vantage Health',   incremental: '$215K' },
+    { gd: 'Elena Vasquez', client: 'Nexus Financial',  incremental: '$95K'  },
+    { gd: 'Elena Vasquez', client: 'Olympus Retail',   incremental: '$73K'  },
+  ],
+  House: [
+    { gd: 'Jordan Chen', client: 'Meridian Auto',    incremental: '$88K' },
+    { gd: 'Jordan Chen', client: 'Redwood Realty',   incremental: '$82K' },
+    { gd: 'Jordan Chen', client: 'Pinnacle Sports',  incremental: '$31K' },
+  ],
+}
+
 // All 50 states assigned to a region
 const STATE_REGIONS: Record<string, string> = {
   // Northeast (11)
@@ -78,6 +112,11 @@ interface Props {
 
 export function ExecutiveView({ onBack }: Props) {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null)
+  const [openRegion,   setOpenRegion]   = useState<string | null>(null)
+
+  const handleRegionClick = (region: string) => {
+    setOpenRegion(prev => prev === region ? null : region)
+  }
 
   return (
     <div className="id-exec">
@@ -101,32 +140,55 @@ export function ExecutiveView({ onBack }: Props) {
           <div className="id-exec__metrics-title">Available Incremental</div>
           {Object.entries(REGION_COLORS).map(([region, color]) => {
             const isHovered = hoveredRegion === region
+            const isOpen    = openRegion   === region
             return (
-              <div
-                key={region}
-                className={`id-exec__metric-row${isHovered ? ' id-exec__metric-row--hovered' : ''}`}
-                onMouseEnter={() => setHoveredRegion(region)}
-                onMouseLeave={() => setHoveredRegion(null)}
-              >
-                <span
-                  className="id-exec__metric-dot"
-                  style={{
-                    background: color,
-                    boxShadow: isHovered
-                      ? `0 0 8px ${color}, 0 0 3px ${color}`
-                      : `0 0 5px ${color}`,
-                  }}
-                />
-                <div className="id-exec__metric-info">
+              <div key={region} className="id-exec__metric-group">
+                {/* Row header */}
+                <div
+                  className={`id-exec__metric-row${isHovered ? ' id-exec__metric-row--hovered' : ''}`}
+                  onClick={() => handleRegionClick(region)}
+                  onMouseEnter={() => setHoveredRegion(region)}
+                  onMouseLeave={() => setHoveredRegion(null)}
+                >
                   <span
-                    className="id-exec__metric-region"
-                    style={{ color: isHovered ? color : undefined }}
+                    className="id-exec__metric-dot"
+                    style={{
+                      background: color,
+                      boxShadow: isHovered
+                        ? `0 0 8px ${color}, 0 0 3px ${color}`
+                        : `0 0 5px ${color}`,
+                    }}
+                  />
+                  <div className="id-exec__metric-info">
+                    <span
+                      className="id-exec__metric-region"
+                      style={{ color: isHovered ? color : undefined }}
+                    >
+                      {region}
+                    </span>
+                    <span className="id-exec__metric-value">
+                      {REGION_INCREMENTAL[region]}
+                    </span>
+                  </div>
+                  <span
+                    className="id-exec__metric-chevron"
+                    style={{ color: isHovered ? color : undefined, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
                   >
-                    {region}
+                    ▾
                   </span>
-                  <span className="id-exec__metric-value">
-                    {REGION_INCREMENTAL[region]}
-                  </span>
+                </div>
+
+                {/* Expanded client list */}
+                <div className={`id-exec__metric-expansion${isOpen ? ' id-exec__metric-expansion--open' : ''}`}>
+                  {REGION_TOP_CLIENTS[region]?.map((item, i) => (
+                    <div key={i} className="id-exec__metric-client-row">
+                      <div className="id-exec__metric-client-header">
+                        <span className="id-exec__metric-client-name">{item.client}</span>
+                        <span className="id-exec__metric-client-amount" style={{ color }}>{item.incremental}</span>
+                      </div>
+                      <span className="id-exec__metric-client-gd">{item.gd}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )
@@ -140,6 +202,24 @@ export function ExecutiveView({ onBack }: Props) {
               projection="geoAlbersUsa"
               style={{ width: '100%', height: '100%' }}
             >
+              {/* Pass 1 — white perimeter outline layer (renders beneath colored fills) */}
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies.map(geo => (
+                    <Geography
+                      key={`outline-${geo.rsmKey}`}
+                      geography={geo}
+                      style={{
+                        default: { fill: 'none', stroke: 'rgba(255,255,255,0.72)', strokeWidth: 2.5, outline: 'none' },
+                        hover:   { fill: 'none', stroke: 'rgba(255,255,255,0.72)', strokeWidth: 2.5, outline: 'none' },
+                        pressed: { outline: 'none' },
+                      }}
+                    />
+                  ))
+                }
+              </Geographies>
+
+              {/* Pass 2 — colored region fills (covers interior white strokes; only outer perimeter stays white) */}
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map(geo => {
@@ -152,6 +232,7 @@ export function ExecutiveView({ onBack }: Props) {
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
+                        onClick={() => region && handleRegionClick(region)}
                         onMouseEnter={() => region && setHoveredRegion(region)}
                         onMouseLeave={() => setHoveredRegion(null)}
                         style={{
@@ -173,7 +254,7 @@ export function ExecutiveView({ onBack }: Props) {
                               ? `drop-shadow(0 0 12px ${color}cc)`
                               : `drop-shadow(0 0 4px ${color}66)`,
                             outline: 'none',
-                            cursor: 'default',
+                            cursor: region ? 'pointer' : 'default',
                           },
                           pressed: { outline: 'none' },
                         }}
