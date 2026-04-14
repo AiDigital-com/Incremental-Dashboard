@@ -13,18 +13,20 @@ const REGION_COLORS: Record<string, string> = {
   Midwest:   '#FF7CF5',
   Central:   '#38b6ff',
   West:      '#8263FF',
+  House:     '#FF6A00',
 }
 
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
-  Northeast: [-74,   44.5],
-  Southeast: [-83,   31.5],
-  Midwest:   [-89.5, 44.5],
-  Central:   [-100,  35  ],
-  West:      [-119,  45  ],
+  Northeast: [-73,   43.5],
+  Southeast: [-84,   32.5],
+  Midwest:   [-92,   43  ],
+  Central:   [-99,   35.5],
+  West:      [-115,  43  ],
+  House:     [-151,  62  ],   // anchored in Alaska inset
 }
 
-// All 50 states assigned to a region (House excluded from visual per spec)
+// All 50 states assigned to a region
 const STATE_REGIONS: Record<string, string> = {
   // Northeast (11)
   Connecticut: 'Northeast', Delaware: 'Northeast', Maine: 'Northeast',
@@ -47,10 +49,13 @@ const STATE_REGIONS: Record<string, string> = {
   // Central (4)
   Colorado: 'Central', 'New Mexico': 'Central', Oklahoma: 'Central', Texas: 'Central',
 
-  // West (11)
-  Alaska: 'West', Arizona: 'West', California: 'West', Hawaii: 'West',
+  // West (9 — Alaska & Hawaii moved to House)
+  Arizona: 'West', California: 'West',
   Idaho: 'West', Montana: 'West', Nevada: 'West', Oregon: 'West',
   Utah: 'West', Washington: 'West', Wyoming: 'West',
+
+  // House (2)
+  Alaska: 'House', Hawaii: 'House',
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -141,7 +146,7 @@ export function ExecutiveView({ onBack }: Props) {
                   style={{
                     fontFamily: "'Barlow Semi Condensed', sans-serif",
                     fontWeight: 700,
-                    fontSize: isHovered ? '11px' : '9px',
+                    fontSize: isHovered ? '33px' : '27px',
                     fill: isHovered ? color : `${color}cc`,
                     letterSpacing: '0.14em',
                     filter: isHovered ? `drop-shadow(0 0 6px ${color})` : 'none',

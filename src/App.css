@@ -657,10 +657,10 @@
 .id-home__card-label {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  font-size: 1.45rem;
+  font-size: 2.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--card-color);
+  color: #ffffff;
   line-height: 1.15;
   text-align: center;
 }

@@ -20,7 +20,7 @@ const VIEWS: {
   {
     id: 'executive',
     label: 'Executive View',
-    sub: 'Regional performance heat map',
+    sub: 'Incremental available by region.',
     color: '#0009DC',
     glow: 'rgba(0, 9, 220, 0.65)',
     glowSubtle: 'rgba(0, 9, 220, 0.28)',
@@ -28,7 +28,7 @@ const VIEWS: {
   {
     id: 'gd',
     label: 'Growth Director View',
-    sub: 'Campaign performance by director',
+    sub: 'Incremental availability for growth director use.',
     color: '#AEF33E',
     glow: 'rgba(174, 243, 62, 0.65)',
     glowSubtle: 'rgba(174, 243, 62, 0.28)',
@@ -36,7 +36,7 @@ const VIEWS: {
   {
     id: 'client',
     label: 'Client View',
-    sub: 'Campaign overview by client',
+    sub: 'Incremental availability for client use.',
     color: '#FF7CF5',
     glow: 'rgba(255, 124, 245, 0.65)',
     glowSubtle: 'rgba(255, 124, 245, 0.28)',
