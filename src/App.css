@@ -490,10 +490,12 @@
 }
 
 .id-home {
-  /* Force dark — not theme-dependent, with matching 30% dot grid */
-  background-color: #07070d;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.30) 1px, transparent 1px);
-  background-size: 32px 32px;
+  /* Aurora mesh gradient — dark left → deep purple → blue → teal right */
+  background:
+    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
+    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
+    #050510;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -766,6 +768,12 @@
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
+  /* Aurora mesh gradient — dark left → deep purple → blue → teal right */
+  background:
+    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
+    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
+    #050510;
 }
 
 .id-exec__header {
@@ -859,3 +867,96 @@
 
 [data-theme="dark"] .id-exec__legend-label,
 .dark .id-exec__legend-label { color: #aaa; }
+
+/* ── Executive View body (sidebar + map) ─────────────────────────────────── */
+
+.id-exec__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 14px;
+}
+
+/* ── Regional metrics panel ──────────────────────────────────────────────── */
+
+.id-exec__metrics {
+  width: 200px;
+  flex-shrink: 0;
+  background: rgba(5, 5, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.id-exec__metrics-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 4px;
+}
+
+.id-exec__metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  cursor: default;
+}
+
+.id-exec__metric-row--hovered {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.id-exec__metric-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: box-shadow 0.15s;
+}
+
+.id-exec__metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.id-exec__metric-region {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.id-exec__metric-value {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.40);
+  white-space: nowrap;
+}
+
+/* Content column (map + legend) */
+.id-exec__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
