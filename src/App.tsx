@@ -1,28 +1,14 @@
-/**
- * App Template — matches the production pattern used by NM, PE, SFG, WA, etc.
- *
- * CRITICAL RULES (learned from LRR deployment):
- * 1. Do NOT pass auth as props from main.tsx. Import Clerk directly here.
- * 2. useSessionPersistence takes 4 args: (supabase, authFetch, userId, config)
- * 3. Use DS Sidebar component (aidl-sidebar CSS) — not custom sidebar.
- * 4. AppContent renders inside AppShell's children render-prop as Fragment <>.
- * 5. main.tsx: <App /> with NO props. ClerkProvider wraps App.
- */
-import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
-import { AppShell, Sidebar, useSessionPersistence } from '@AiDigital-com/design-system'
-import type { SupabaseClient, SidebarItem } from '@AiDigital-com/design-system'
+import { useState } from 'react'
+import { AppShell } from '@AiDigital-com/design-system'
 import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'
 import type { Campaign } from './components/IncrementalDashboard'
+import { AppSidebar, REGION_GDS } from './components/AppSidebar/AppSidebar'
 import './App.css'
 
 // ── App Config ────────────────────────────────────────────────────────────────
-const APP_NAME = 'incremental-dashboard'
 const APP_TITLE = 'Incremental Dashboard'
-const SESSION_TABLE = 'id_sessions'
-const TITLE_FIELD = 'brand_name'
-const ACTIVITY_LABEL = 'Plan'
 
 const supabaseConfig = import.meta.env.VITE_SUPABASE_URL ? {
   url: import.meta.env.VITE_SUPABASE_URL as string,
@@ -106,178 +92,63 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
 ]
 
-// ── Sidebar item type ────────────────────────────────────────────────────────
-interface AppSession extends SidebarItem {
-  title: string;
-}
+// ── GD → campaign ID mapping (placeholder; API will supply real assignments) ──
+// Pattern rotates across GDs: each index maps to a campaign subset.
+const GD_CAMPAIGN_PATTERNS: string[][] = [
+  ['1', '3', '5'],
+  ['2', '4', '6'],
+  ['1', '2', '4'],
+  ['3', '5', '6'],
+  ['1', '2', '3', '4', '5', '6'],
+]
+
+const GD_CAMPAIGNS: Record<string, string[]> = {}
+Object.values(REGION_GDS).flat().forEach((gd, i) => {
+  GD_CAMPAIGNS[gd] = GD_CAMPAIGN_PATTERNS[i % GD_CAMPAIGN_PATTERNS.length]
+})
+
+// ── Root component ────────────────────────────────────────────────────────────
 
 export default function App() {
-  const { userId } = useAuth()
+  const [selectedRegion, setSelectedRegion] = useState('')
+  const [selectedGD, setSelectedGD] = useState('')
 
-  const [sidebarItems, setSidebarItems] = useState<AppSession[]>([])
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-  const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [sidebarSupabase, setSidebarSupabase] = useState<SupabaseClient | null>(null)
-  const [refreshKey, setRefreshKey] = useState(0)
+  // Filter campaigns by selected GD (when region+GD chosen); otherwise show all
+  const visibleCampaigns = selectedGD
+    ? PLACEHOLDER_CAMPAIGNS.filter(c => GD_CAMPAIGNS[selectedGD]?.includes(c.id))
+    : PLACEHOLDER_CAMPAIGNS
 
-  // Load sidebar sessions
-  useEffect(() => {
-    if (!sidebarSupabase) return
-    sidebarSupabase.from(SESSION_TABLE)
-      .select(`id, ${TITLE_FIELD}, status, created_at`)
-      .eq('deleted_by_user', false)
-      .order('created_at', { ascending: false })
-      .limit(100)
-      .then(({ data }) => {
-        setSidebarItems((data ?? []).map((r: any) => ({
-          id: r.id,
-          title: r[TITLE_FIELD] || 'Untitled',
-          status: r.status,
-          createdAt: r.created_at,
-        })))
-      })
-  }, [refreshKey, sidebarSupabase])
-
-  // Handlers bridged to AppContent via ref
-  const handlersRef = useRef<{
-    onSelect: (id: string) => void
-    onNew: () => void
-    onDelete: (id: string) => void
-  }>({ onSelect: () => {}, onNew: () => {}, onDelete: () => {} })
+  const planName = selectedGD
+    ? `${selectedGD} — ${selectedRegion}`
+    : selectedRegion
+    ? `${selectedRegion} Region`
+    : 'Campaign Overview'
 
   return (
     <AppShell
       appTitle={APP_TITLE}
-      activityLabel={ACTIVITY_LABEL}
+      activityLabel="Plan"
       auth={{ SignIn, UserButton, useAuth }}
       supabaseConfig={supabaseConfig}
       helpUrl="/help"
       sidebar={
-        <Sidebar
-          items={sidebarItems}
-          activeId={activeSessionId}
-          loadingId={loadingId}
-          onSelect={(id) => handlersRef.current.onSelect(id)}
-          onNew={() => handlersRef.current.onNew()}
-          onDelete={(id) => handlersRef.current.onDelete(id)}
-          renderItem={(item) => <span>{(item as AppSession).title}</span>}
-          emptyMessage={`No ${ACTIVITY_LABEL.toLowerCase()}s yet.`}
+        <AppSidebar
+          selectedRegion={selectedRegion}
+          selectedGD={selectedGD}
+          onRegionChange={setSelectedRegion}
+          onGDChange={setSelectedGD}
         />
       }
     >
-      {({ authFetch, supabase }) => (
-        <AppContent
-          authFetch={authFetch}
-          supabase={supabase}
-          userId={userId}
-          activeSessionId={activeSessionId}
-          setActiveSessionId={setActiveSessionId}
-          setLoadingId={setLoadingId}
-          setRefreshKey={setRefreshKey}
-          handlersRef={handlersRef}
-          setSidebarSupabase={setSidebarSupabase}
+      {() => (
+        <IncrementalDashboard
+          sessionId="demo"
+          planName={planName}
+          campaigns={visibleCampaigns}
+          onPlanNameChange={() => {}}
+          onCampaignsChange={() => {}}
         />
       )}
     </AppShell>
-  )
-}
-
-/* ── Domain-specific content ────────────────────────────────────────────── */
-
-interface AppContentProps {
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>
-  supabase: SupabaseClient | null
-  userId: string | null | undefined
-  activeSessionId: string | null
-  setActiveSessionId: Dispatch<SetStateAction<string | null>>
-  setLoadingId: Dispatch<SetStateAction<string | null>>
-  setRefreshKey: Dispatch<SetStateAction<number>>
-  handlersRef: React.MutableRefObject<{
-    onSelect: (id: string) => void
-    onNew: () => void
-    onDelete: (id: string) => void
-  }>
-  setSidebarSupabase: Dispatch<SetStateAction<SupabaseClient | null>>
-}
-
-function AppContent({
-  authFetch, supabase, userId,
-  activeSessionId, setActiveSessionId, setLoadingId, setRefreshKey,
-  handlersRef, setSidebarSupabase,
-}: AppContentProps) {
-  const [planName, setPlanName] = useState('Campaign Overview')
-  const [campaigns, setCampaigns] = useState<Campaign[]>(PLACEHOLDER_CAMPAIGNS)
-
-  // Expose supabase to sidebar
-  useEffect(() => { setSidebarSupabase(supabase) }, [supabase, setSidebarSupabase])
-
-  // Session persistence — MUST pass all 4 args: (supabase, authFetch, userId, config)
-  const session = useSessionPersistence(supabase, authFetch, userId, {
-    table: SESSION_TABLE,
-    app: APP_NAME,
-    titleField: TITLE_FIELD,
-    mergeConfig: { objectFields: ['intake_summary'] },
-    defaultFields: { status: 'active' },
-    mergeEndpoint: '/.netlify/functions/save-session',
-  })
-
-  // Wire sidebar handlers
-  useEffect(() => {
-    handlersRef.current = {
-      onSelect: async (id: string) => {
-        if (!supabase) return
-        setLoadingId(id)
-        const { data } = await supabase.from(SESSION_TABLE).select('*').eq('id', id).maybeSingle()
-        setLoadingId(null)
-        if (!data) return
-        session.loadSession(id)
-        setActiveSessionId(id)
-        const summary = data.intake_summary as { campaigns?: Campaign[] } | null
-        setCampaigns(summary?.campaigns ?? PLACEHOLDER_CAMPAIGNS)
-        setPlanName((data[TITLE_FIELD] as string) || 'Campaign Overview')
-      },
-      onNew: () => {
-        const newId = session.newSession()
-        setActiveSessionId(newId)
-        setCampaigns(PLACEHOLDER_CAMPAIGNS)
-        setPlanName('Campaign Overview')
-        session.setField(TITLE_FIELD, 'Campaign Overview')
-        setTimeout(() => setRefreshKey(k => k + 1), 1000)
-      },
-      onDelete: async (id: string) => {
-        await session.deleteSession(id)
-        if (activeSessionId === id) {
-          setActiveSessionId(null)
-          setCampaigns(PLACEHOLDER_CAMPAIGNS)
-          setPlanName('Campaign Overview')
-        }
-        setRefreshKey(k => k + 1)
-      },
-    }
-  }, [supabase, session, activeSessionId, setActiveSessionId, setLoadingId, setRefreshKey])
-
-  function handleCampaignsChange(updated: Campaign[]) {
-    setCampaigns(updated)
-    if (activeSessionId) {
-      session.mergeFields({ intake_summary: { campaigns: updated } })
-    }
-  }
-
-  function handlePlanNameChange(name: string) {
-    setPlanName(name)
-    if (activeSessionId) {
-      session.setField(TITLE_FIELD, name)
-      setRefreshKey(k => k + 1)
-    }
-  }
-
-  return (
-    <IncrementalDashboard
-      sessionId={activeSessionId ?? 'demo'}
-      planName={planName}
-      campaigns={campaigns}
-      onPlanNameChange={handlePlanNameChange}
-      onCampaignsChange={handleCampaignsChange}
-    />
   )
 }

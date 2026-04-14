@@ -1,5 +1,3 @@
-import { DownloadBar } from '@AiDigital-com/design-system'
-
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface Campaign {
@@ -51,11 +49,36 @@ function perfStatus(m: number): 'above' | 'near' | 'below' {
   return 'below'
 }
 
+function downloadCSV(campaigns: Campaign[], filename: string) {
+  const headers = [
+    'Campaign Name', 'Start Date', 'End Date', 'Current Budget',
+    'KPI', 'KPI Value', 'Performance vs. Goal (x)', 'Incremental Availability (%)',
+  ]
+  const rows = campaigns.map(c => [
+    c.name,
+    c.startDate,
+    c.endDate,
+    c.budget,
+    c.kpiLabel,
+    `${c.kpiValue}${c.kpiUnit}`,
+    c.performanceMultiplier.toFixed(2),
+    c.incrementalAvailability,
+  ])
+  const csv = [headers, ...rows]
+    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${filename}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncrementalDashboard({
-  planName, campaigns, onCampaignsChange,
-}: Props) {
+export function IncrementalDashboard({ planName, campaigns }: Props) {
 
   // ── Summary metrics ──────────────────────────────────────────────────────
   const totalBudget = campaigns.reduce((s, c) => s + (c.budget || 0), 0)
@@ -63,21 +86,6 @@ export function IncrementalDashboard({
   const avgIncremental = campaigns.length
     ? Math.round(campaigns.reduce((s, c) => s + (c.incrementalAvailability || 0), 0) / campaigns.length)
     : 0
-
-  // ── Markdown report for download ─────────────────────────────────────────
-  const reportText = [
-    `# ${planName}`,
-    '',
-    '| Campaign | Start | End | Budget | KPI | Performance | Incremental Avail. |',
-    '|---|---|---|---|---|---|---|',
-    ...campaigns.map(c =>
-      `| ${c.name} | ${c.startDate} | ${c.endDate} | ${formatBudget(c.budget)} | ${c.kpiLabel}: ${formatKpi(c.kpiValue, c.kpiUnit)} | ${c.performanceMultiplier.toFixed(2)}x | ${c.incrementalAvailability}% |`
-    ),
-    '',
-    `**Total Budget:** ${formatBudget(totalBudget)}`,
-    `**On Track:** ${onTrackCount} / ${campaigns.length}`,
-    `**Avg Incremental Available:** ${avgIncremental}%`,
-  ].join('\n')
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -89,11 +97,13 @@ export function IncrementalDashboard({
           <h2 className="id-dashboard__title-text">{planName}</h2>
         </div>
         <div className="id-dashboard__header-actions">
-          <DownloadBar
-            reportText={reportText}
-            title={planName}
-            visualSelector=".id-dashboard"
-          />
+          <button
+            className="id-download-btn"
+            onClick={() => downloadCSV(campaigns, planName)}
+            disabled={campaigns.length === 0}
+          >
+            ↓ Download
+          </button>
         </div>
       </div>
 
@@ -105,7 +115,10 @@ export function IncrementalDashboard({
         </div>
         <div className="id-kpi-tile">
           <span className="id-kpi-tile__label">On Track</span>
-          <span className="id-kpi-tile__value" style={onTrackCount === campaigns.length && campaigns.length > 0 ? { color: 'var(--success)' } : undefined}>
+          <span
+            className="id-kpi-tile__value"
+            style={onTrackCount === campaigns.length && campaigns.length > 0 ? { color: 'var(--success)' } : undefined}
+          >
             {onTrackCount} / {campaigns.length}
           </span>
         </div>
@@ -137,7 +150,7 @@ export function IncrementalDashboard({
             {campaigns.length === 0 && (
               <tr>
                 <td colSpan={7} className="id-table__empty">
-                  No campaigns loaded.
+                  No campaigns match the selected filters.
                 </td>
               </tr>
             )}
@@ -146,25 +159,19 @@ export function IncrementalDashboard({
               return (
                 <tr key={c.id} className={`id-table__row id-table__row--${status}`}>
 
-                  {/* Campaign Name */}
                   <td className="id-table__name">{c.name}</td>
 
-                  {/* Start Date */}
                   <td className="id-table__date">{formatDate(c.startDate)}</td>
 
-                  {/* End Date */}
                   <td className="id-table__date">{formatDate(c.endDate)}</td>
 
-                  {/* Budget */}
                   <td className="id-table__budget">{formatBudget(c.budget)}</td>
 
-                  {/* KPI */}
                   <td>
                     <span className="id-table__kpi-label">{c.kpiLabel}</span>
                     <span className="id-table__kpi-value">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
                   </td>
 
-                  {/* Performance vs Goal */}
                   <td>
                     <span className={`id-perf-badge id-perf-badge--${status}`}>
                       {c.performanceMultiplier.toFixed(2)}x
@@ -174,7 +181,6 @@ export function IncrementalDashboard({
                     </span>
                   </td>
 
-                  {/* Incremental Availability */}
                   <td>
                     <div className="id-incr-bar-wrap">
                       <div
