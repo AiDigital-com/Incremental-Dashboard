@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react'
-import { KpiTile, DownloadBar } from '@AiDigital-com/design-system'
+import { DownloadBar } from '@AiDigital-com/design-system'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface Campaign {
   id: string
   name: string
-  channel: string
-  budget: number
-  currentKpi: number
-  kpiGoal: number
-  kpiLabel: string       // e.g. "ROAS", "CPA", "Revenue Lift"
-  incrementalPct: number // % incremental available (0–100)
+  startDate: string               // 'YYYY-MM-DD'
+  endDate: string                 // 'YYYY-MM-DD'
+  budget: number                  // current budget in dollars
+  kpiLabel: string                // e.g. 'CTR', 'ROAS', 'CPA'
+  kpiValue: number                // current KPI value
+  kpiUnit: string                 // '%', 'x', '$'
+  performanceMultiplier: number   // ratio vs goal (1.25 = exceeding by 1.25x)
+  incrementalAvailability: number // 0–100
 }
 
 interface Props {
@@ -24,83 +25,53 @@ interface Props {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function statusOf(c: Campaign): 'on_track' | 'at_risk' | 'behind' {
-  if (!c.kpiGoal) return 'behind'
-  if (c.currentKpi >= c.kpiGoal) return 'on_track'
-  if (c.currentKpi >= c.kpiGoal * 0.8) return 'at_risk'
-  return 'behind'
-}
-
 function formatBudget(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
   return `$${n}`
 }
 
-const STATUS_LABELS = { on_track: 'On Track', at_risk: 'At Risk', behind: 'Behind' }
+function formatDate(iso: string): string {
+  if (!iso) return '—'
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  })
+}
+
+function formatKpi(value: number, unit: string): string {
+  if (unit === '$') return `$${value.toFixed(2)}`
+  if (unit === '%') return `${value.toFixed(1)}%`
+  return `${value.toFixed(2)}x`
+}
+
+function perfStatus(m: number): 'above' | 'near' | 'below' {
+  if (m >= 1.0) return 'above'
+  if (m >= 0.85) return 'near'
+  return 'below'
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function IncrementalDashboard({
-  sessionId, planName, campaigns, onPlanNameChange, onCampaignsChange,
+  planName, campaigns, onCampaignsChange,
 }: Props) {
-  const [editingName, setEditingName] = useState(false)
-  const [nameInput, setNameInput] = useState(planName)
-
-  // Sync name input when plan switches
-  useEffect(() => { setNameInput(planName) }, [planName])
 
   // ── Summary metrics ──────────────────────────────────────────────────────
   const totalBudget = campaigns.reduce((s, c) => s + (c.budget || 0), 0)
-  const onTrackCount = campaigns.filter(c => statusOf(c) === 'on_track').length
+  const onTrackCount = campaigns.filter(c => c.performanceMultiplier >= 1).length
   const avgIncremental = campaigns.length
-    ? Math.round(campaigns.reduce((s, c) => s + (c.incrementalPct || 0), 0) / campaigns.length)
+    ? Math.round(campaigns.reduce((s, c) => s + (c.incrementalAvailability || 0), 0) / campaigns.length)
     : 0
 
-  // ── Plan name editing ────────────────────────────────────────────────────
-  function commitName() {
-    setEditingName(false)
-    const trimmed = nameInput.trim() || 'New Plan'
-    setNameInput(trimmed)
-    onPlanNameChange(trimmed)
-  }
-
-  // ── Campaign CRUD ────────────────────────────────────────────────────────
-  function addCampaign() {
-    onCampaignsChange([
-      ...campaigns,
-      {
-        id: crypto.randomUUID(),
-        name: 'New Campaign',
-        channel: 'Paid Search',
-        budget: 0,
-        currentKpi: 0,
-        kpiGoal: 0,
-        kpiLabel: 'ROAS',
-        incrementalPct: 0,
-      },
-    ])
-  }
-
-  function updateCampaign(id: string, field: keyof Campaign, raw: string) {
-    const numFields: (keyof Campaign)[] = ['budget', 'currentKpi', 'kpiGoal', 'incrementalPct']
-    const value = numFields.includes(field) ? parseFloat(raw) || 0 : raw
-    onCampaignsChange(campaigns.map(c => (c.id === id ? { ...c, [field]: value } : c)))
-  }
-
-  function deleteCampaign(id: string) {
-    onCampaignsChange(campaigns.filter(c => c.id !== id))
-  }
-
   // ── Markdown report for download ─────────────────────────────────────────
-  const kpiHeader = campaigns[0]?.kpiLabel ?? 'KPI'
   const reportText = [
     `# ${planName}`,
     '',
-    `| Campaign | Channel | Budget | ${kpiHeader} | Goal | Status | Incremental Avail. |`,
+    '| Campaign | Start | End | Budget | KPI | Performance | Incremental Avail. |',
     '|---|---|---|---|---|---|---|',
     ...campaigns.map(c =>
-      `| ${c.name} | ${c.channel} | ${formatBudget(c.budget)} | ${c.currentKpi.toFixed(2)}x | ${c.kpiGoal.toFixed(2)}x | ${STATUS_LABELS[statusOf(c)]} | ${c.incrementalPct}% |`
+      `| ${c.name} | ${c.startDate} | ${c.endDate} | ${formatBudget(c.budget)} | ${c.kpiLabel}: ${formatKpi(c.kpiValue, c.kpiUnit)} | ${c.performanceMultiplier.toFixed(2)}x | ${c.incrementalAvailability}% |`
     ),
     '',
     `**Total Budget:** ${formatBudget(totalBudget)}`,
@@ -115,27 +86,8 @@ export function IncrementalDashboard({
       {/* Header */}
       <div className="id-dashboard__header">
         <div className="id-dashboard__title-wrap">
-          {editingName ? (
-            <input
-              className="id-dashboard__title-input"
-              value={nameInput}
-              autoFocus
-              onChange={e => setNameInput(e.target.value)}
-              onBlur={commitName}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') commitName() }}
-            />
-          ) : (
-            <button
-              className="id-dashboard__title-btn"
-              onClick={() => { setNameInput(planName); setEditingName(true) }}
-              title="Click to rename"
-            >
-              <h2 className="id-dashboard__title-text">{planName}</h2>
-              <span className="id-dashboard__title-edit" aria-hidden>✎</span>
-            </button>
-          )}
+          <h2 className="id-dashboard__title-text">{planName}</h2>
         </div>
-
         <div className="id-dashboard__header-actions">
           <DownloadBar
             reportText={reportText}
@@ -145,16 +97,26 @@ export function IncrementalDashboard({
         </div>
       </div>
 
-      {/* KPI Summary Tiles */}
+      {/* Summary tiles */}
       <div className="id-dashboard__kpis">
-        <KpiTile label="Total Budget" value={formatBudget(totalBudget)} />
-        <KpiTile
-          label="On Track"
-          value={`${onTrackCount} / ${campaigns.length}`}
-          color={onTrackCount > 0 && onTrackCount === campaigns.length ? 'var(--success)' : undefined}
-        />
-        <KpiTile label="Avg Incremental Available" value={avgIncremental} suffix="%" />
-        <KpiTile label="Total Campaigns" value={campaigns.length} />
+        <div className="id-kpi-tile">
+          <span className="id-kpi-tile__label">Total Budget</span>
+          <span className="id-kpi-tile__value">{formatBudget(totalBudget)}</span>
+        </div>
+        <div className="id-kpi-tile">
+          <span className="id-kpi-tile__label">On Track</span>
+          <span className="id-kpi-tile__value" style={onTrackCount === campaigns.length && campaigns.length > 0 ? { color: 'var(--success)' } : undefined}>
+            {onTrackCount} / {campaigns.length}
+          </span>
+        </div>
+        <div className="id-kpi-tile">
+          <span className="id-kpi-tile__label">Avg Incremental Availability</span>
+          <span className="id-kpi-tile__value">{avgIncremental}%</span>
+        </div>
+        <div className="id-kpi-tile">
+          <span className="id-kpi-tile__label">Total Campaigns</span>
+          <span className="id-kpi-tile__value">{campaigns.length}</span>
+        </div>
       </div>
 
       {/* Campaign Table */}
@@ -162,124 +124,72 @@ export function IncrementalDashboard({
         <table className="id-table">
           <thead>
             <tr>
-              <th>Campaign</th>
-              <th>Channel</th>
-              <th>Budget ($)</th>
-              <th>KPI Label</th>
-              <th>Current KPI</th>
-              <th>Goal</th>
-              <th>Incremental %</th>
-              <th>Status</th>
-              <th></th>
+              <th>Campaign Name</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Current Budget</th>
+              <th>KPI</th>
+              <th>Performance vs. Goal</th>
+              <th>Incremental Availability</th>
             </tr>
           </thead>
           <tbody>
             {campaigns.length === 0 && (
               <tr>
-                <td colSpan={9} className="id-table__empty">
-                  No campaigns yet — click "+ Add Campaign" below to get started.
+                <td colSpan={7} className="id-table__empty">
+                  No campaigns loaded.
                 </td>
               </tr>
             )}
             {campaigns.map(c => {
-              const status = statusOf(c)
+              const status = perfStatus(c.performanceMultiplier)
               return (
                 <tr key={c.id} className={`id-table__row id-table__row--${status}`}>
+
+                  {/* Campaign Name */}
+                  <td className="id-table__name">{c.name}</td>
+
+                  {/* Start Date */}
+                  <td className="id-table__date">{formatDate(c.startDate)}</td>
+
+                  {/* End Date */}
+                  <td className="id-table__date">{formatDate(c.endDate)}</td>
+
+                  {/* Budget */}
+                  <td className="id-table__budget">{formatBudget(c.budget)}</td>
+
+                  {/* KPI */}
                   <td>
-                    <input
-                      className="id-table__cell-input"
-                      value={c.name}
-                      onChange={e => updateCampaign(c.id, 'name', e.target.value)}
-                    />
+                    <span className="id-table__kpi-label">{c.kpiLabel}</span>
+                    <span className="id-table__kpi-value">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
                   </td>
+
+                  {/* Performance vs Goal */}
                   <td>
-                    <input
-                      className="id-table__cell-input"
-                      value={c.channel}
-                      onChange={e => updateCampaign(c.id, 'channel', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      className="id-table__cell-input id-table__cell-input--num"
-                      type="number"
-                      min={0}
-                      value={c.budget}
-                      onChange={e => updateCampaign(c.id, 'budget', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      className="id-table__cell-input id-table__cell-input--kpi-label"
-                      value={c.kpiLabel}
-                      onChange={e => updateCampaign(c.id, 'kpiLabel', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <div className="id-table__num-cell">
-                      <input
-                        className="id-table__cell-input id-table__cell-input--num"
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={c.currentKpi}
-                        onChange={e => updateCampaign(c.id, 'currentKpi', e.target.value)}
-                      />
-                      <span className="id-table__suffix">x</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="id-table__num-cell">
-                      <input
-                        className="id-table__cell-input id-table__cell-input--num"
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        value={c.kpiGoal}
-                        onChange={e => updateCampaign(c.id, 'kpiGoal', e.target.value)}
-                      />
-                      <span className="id-table__suffix">x</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="id-table__num-cell">
-                      <input
-                        className="id-table__cell-input id-table__cell-input--num"
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={c.incrementalPct}
-                        onChange={e => updateCampaign(c.id, 'incrementalPct', e.target.value)}
-                      />
-                      <span className="id-table__suffix">%</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`id-status-badge id-status-badge--${status}`}>
-                      {STATUS_LABELS[status]}
+                    <span className={`id-perf-badge id-perf-badge--${status}`}>
+                      {c.performanceMultiplier.toFixed(2)}x
+                      {status === 'above' && ' above goal'}
+                      {status === 'near'  && ' near goal'}
+                      {status === 'below' && ' below goal'}
                     </span>
                   </td>
+
+                  {/* Incremental Availability */}
                   <td>
-                    <button
-                      className="id-table__delete"
-                      onClick={() => deleteCampaign(c.id)}
-                      title="Remove campaign"
-                    >
-                      ✕
-                    </button>
+                    <div className="id-incr-bar-wrap">
+                      <div
+                        className="id-incr-bar"
+                        style={{ width: `${c.incrementalAvailability}%` }}
+                      />
+                      <span className="id-incr-pct">{c.incrementalAvailability}%</span>
+                    </div>
                   </td>
+
                 </tr>
               )
             })}
           </tbody>
         </table>
-      </div>
-
-      {/* Footer */}
-      <div className="id-dashboard__footer">
-        <button className="id-btn-add" onClick={addCampaign}>
-          + Add Campaign
-        </button>
       </div>
 
     </div>

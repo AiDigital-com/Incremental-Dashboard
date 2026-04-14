@@ -30,6 +30,82 @@ const supabaseConfig = import.meta.env.VITE_SUPABASE_URL ? {
   createClient: createClient as any,
 } : undefined
 
+// ── Placeholder campaign data (replaced by API when ready) ───────────────────
+const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
+  {
+    id: '1',
+    name: 'Q2 Paid Search — Brand',
+    startDate: '2025-04-01',
+    endDate: '2025-06-30',
+    budget: 185000,
+    kpiLabel: 'CTR',
+    kpiValue: 4.0,
+    kpiUnit: '%',
+    performanceMultiplier: 1.25,
+    incrementalAvailability: 72,
+  },
+  {
+    id: '2',
+    name: 'Spring Display Prospecting',
+    startDate: '2025-03-15',
+    endDate: '2025-05-31',
+    budget: 240000,
+    kpiLabel: 'ROAS',
+    kpiValue: 3.8,
+    kpiUnit: 'x',
+    performanceMultiplier: 0.84,
+    incrementalAvailability: 58,
+  },
+  {
+    id: '3',
+    name: 'Connected TV — Awareness',
+    startDate: '2025-04-15',
+    endDate: '2025-07-15',
+    budget: 320000,
+    kpiLabel: 'VCR',
+    kpiValue: 78,
+    kpiUnit: '%',
+    performanceMultiplier: 1.20,
+    incrementalAvailability: 84,
+  },
+  {
+    id: '4',
+    name: 'Paid Social — Retargeting',
+    startDate: '2025-01-01',
+    endDate: '2025-06-30',
+    budget: 95000,
+    kpiLabel: 'CPA',
+    kpiValue: 12.40,
+    kpiUnit: '$',
+    performanceMultiplier: 1.21,
+    incrementalAvailability: 61,
+  },
+  {
+    id: '5',
+    name: 'Programmatic — In-Market',
+    startDate: '2025-04-01',
+    endDate: '2025-09-30',
+    budget: 175000,
+    kpiLabel: 'CTR',
+    kpiValue: 1.8,
+    kpiUnit: '%',
+    performanceMultiplier: 0.86,
+    incrementalAvailability: 45,
+  },
+  {
+    id: '6',
+    name: 'YouTube Pre-Roll',
+    startDate: '2025-02-01',
+    endDate: '2025-05-31',
+    budget: 130000,
+    kpiLabel: 'VTR',
+    kpiValue: 42,
+    kpiUnit: '%',
+    performanceMultiplier: 1.11,
+    incrementalAvailability: 79,
+  },
+]
+
 // ── Sidebar item type ────────────────────────────────────────────────────────
 interface AppSession extends SidebarItem {
   title: string;
@@ -85,7 +161,6 @@ export default function App() {
           onNew={() => handlersRef.current.onNew()}
           onDelete={(id) => handlersRef.current.onDelete(id)}
           renderItem={(item) => <span>{(item as AppSession).title}</span>}
-          newLabel={`+ New ${ACTIVITY_LABEL}`}
           emptyMessage={`No ${ACTIVITY_LABEL.toLowerCase()}s yet.`}
         />
       }
@@ -130,8 +205,8 @@ function AppContent({
   activeSessionId, setActiveSessionId, setLoadingId, setRefreshKey,
   handlersRef, setSidebarSupabase,
 }: AppContentProps) {
-  const [planName, setPlanName] = useState('New Plan')
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [planName, setPlanName] = useState('Campaign Overview')
+  const [campaigns, setCampaigns] = useState<Campaign[]>(PLACEHOLDER_CAMPAIGNS)
 
   // Expose supabase to sidebar
   useEffect(() => { setSidebarSupabase(supabase) }, [supabase, setSidebarSupabase])
@@ -158,24 +233,23 @@ function AppContent({
         session.loadSession(id)
         setActiveSessionId(id)
         const summary = data.intake_summary as { campaigns?: Campaign[] } | null
-        setCampaigns(summary?.campaigns ?? [])
-        setPlanName((data[TITLE_FIELD] as string) || 'New Plan')
+        setCampaigns(summary?.campaigns ?? PLACEHOLDER_CAMPAIGNS)
+        setPlanName((data[TITLE_FIELD] as string) || 'Campaign Overview')
       },
       onNew: () => {
         const newId = session.newSession()
         setActiveSessionId(newId)
-        setCampaigns([])
-        setPlanName('New Plan')
-        session.setField(TITLE_FIELD, 'New Plan')
-        // Defer sidebar refresh to allow DB insert to complete
+        setCampaigns(PLACEHOLDER_CAMPAIGNS)
+        setPlanName('Campaign Overview')
+        session.setField(TITLE_FIELD, 'Campaign Overview')
         setTimeout(() => setRefreshKey(k => k + 1), 1000)
       },
       onDelete: async (id: string) => {
         await session.deleteSession(id)
         if (activeSessionId === id) {
           setActiveSessionId(null)
-          setCampaigns([])
-          setPlanName('New Plan')
+          setCampaigns(PLACEHOLDER_CAMPAIGNS)
+          setPlanName('Campaign Overview')
         }
         setRefreshKey(k => k + 1)
       },
@@ -184,32 +258,22 @@ function AppContent({
 
   function handleCampaignsChange(updated: Campaign[]) {
     setCampaigns(updated)
-    session.mergeFields({ intake_summary: { campaigns: updated } })
+    if (activeSessionId) {
+      session.mergeFields({ intake_summary: { campaigns: updated } })
+    }
   }
 
   function handlePlanNameChange(name: string) {
     setPlanName(name)
-    session.setField(TITLE_FIELD, name)
-    setRefreshKey(k => k + 1)
-  }
-
-  if (!activeSessionId) {
-    return (
-      <div className="id-empty">
-        <div className="id-empty__content">
-          <h2>Incremental Dashboard</h2>
-          <p>Track campaign KPIs, incremental lift, and goal performance across your media plan.</p>
-          <button className="id-empty__btn" onClick={() => handlersRef.current.onNew()}>
-            + New Plan
-          </button>
-        </div>
-      </div>
-    )
+    if (activeSessionId) {
+      session.setField(TITLE_FIELD, name)
+      setRefreshKey(k => k + 1)
+    }
   }
 
   return (
     <IncrementalDashboard
-      sessionId={activeSessionId}
+      sessionId={activeSessionId ?? 'demo'}
       planName={planName}
       campaigns={campaigns}
       onPlanNameChange={handlePlanNameChange}
