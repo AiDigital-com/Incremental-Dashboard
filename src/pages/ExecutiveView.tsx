@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
+import { feature as topoFeature } from 'topojson-client'
 
 // ── Geo data ──────────────────────────────────────────────────────────────────
 
@@ -111,8 +112,23 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function ExecutiveView({ onBack }: Props) {
-  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null)
-  const [openRegion,   setOpenRegion]   = useState<string | null>(null)
+  const [hoveredRegion,  setHoveredRegion]  = useState<string | null>(null)
+  const [openRegion,     setOpenRegion]     = useState<string | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [nationFeature,  setNationFeature]  = useState<any>(null)
+
+  // Fetch topojson once and extract the nation (outer boundary) feature
+  useEffect(() => {
+    fetch(GEO_URL)
+      .then(r => r.json())
+      .then((topo: any) => {
+        if (topo.objects?.nation) {
+          const f = topoFeature(topo, topo.objects.nation)
+          // feature() returns FeatureCollection or Feature; unwrap if needed
+          setNationFeature('features' in f ? (f as any).features[0] : f)
+        }
+      })
+  }, [])
 
   const handleRegionClick = (region: string) => {
     setOpenRegion(prev => prev === region ? null : region)
@@ -202,24 +218,19 @@ export function ExecutiveView({ onBack }: Props) {
               projection="geoAlbersUsa"
               style={{ width: '100%', height: '100%' }}
             >
-              {/* Pass 1 — white perimeter outline layer (renders beneath colored fills) */}
-              <Geographies geography={GEO_URL}>
-                {({ geographies }) =>
-                  geographies.map(geo => (
-                    <Geography
-                      key={`outline-${geo.rsmKey}`}
-                      geography={geo}
-                      style={{
-                        default: { fill: 'none', stroke: 'rgba(255,255,255,0.72)', strokeWidth: 2.5, outline: 'none' },
-                        hover:   { fill: 'none', stroke: 'rgba(255,255,255,0.72)', strokeWidth: 2.5, outline: 'none' },
-                        pressed: { outline: 'none' },
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
+              {/* Nation outer boundary — white perimeter outline only (no interior state lines) */}
+              {nationFeature && (
+                <Geography
+                  geography={nationFeature}
+                  style={{
+                    default: { fill: 'none', stroke: 'rgba(255,255,255,0.80)', strokeWidth: 1.5, outline: 'none' },
+                    hover:   { fill: 'none', stroke: 'rgba(255,255,255,0.80)', strokeWidth: 1.5, outline: 'none' },
+                    pressed: { outline: 'none' },
+                  }}
+                />
+              )}
 
-              {/* Pass 2 — colored region fills (covers interior white strokes; only outer perimeter stays white) */}
+              {/* State fills */}
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map(geo => {
@@ -264,7 +275,7 @@ export function ExecutiveView({ onBack }: Props) {
                 }
               </Geographies>
 
-              {/* Region name labels — always visible */}
+              {/* Region name labels — always at full hover brightness */}
               {Object.entries(REGION_CENTROIDS).map(([region, coords]) => {
                 const color = REGION_COLORS[region]
                 const isHovered = hoveredRegion === region
@@ -276,18 +287,18 @@ export function ExecutiveView({ onBack }: Props) {
                       style={{
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
-                        fontSize: isHovered ? '33px' : '27px',
-                        fill: isHovered ? color : `${color}cc`,
+                        fontSize: '33px',
+                        fill: color,
                         stroke: 'rgba(255, 255, 255, 0.90)',
                         strokeWidth: '2',
                         paintOrder: 'stroke fill',
                         letterSpacing: '0.14em',
                         filter: isHovered
-                          ? `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 4px rgba(255,255,255,0.55))`
-                          : 'drop-shadow(0 0 3px rgba(255,255,255,0.35))',
+                          ? `drop-shadow(0 0 10px ${color}) drop-shadow(0 0 6px rgba(255,255,255,0.70))`
+                          : `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 4px rgba(255,255,255,0.55))`,
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        transition: 'font-size 0.15s, fill 0.15s, filter 0.15s',
+                        transition: 'filter 0.15s',
                       }}
                     >
                       {region.toUpperCase()}

@@ -562,12 +562,8 @@
   position: absolute;
   top: 0;
   left: 50%;
-  /* Aurora mesh gradient — matches Executive View background */
-  background:
-    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
-    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
-    #050510;
+  /* Uniform dark-navy background — matches the Executive View card specifically */
+  background: color-mix(in srgb, #0009DC 25%, #04040a);
   border: 1.5px solid var(--card-color);
   border-radius: 20px;
   width: 340px;
@@ -637,11 +633,7 @@
     0 0 80px var(--card-glow),
     0 0 24px var(--card-glow),
     inset 0 0 28px rgba(255, 255, 255, 0.06);
-  background:
-    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.85) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.92) 0%, transparent 52%),
-    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.95) 0%, transparent 56%),
-    #050510;
+  background: color-mix(in srgb, #0009DC 38%, #04040a);
 }
 
 .id-home__card--left {
@@ -887,7 +879,7 @@
 /* ── Regional metrics panel ──────────────────────────────────────────────── */
 
 .id-exec__metrics {
-  width: 232px;
+  width: 280px;
   flex-shrink: 0;
   background: rgba(5, 5, 20, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -950,20 +942,20 @@
 .id-exec__metric-region {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 2.7rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.80);
   transition: color 0.15s;
-  white-space: nowrap;
+  line-height: 1.05;
 }
 
 .id-exec__metric-value {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 400;
-  font-size: 0.82rem;
+  font-size: 2.4rem;
   color: rgba(255, 255, 255, 0.45);
-  white-space: nowrap;
+  line-height: 1.1;
 }
 
 .id-exec__metric-chevron {
