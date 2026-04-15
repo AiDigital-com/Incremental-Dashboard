@@ -135,7 +135,8 @@
   color: rgba(255, 255, 255, 0.58);
   font-size: 0.57rem;
   padding: 3px 10px;
-  margin-top: 4px;
+  flex: 0 0 50%;
+  justify-content: center;
 }
 
 .id-send-email-btn--exec:hover {
@@ -242,8 +243,8 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.76rem;
-  table-layout: auto;
-  /* Fill the wrapper — ghost rows keep all pages at exactly PAGE_SIZE rows */
+  /* Fixed layout ensures column widths are consistent on every page */
+  table-layout: fixed;
   height: 100%;
 }
 
@@ -263,15 +264,19 @@
   line-height: 1.25;
 }
 
-/* Compact rows — height driven by table distribution across PAGE_SIZE ghost+real rows */
+/* All rows — fixed height so ghost and data rows are always identical */
 .id-table__row td {
   border-bottom: 1px solid rgba(0, 9, 220, 0.06);
-  padding: 5px 10px;
+  padding: 0 10px;
   vertical-align: middle;
   font-family: 'Inter', sans-serif;
   font-weight: 300;
   color: #080808;
   line-height: 1.4;
+  height: 52px;
+  max-height: 52px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 [data-theme="dark"] .id-table__row td,
@@ -308,7 +313,7 @@
 [data-theme="dark"] .id-table__client,
 .dark .id-table__client { color: #AEF33E; }
 
-.id-table__name   { font-weight: 400; color: #080808; font-size: 0.76rem; }
+.id-table__name   { font-weight: 400; color: #080808; font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; }
 .id-table__date   { color: #555; white-space: nowrap; font-size: 0.73rem; }
 .id-table__budget {
   font-family: 'Barlow Semi Condensed', sans-serif;
@@ -995,7 +1000,7 @@
 
 .id-exec__panel-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   margin-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -1012,9 +1017,32 @@
 
 .id-exec__panel-subtitle {
   font-size: 0.62rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.62);
   letter-spacing: 0.10em;
   text-transform: uppercase;
+}
+
+/* Back button — top-right of panel */
+.id-exec__panel-close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.62);
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.id-exec__panel-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
 }
 
 .id-exec__panel-body {
@@ -1025,7 +1053,7 @@
 
 .id-exec__panel-section-label {
   font-size: 0.60rem;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.62);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -1074,7 +1102,7 @@
 
 .id-exec__panel-seller-name {
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.52);
+  color: rgba(255, 255, 255, 0.80);
   white-space: nowrap;
   min-width: 100px;
   letter-spacing: 0.02em;
@@ -1272,17 +1300,18 @@
 .id-exec__metric-client-row {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   padding: 5px 8px 5px 26px;
   border-left: 1px solid rgba(255, 255, 255, 0.10);
   margin: 1px 0 1px 14px;
 }
 
-.id-exec__metric-client-header {
+/* Bottom row: Send Email (50%) + incremental amount (50%) */
+.id-exec__metric-client-bottom {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  width: 100%;
+  gap: 0;
 }
 
 .id-exec__metric-client-name {
@@ -1293,13 +1322,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
 .id-exec__metric-client-amount {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 600;
   font-size: 1.14rem;
-  flex-shrink: 0;
+  flex: 0 0 50%;
+  text-align: right;
+  padding-right: 2px;
 }
 
 .id-exec__metric-client-gd {

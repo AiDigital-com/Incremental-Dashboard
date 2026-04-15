@@ -136,7 +136,7 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
             <text x={x + barW / 2} y={y - 7} textAnchor="middle"
               style={{
                 fontSize: '11px',
-                fill: isPeak ? color : 'rgba(255,255,255,0.40)',
+                fill: isPeak ? color : 'rgba(255,255,255,0.72)',
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
               }}>
@@ -145,7 +145,7 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
               style={{
                 fontSize: '11px',
-                fill: 'rgba(255,255,255,0.36)',
+                fill: 'rgba(255,255,255,0.68)',
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
                 letterSpacing: '0.06em',
@@ -304,20 +304,20 @@ export function ExecutiveView({ onBack }: Props) {
                 <div className={`id-exec__metric-expansion${isOpen ? ' id-exec__metric-expansion--open' : ''}`}>
                   {REGION_TOP_CLIENTS[region]?.map((item, i) => (
                     <div key={i} className="id-exec__metric-client-row">
-                      <div className="id-exec__metric-client-header">
-                        <span className="id-exec__metric-client-name">{item.client}</span>
+                      <span className="id-exec__metric-client-name">{item.client}</span>
+                      <div className="id-exec__metric-client-bottom">
+                        <button
+                          className="id-send-email-btn id-send-email-btn--exec"
+                          onClick={() => openGmailCompose(item.client, item.incremental)}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                          </svg>
+                          Send Email
+                        </button>
                         <span className="id-exec__metric-client-amount" style={{ color }}>{item.incremental}</span>
                       </div>
-                      <button
-                        className="id-send-email-btn id-send-email-btn--exec"
-                        onClick={() => openGmailCompose(item.client, item.incremental)}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                          <polyline points="22,6 12,13 2,6"/>
-                        </svg>
-                        Send Email
-                      </button>
                       <span className="id-exec__metric-client-gd">{item.gd}</span>
                     </div>
                   ))}
@@ -451,6 +451,13 @@ export function ExecutiveView({ onBack }: Props) {
                     {openRegion}
                   </span>
                   <span className="id-exec__panel-subtitle">YTD Incremental</span>
+                  <button
+                    className="id-exec__panel-close"
+                    onClick={() => setOpenRegion(null)}
+                    aria-label="Close region panel"
+                  >
+                    ← Back
+                  </button>
                 </div>
                 <div className="id-exec__panel-body">
                   {/* Monthly bar chart — full width */}

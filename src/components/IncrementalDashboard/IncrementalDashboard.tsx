@@ -181,6 +181,19 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
       {/* Campaign Table */}
       <div className="id-dashboard__table-wrap">
         <table className="id-table">
+          {/* Fixed column widths — table-layout:fixed requires explicit sizing */}
+          <colgroup>
+            <col style={{ width: '11%' }} />{/* Client Name */}
+            <col style={{ width: '16%' }} />{/* Campaign Name */}
+            <col style={{ width: '8%'  }} />{/* Start Date */}
+            <col style={{ width: '8%'  }} />{/* End Date */}
+            <col style={{ width: '7%'  }} />{/* Budget */}
+            <col style={{ width: '9%'  }} />{/* KPI */}
+            <col style={{ width: '11%' }} />{/* Performance vs. Goal */}
+            <col style={{ width: '10%' }} />{/* Incremental Availability */}
+            <col style={{ width: '6%'  }} />{/* Days Left */}
+            <col style={{ width: '10%' }} />{/* Initiate Outreach */}
+          </colgroup>
           <thead>
             <tr>
               <th>Client Name</th>
