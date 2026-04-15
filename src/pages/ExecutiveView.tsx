@@ -71,6 +71,95 @@ const REGION_TOP_CLIENTS: Record<string, { gd: string; client: string; increment
   ],
 }
 
+// CSS transform zoom params per region (scale + transform-origin on the map SVG)
+const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
+  Northeast: { scale: 3.2, origin: '85% 22%' },
+  Southeast: { scale: 2.8, origin: '72% 64%' },
+  Midwest:   { scale: 2.4, origin: '52% 28%' },
+  Central:   { scale: 2.7, origin: '41% 62%' },
+  West:      { scale: 2.4, origin: '13% 38%' },
+  House:     { scale: 3.8, origin: '13% 82%' },
+}
+
+// Monthly incremental data — Jan–Apr 2026 YTD ($K) — sums match REGION_INCREMENTAL
+const REGION_MONTHLY_DATA: Record<string, number[]> = {
+  Northeast: [285, 312, 398, 245],
+  Southeast: [195, 218, 261, 306],
+  Midwest:   [322, 289, 415, 485],
+  Central:   [158, 192, 224, 188],
+  West:      [410, 468, 523, 679],
+  House:     [ 72,  85,  91,  93],
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr']
+
+// YTD incremental by seller ($K)
+const REGION_GD_YTD: Record<string, { name: string; ytdK: number }[]> = {
+  Northeast: [
+    { name: 'James Okafor',   ytdK:  479 },
+    { name: 'Sarah Mitchell', ytdK:  761 },
+  ],
+  Southeast: [{ name: 'Marcus Webb',    ytdK:  980 }],
+  Midwest:   [{ name: 'Priya Sharma',   ytdK: 1511 }],
+  Central:   [{ name: 'Tyler Brooks',   ytdK:  762 }],
+  West:      [{ name: 'Elena Vasquez',  ytdK: 2080 }],
+  House:     [{ name: 'Jordan Chen',    ytdK:  341 }],
+}
+
+// ── Inline bar chart component ────────────────────────────────────────────────
+
+function IncrementalBarChart({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data)
+  const H = 70
+  const barW = 36
+  const gap = 10
+  const totalW = (barW + gap) * data.length - gap
+
+  return (
+    <svg
+      width={totalW}
+      height={H + 30}
+      viewBox={`0 0 ${totalW} ${H + 30}`}
+      style={{ overflow: 'visible' }}
+    >
+      {data.map((val, i) => {
+        const barH = Math.max(3, Math.round((val / max) * H))
+        const x = i * (barW + gap)
+        const y = H - barH
+        const isPeak = val === max
+        return (
+          <g key={i}>
+            <rect x={x} y={0} width={barW} height={H} rx={3}
+              fill="rgba(255,255,255,0.06)" />
+            <rect x={x} y={y} width={barW} height={barH} rx={3}
+              fill={isPeak ? color : `${color}88`} />
+            <text x={x + barW / 2} y={y - 5} textAnchor="middle"
+              style={{
+                fontSize: '9px',
+                fill: isPeak ? color : 'rgba(255,255,255,0.40)',
+                fontFamily: "'Barlow Semi Condensed',sans-serif",
+                fontWeight: 700,
+              }}>
+              ${val}K
+            </text>
+            <text x={x + barW / 2} y={H + 16} textAnchor="middle"
+              style={{
+                fontSize: '9px',
+                fill: 'rgba(255,255,255,0.36)',
+                fontFamily: "'Barlow Semi Condensed',sans-serif",
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>
+              {MONTHS[i]}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
 // All 50 states assigned to a region
 const STATE_REGIONS: Record<string, string> = {
   // Northeast (11)
@@ -241,6 +330,21 @@ export function ExecutiveView({ onBack }: Props) {
         {/* Map + legend column */}
         <div className="id-exec__content">
           <div className="id-exec__map-wrap">
+            {/* Zoom wrapper — CSS transform animates scale on region click */}
+            <div
+              className="id-exec__zoom-wrapper"
+              style={{
+                transform: openRegion
+                  ? `scale(${REGION_ZOOM_PARAMS[openRegion].scale})`
+                  : 'scale(1)',
+                transformOrigin: openRegion
+                  ? REGION_ZOOM_PARAMS[openRegion].origin
+                  : 'center center',
+                transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                width: '100%',
+                height: '100%',
+              }}
+            >
             <ComposableMap
               projection="geoAlbersUsa"
               style={{ width: '100%', height: '100%' }}
@@ -334,6 +438,64 @@ export function ExecutiveView({ onBack }: Props) {
                 )
               })}
             </ComposableMap>
+            </div>{/* end zoom-wrapper */}
+
+            {/* Region info panel — slides up when a region is selected */}
+            {openRegion && (
+              <div className="id-exec__region-panel">
+                <div className="id-exec__panel-header">
+                  <span
+                    className="id-exec__panel-title"
+                    style={{ color: REGION_COLORS[openRegion] }}
+                  >
+                    {openRegion}
+                  </span>
+                  <span className="id-exec__panel-subtitle">YTD Incremental</span>
+                </div>
+                <div className="id-exec__panel-body">
+                  {/* Monthly bar chart */}
+                  <div className="id-exec__panel-chart">
+                    <div className="id-exec__panel-section-label">Monthly Won</div>
+                    <IncrementalBarChart
+                      data={REGION_MONTHLY_DATA[openRegion]}
+                      color={REGION_COLORS[openRegion]}
+                    />
+                  </div>
+
+                  <div className="id-exec__panel-divider" />
+
+                  {/* Seller YTD progress bars */}
+                  <div className="id-exec__panel-sellers">
+                    <div className="id-exec__panel-section-label">Seller YTD</div>
+                    {REGION_GD_YTD[openRegion].map(seller => {
+                      const maxYtd = Math.max(...REGION_GD_YTD[openRegion].map(s => s.ytdK))
+                      return (
+                        <div key={seller.name} className="id-exec__panel-seller-row">
+                          <span className="id-exec__panel-seller-name">{seller.name}</span>
+                          <div className="id-exec__panel-seller-track">
+                            <div
+                              className="id-exec__panel-seller-fill"
+                              style={{
+                                width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
+                                background: REGION_COLORS[openRegion],
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="id-exec__panel-seller-amount"
+                            style={{ color: REGION_COLORS[openRegion] }}
+                          >
+                            {seller.ytdK >= 1000
+                              ? `$${(seller.ytdK / 1000).toFixed(2)}M`
+                              : `$${seller.ytdK}K`}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Legend */}

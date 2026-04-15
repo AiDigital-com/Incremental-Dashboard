@@ -1,10 +1,12 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import type { AppView } from '../App'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
   onViewSelect: (view: Exclude<AppView, 'home'>) => void
+  activeIdx: number
+  onIdxChange: (idx: number) => void
 }
 
 // ── View definitions ──────────────────────────────────────────────────────────
@@ -43,6 +45,9 @@ const VIEWS: {
   },
 ]
 
+// Watermark text repeated enough times to fill 2× any viewport width seamlessly
+const WATERMARK_REPS = Array.from({ length: 20 }, (_, i) => i)
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getPos(idx: number, active: number, total: number): 'center' | 'left' | 'right' {
@@ -54,11 +59,15 @@ function getPos(idx: number, active: number, total: number): 'center' | 'left' |
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function HomePage({ onViewSelect }: Props) {
-  const [activeIdx, setActiveIdx] = useState(0)
-
-  const prev = useCallback(() => setActiveIdx(i => (i - 1 + VIEWS.length) % VIEWS.length), [])
-  const next = useCallback(() => setActiveIdx(i => (i + 1) % VIEWS.length), [])
+export function HomePage({ onViewSelect, activeIdx, onIdxChange }: Props) {
+  const prev = useCallback(
+    () => onIdxChange((activeIdx - 1 + VIEWS.length) % VIEWS.length),
+    [activeIdx, onIdxChange],
+  )
+  const next = useCallback(
+    () => onIdxChange((activeIdx + 1) % VIEWS.length),
+    [activeIdx, onIdxChange],
+  )
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -71,6 +80,25 @@ export function HomePage({ onViewSelect }: Props) {
 
   return (
     <div className="id-home">
+
+      {/* ── Diagonal watermark ──────────────────────────────────────────── */}
+      <div className="id-home__watermark" aria-hidden="true">
+        <div className="id-home__watermark-row">
+          <div className="id-home__watermark-track">
+            {WATERMARK_REPS.map(i => (
+              <span key={i} className="id-home__watermark-text">AI LABS</span>
+            ))}
+          </div>
+        </div>
+        <div className="id-home__watermark-row id-home__watermark-row--2">
+          <div className="id-home__watermark-track id-home__watermark-track--2">
+            {WATERMARK_REPS.map(i => (
+              <span key={i} className="id-home__watermark-text">AI LABS</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="id-home__header">
         <h1 className="id-home__title">Incremental Suite</h1>
         <p className="id-home__subtitle">Select a view to get started</p>
@@ -101,7 +129,7 @@ export function HomePage({ onViewSelect }: Props) {
                   if (pos === 'center') {
                     onViewSelect(v.id)
                   } else {
-                    setActiveIdx(i)
+                    onIdxChange(i)
                   }
                 }}
                 tabIndex={pos === 'center' ? 0 : -1}

@@ -308,6 +308,7 @@ Object.values(REGION_GDS).flat().forEach((gd, i) => {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('home')
+  const [homeCardIdx, setHomeCardIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState('')
   const [selectedGD, setSelectedGD] = useState('')
 
@@ -346,7 +347,13 @@ export default function App() {
       {() => {
         switch (currentView) {
           case 'home':
-            return <HomePage onViewSelect={setCurrentView} />
+            return (
+              <HomePage
+                onViewSelect={setCurrentView}
+                activeIdx={homeCardIdx}
+                onIdxChange={setHomeCardIdx}
+              />
+            )
           case 'executive':
             return <ExecutiveView onBack={() => setCurrentView('home')} />
           case 'gd':
