@@ -243,8 +243,8 @@
   border-collapse: collapse;
   font-size: 0.76rem;
   table-layout: auto;
-  /* Static row height — rows do not stretch to fill container */
-  height: auto;
+  /* Fill the wrapper — ghost rows keep all pages at exactly PAGE_SIZE rows */
+  height: 100%;
 }
 
 .id-table th {
@@ -263,11 +263,10 @@
   line-height: 1.25;
 }
 
-/* Static row height — always matches the 10-row spacing, never stretches */
+/* Compact rows — height driven by table distribution across PAGE_SIZE ghost+real rows */
 .id-table__row td {
   border-bottom: 1px solid rgba(0, 9, 220, 0.06);
-  padding: 0 10px;
-  height: 52px;
+  padding: 5px 10px;
   vertical-align: middle;
   font-family: 'Inter', sans-serif;
   font-weight: 300;
@@ -286,6 +285,14 @@
 
 [data-theme="dark"] .id-table__row:hover td,
 .dark .id-table__row:hover td { background: rgba(174, 243, 62, 0.04); }
+
+/* Ghost rows — visually empty, hold their distributed height */
+.id-table__row--ghost td { border-bottom: 1px solid rgba(0, 9, 220, 0.03); }
+.id-table__row--ghost:hover td,
+.id-dashboard .id-table__row--ghost:hover td { background: transparent !important; }
+
+[data-theme="dark"] .id-table__row--ghost td,
+.dark .id-table__row--ghost td { border-bottom-color: rgba(255, 255, 255, 0.03); }
 
 /* Cell variants */
 .id-table__client {

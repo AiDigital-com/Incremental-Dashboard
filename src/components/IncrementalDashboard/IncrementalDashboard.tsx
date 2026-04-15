@@ -61,22 +61,15 @@ function daysLeft(endDate: string): number {
 }
 
 function openGmailCompose(c: Campaign) {
-  const remaining = daysLeft(c.endDate)
-  const subject = `Incremental Investment Opportunity — ${c.clientName}: ${c.name}`
+  const subject = `Incremental Opportunity — ${c.clientName}`
   const body = [
-    'Hi,',
+    `I wanted to reach out regarding an incremental media investment opportunity for ${c.clientName}.`,
     '',
-    `I'm reaching out about an incremental media investment opportunity for ${c.clientName}.`,
+    `Based on our latest campaign performance data, ${c.clientName}'s campaigns are currently exceeding performance benchmarks, and we have ${formatBudget(c.incrementalDollars)} in incremental availability.`,
     '',
-    `Your campaign "${c.name}" is currently delivering strong ${c.kpiLabel} performance at ${formatKpi(c.kpiValue, c.kpiUnit)} — exceeding the performance benchmark at ${c.performanceMultiplier.toFixed(2)}x above goal. This strong performance has unlocked ${formatBudget(c.incrementalDollars)} in identified incremental availability with ${remaining > 0 ? `${remaining} days` : 'limited time'} remaining in the flight.`,
+    `This represents an opportunity to extend the strong performance we're seeing while momentum is on our side.`,
     '',
-    `This is an ideal window to scale what's working. The performance momentum is there, and the incremental capacity is ready to activate.`,
-    '',
-    `I'd love to connect to discuss how we can put this to work before the flight closes. Would you be available for a brief conversation this week?`,
-    '',
-    'Best,',
-    '[Your Name]',
-    'Growth Director | AIDigital Labs',
+    `I'd love to connect to discuss how we can put this incremental to work before the flight window closes!`,
   ].join('\n')
   const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   window.open(url, '_blank')
@@ -260,6 +253,12 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
                 </tr>
               )
             })}
+            {/* Ghost rows — pad to PAGE_SIZE so row height is identical on every page */}
+            {Array.from({ length: Math.max(0, PAGE_SIZE - pagedCampaigns.length) }, (_, i) => (
+              <tr key={`ghost-${i}`} className="id-table__row id-table__row--ghost">
+                <td /><td /><td /><td /><td /><td /><td /><td /><td /><td />
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
