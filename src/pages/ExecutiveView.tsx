@@ -103,6 +103,31 @@ const STATE_REGIONS: Record<string, string> = {
   Alaska: 'House', Hawaii: 'House',
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function openGmailCompose(client: string, region: string, incremental: string) {
+  const subject = `Incremental Investment Opportunity — ${client} | ${region} Region`
+  const body = [
+    'Hi,',
+    '',
+    `I wanted to reach out regarding an incremental media investment opportunity for ${client}.`,
+    '',
+    `Based on our latest campaign performance data, ${client}'s campaigns in the ${region} region are currently exceeding performance benchmarks — and we have ${incremental} in identified incremental available to deploy immediately.`,
+    '',
+    `This represents a time-sensitive opportunity to extend the strong performance we're seeing and capture additional return while momentum is on our side.`,
+    '',
+    `I'd love to connect to discuss how we can put this incremental to work before the flight window closes. Would you have 20 minutes this week?`,
+    '',
+    'Looking forward to speaking with you.',
+    '',
+    'Best,',
+    '[Your Name]',
+    'Growth Director | AIDigital Labs',
+  ].join('\n')
+  const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  window.open(url, '_blank')
+}
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -202,6 +227,16 @@ export function ExecutiveView({ onBack }: Props) {
                         <span className="id-exec__metric-client-name">{item.client}</span>
                         <span className="id-exec__metric-client-amount" style={{ color }}>{item.incremental}</span>
                       </div>
+                      <button
+                        className="id-send-email-btn id-send-email-btn--exec"
+                        onClick={() => openGmailCompose(item.client, region, item.incremental)}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        Send Email
+                      </button>
                       <span className="id-exec__metric-client-gd">{item.gd}</span>
                     </div>
                   ))}

@@ -60,6 +60,28 @@ function daysLeft(endDate: string): number {
   return Math.max(0, Math.round((end.getTime() - now.getTime()) / 86_400_000))
 }
 
+function openGmailCompose(c: Campaign) {
+  const remaining = daysLeft(c.endDate)
+  const subject = `Incremental Investment Opportunity — ${c.clientName}: ${c.name}`
+  const body = [
+    'Hi,',
+    '',
+    `I'm reaching out about an incremental media investment opportunity for ${c.clientName}.`,
+    '',
+    `Your campaign "${c.name}" is currently delivering strong ${c.kpiLabel} performance at ${formatKpi(c.kpiValue, c.kpiUnit)} — exceeding the performance benchmark at ${c.performanceMultiplier.toFixed(2)}x above goal. This strong performance has unlocked ${formatBudget(c.incrementalDollars)} in identified incremental availability with ${remaining > 0 ? `${remaining} days` : 'limited time'} remaining in the flight.`,
+    '',
+    `This is an ideal window to scale what's working. The performance momentum is there, and the incremental capacity is ready to activate.`,
+    '',
+    `I'd love to connect to discuss how we can put this to work before the flight closes. Would you be available for a brief conversation this week?`,
+    '',
+    'Best,',
+    '[Your Name]',
+    'Growth Director | AIDigital Labs',
+  ].join('\n')
+  const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  window.open(url, '_blank')
+}
+
 // Download always exports ALL active campaigns regardless of current page
 function downloadCSV(campaigns: Campaign[], filename: string) {
   const headers = [
@@ -177,12 +199,13 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
               <th>Performance vs. Goal</th>
               <th>Incremental Availability</th>
               <th>Days Left</th>
+              <th>Initiate Outreach</th>
             </tr>
           </thead>
           <tbody>
             {activeCampaigns.length === 0 && (
               <tr>
-                <td colSpan={9} className="id-table__empty">
+                <td colSpan={10} className="id-table__empty">
                   No qualifying campaigns match the selected filters.
                 </td>
               </tr>
@@ -219,6 +242,19 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
 
                   <td className="id-table__days">
                     {remaining > 0 ? `${remaining}d` : 'Ended'}
+                  </td>
+
+                  <td className="id-table__outreach">
+                    <button
+                      className="id-send-email-btn"
+                      onClick={() => openGmailCompose(c)}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                      Send Email
+                    </button>
                   </td>
 
                 </tr>
