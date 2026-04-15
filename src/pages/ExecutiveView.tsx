@@ -110,41 +110,41 @@ const REGION_GD_YTD: Record<string, { name: string; ytdK: number }[]> = {
 
 function IncrementalBarChart({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...data)
-  const H = 70
-  const barW = 36
-  const gap = 10
+  const H = 175
+  const barW = 90
+  const gap = 25
   const totalW = (barW + gap) * data.length - gap
 
   return (
     <svg
       width={totalW}
-      height={H + 30}
-      viewBox={`0 0 ${totalW} ${H + 30}`}
-      style={{ overflow: 'visible' }}
+      height={H + 36}
+      viewBox={`0 0 ${totalW} ${H + 36}`}
+      style={{ overflow: 'visible', display: 'block' }}
     >
       {data.map((val, i) => {
-        const barH = Math.max(3, Math.round((val / max) * H))
+        const barH = Math.max(4, Math.round((val / max) * H))
         const x = i * (barW + gap)
         const y = H - barH
         const isPeak = val === max
         return (
           <g key={i}>
-            <rect x={x} y={0} width={barW} height={H} rx={3}
-              fill="rgba(255,255,255,0.06)" />
-            <rect x={x} y={y} width={barW} height={barH} rx={3}
+            <rect x={x} y={0} width={barW} height={H} rx={5}
+              fill="rgba(255,255,255,0.05)" />
+            <rect x={x} y={y} width={barW} height={barH} rx={5}
               fill={isPeak ? color : `${color}88`} />
-            <text x={x + barW / 2} y={y - 5} textAnchor="middle"
+            <text x={x + barW / 2} y={y - 7} textAnchor="middle"
               style={{
-                fontSize: '9px',
+                fontSize: '11px',
                 fill: isPeak ? color : 'rgba(255,255,255,0.40)',
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
               }}>
               ${val}K
             </text>
-            <text x={x + barW / 2} y={H + 16} textAnchor="middle"
+            <text x={x + barW / 2} y={H + 20} textAnchor="middle"
               style={{
-                fontSize: '9px',
+                fontSize: '11px',
                 fill: 'rgba(255,255,255,0.36)',
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
@@ -453,7 +453,7 @@ export function ExecutiveView({ onBack }: Props) {
                   <span className="id-exec__panel-subtitle">YTD Incremental</span>
                 </div>
                 <div className="id-exec__panel-body">
-                  {/* Monthly bar chart */}
+                  {/* Monthly bar chart — full width */}
                   <div className="id-exec__panel-chart">
                     <div className="id-exec__panel-section-label">Monthly Won</div>
                     <IncrementalBarChart
@@ -462,36 +462,79 @@ export function ExecutiveView({ onBack }: Props) {
                     />
                   </div>
 
-                  <div className="id-exec__panel-divider" />
+                  <div className="id-exec__panel-hdivider" />
 
-                  {/* Seller YTD progress bars */}
-                  <div className="id-exec__panel-sellers">
-                    <div className="id-exec__panel-section-label">Seller YTD</div>
-                    {REGION_GD_YTD[openRegion].map(seller => {
-                      const maxYtd = Math.max(...REGION_GD_YTD[openRegion].map(s => s.ytdK))
-                      return (
-                        <div key={seller.name} className="id-exec__panel-seller-row">
-                          <span className="id-exec__panel-seller-name">{seller.name}</span>
-                          <div className="id-exec__panel-seller-track">
-                            <div
-                              className="id-exec__panel-seller-fill"
-                              style={{
-                                width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
-                                background: REGION_COLORS[openRegion],
-                              }}
-                            />
+                  {/* Bottom row: Seller YTD + Client YTD */}
+                  <div className="id-exec__panel-bottom-row">
+
+                    {/* Seller YTD progress bars */}
+                    <div className="id-exec__panel-sellers">
+                      <div className="id-exec__panel-section-label">Seller YTD</div>
+                      {REGION_GD_YTD[openRegion].map(seller => {
+                        const maxYtd = Math.max(...REGION_GD_YTD[openRegion].map(s => s.ytdK))
+                        return (
+                          <div key={seller.name} className="id-exec__panel-seller-row">
+                            <span className="id-exec__panel-seller-name">{seller.name}</span>
+                            <div className="id-exec__panel-seller-track">
+                              <div
+                                className="id-exec__panel-seller-fill"
+                                style={{
+                                  width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
+                                  background: REGION_COLORS[openRegion],
+                                }}
+                              />
+                            </div>
+                            <span
+                              className="id-exec__panel-seller-amount"
+                              style={{ color: REGION_COLORS[openRegion] }}
+                            >
+                              {seller.ytdK >= 1000
+                                ? `$${(seller.ytdK / 1000).toFixed(2)}M`
+                                : `$${seller.ytdK}K`}
+                            </span>
                           </div>
-                          <span
-                            className="id-exec__panel-seller-amount"
-                            style={{ color: REGION_COLORS[openRegion] }}
-                          >
-                            {seller.ytdK >= 1000
-                              ? `$${(seller.ytdK / 1000).toFixed(2)}M`
-                              : `$${seller.ytdK}K`}
-                          </span>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
+
+                    <div className="id-exec__panel-divider" />
+
+                    {/* Client YTD progress bars */}
+                    <div className="id-exec__panel-clients">
+                      <div className="id-exec__panel-section-label">Client YTD</div>
+                      {(() => {
+                        const clients = REGION_TOP_CLIENTS[openRegion] ?? []
+                        const maxVal = Math.max(...clients.map(c => {
+                          const n = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                          return c.incremental.includes('M') ? n * 1000 : n
+                        }))
+                        return clients.map(c => {
+                          const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                          const valK = c.incremental.includes('M') ? raw * 1000 : raw
+                          return (
+                            <div key={c.client} className="id-exec__panel-seller-row">
+                              <span className="id-exec__panel-seller-name">{c.client}</span>
+                              <div className="id-exec__panel-seller-track">
+                                <div
+                                  className="id-exec__panel-seller-fill"
+                                  style={{
+                                    width: `${Math.round((valK / maxVal) * 100)}%`,
+                                    background: REGION_COLORS[openRegion],
+                                  }}
+                                />
+                              </div>
+                              <span
+                                className="id-exec__panel-seller-amount"
+                                style={{ color: REGION_COLORS[openRegion] }}
+                              >
+                                {c.incremental}
+                              </span>
+                            </div>
+                          )
+                        })
+                      })()}
+                    </div>
+
                   </div>
                 </div>
               </div>

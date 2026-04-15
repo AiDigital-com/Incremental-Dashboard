@@ -575,10 +575,16 @@
   to   { transform: translateX(-50%); }
 }
 
-/* Region chart panel slide-up */
+/* Region chart panel slide-up (legacy — bottom-anchored) */
 @keyframes panel-slide-up {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Region chart panel centered entry */
+@keyframes panel-center-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
 .id-home {
@@ -613,25 +619,25 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 52px;
+  gap: 120px;
   overflow: hidden;
 }
 
 .id-home__watermark-row {
-  transform: rotate(-14deg);
+  transform: rotate(-20deg);
   white-space: nowrap;
   /* Wider than 100% so the rotated strip covers edge-to-edge */
-  width: 150%;
-  margin-left: -25%;
+  width: 160%;
+  margin-left: -30%;
 }
 
 .id-home__watermark-track {
   display: inline-block;
-  animation: watermark-scroll 26s linear infinite;
+  animation: watermark-scroll 90s linear infinite;
 }
 
 .id-home__watermark-track--2 {
-  animation-duration: 21s;
+  animation-duration: 75s;
   animation-direction: reverse;
 }
 
@@ -685,6 +691,7 @@
   align-items: center;
   gap: 20px;
   animation: home-carousel-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  margin-top: 36px;
 }
 
 /* ── Cards stage ─────────────────────────────────────────────────────────── */
@@ -739,18 +746,18 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 18px;
-  height: 18px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   /* Solid circle — glow begins right at its edge with no gap */
   background: var(--card-color);
   box-shadow:
-    0 0 6px 0px var(--card-glow),
-    0 0 12px 1px var(--card-glow);
+    0 0 3px 0px var(--card-glow),
+    0 0 6px 0px var(--card-glow);
   /* Path traces the 375×334 card border with 20px corner radius */
   offset-path: path('M 20,0 L 355,0 Q 375,0 375,20 L 375,314 Q 375,334 355,334 L 20,334 Q 0,334 0,314 L 0,20 Q 0,0 20,0 Z');
   offset-rotate: 0deg;
-  animation: orbit-card 3.5s linear infinite;
+  animation: orbit-card 8.75s linear infinite;
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
@@ -971,18 +978,18 @@
 
 .id-exec__region-panel {
   position: absolute;
-  bottom: 16px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 520px;
-  background: rgba(8, 8, 20, 0.86);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  padding: 14px 18px 16px;
-  animation: panel-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 32px);
+  max-width: 720px;
+  background: rgba(8, 8, 20, 0.90);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 18px 22px 20px;
+  animation: panel-center-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
   z-index: 10;
 }
 
@@ -1012,12 +1019,12 @@
 
 .id-exec__panel-body {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 0;
 }
 
 .id-exec__panel-section-label {
-  font-size: 0.58rem;
+  font-size: 0.60rem;
   color: rgba(255, 255, 255, 0.28);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1025,17 +1032,36 @@
 }
 
 .id-exec__panel-chart {
-  flex: 1.1;
+  margin-bottom: 4px;
+}
+
+/* Horizontal rule between chart and bottom row */
+.id-exec__panel-hdivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 14px 0;
+}
+
+/* Bottom row: sellers + vertical divider + clients */
+.id-exec__panel-bottom-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .id-exec__panel-divider {
   width: 1px;
   background: rgba(255, 255, 255, 0.07);
   align-self: stretch;
-  margin: 0 18px;
+  margin: 0 20px;
 }
 
 .id-exec__panel-sellers {
+  flex: 1;
+}
+
+.id-exec__panel-clients {
   flex: 1;
 }
 
@@ -1047,10 +1073,10 @@
 }
 
 .id-exec__panel-seller-name {
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   color: rgba(255, 255, 255, 0.52);
   white-space: nowrap;
-  min-width: 90px;
+  min-width: 100px;
   letter-spacing: 0.02em;
 }
 
