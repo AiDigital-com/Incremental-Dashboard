@@ -1476,3 +1476,309 @@
   color: #080808;
   border-color: rgba(255, 255, 255, 0.90);
 }
+
+/* ── Client View — action cards ──────────────────────────────────────────────
+
+   Three feature cards replacing the placeholder table. Each is a glass-morph
+   panel with a top accent gradient, themed icon, and hover glow.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.id-client__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.id-client__card {
+  background: rgba(8, 16, 32, 0.52);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Top accent gradient bar per card */
+.id-client__card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.id-client__card--reach::before       { background: linear-gradient(90deg, transparent, #8263FF 40%, transparent); }
+.id-client__card--attribution::before { background: linear-gradient(90deg, transparent, #8EE7F1 40%, transparent); }
+.id-client__card--audit::before       { background: linear-gradient(90deg, transparent, #AEF33E 40%, transparent); }
+
+.id-client__card--reach       { box-shadow: 0 0 28px rgba(130, 99, 255, 0.08),  inset 0 0 20px rgba(255,255,255,0.02); }
+.id-client__card--attribution { box-shadow: 0 0 28px rgba(142, 231, 241, 0.08), inset 0 0 20px rgba(255,255,255,0.02); }
+.id-client__card--audit       { box-shadow: 0 0 28px rgba(174, 243, 62, 0.08),  inset 0 0 20px rgba(255,255,255,0.02); }
+
+.id-client__card--reach:hover {
+  transform: translateY(-5px);
+  background: rgba(12, 24, 52, 0.72);
+  border-color: rgba(130, 99, 255, 0.40);
+  box-shadow: 0 0 52px rgba(130, 99, 255, 0.24), 0 10px 36px rgba(0,0,0,0.30);
+}
+.id-client__card--attribution:hover {
+  transform: translateY(-5px);
+  background: rgba(12, 24, 52, 0.72);
+  border-color: rgba(142, 231, 241, 0.40);
+  box-shadow: 0 0 52px rgba(142, 231, 241, 0.24), 0 10px 36px rgba(0,0,0,0.30);
+}
+.id-client__card--audit:hover {
+  transform: translateY(-5px);
+  background: rgba(12, 24, 52, 0.72);
+  border-color: rgba(174, 243, 62, 0.40);
+  box-shadow: 0 0 52px rgba(174, 243, 62, 0.24), 0 10px 36px rgba(0,0,0,0.30);
+}
+
+.id-client__card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.id-client__card--reach       .id-client__card-icon { background: rgba(130, 99, 255, 0.15); color: #8263FF; }
+.id-client__card--attribution .id-client__card-icon { background: rgba(142, 231, 241, 0.12); color: #8EE7F1; }
+.id-client__card--audit       .id-client__card-icon { background: rgba(174, 243, 62, 0.12);  color: #AEF33E; }
+
+.id-client__card-kicker {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.57rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.id-client__card--reach       .id-client__card-kicker { color: rgba(130, 99, 255, 0.80); }
+.id-client__card--attribution .id-client__card-kicker { color: rgba(142, 231, 241, 0.80); }
+.id-client__card--audit       .id-client__card-kicker { color: rgba(174, 243, 62, 0.80); }
+
+.id-client__card-title {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.55rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.15;
+}
+
+.id-client__card-desc {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.50);
+  line-height: 1.62;
+  flex: 1;
+}
+
+.id-client__card-cta {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.id-client__card--reach       .id-client__card-cta { color: #8263FF; }
+.id-client__card--attribution .id-client__card-cta { color: #8EE7F1; }
+.id-client__card--audit       .id-client__card-cta { color: #AEF33E; }
+
+/* ── Client View — modal ──────────────────────────────────────────────────── */
+
+@keyframes id-modal-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.id-client__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 16, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.id-client__modal {
+  position: relative;
+  background: rgba(8, 12, 28, 0.95);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 540px;
+  padding: 36px 36px 28px;
+  animation: id-modal-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.id-client__modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  width: 30px; height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.id-client__modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.30);
+}
+
+.id-client__modal-header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.id-client__modal-kicker {
+  display: block;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.57rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.id-client__modal-header--reach       .id-client__modal-kicker { color: #8263FF; }
+.id-client__modal-header--attribution .id-client__modal-kicker { color: #8EE7F1; }
+.id-client__modal-header--audit       .id-client__modal-kicker { color: #AEF33E; }
+
+.id-client__modal-title {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 12px;
+  line-height: 1.1;
+}
+
+.id-client__modal-intro {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.56);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.id-client__modal-points {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.id-client__modal-point {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.id-client__modal-point-mark {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.id-client__modal-point strong {
+  display: block;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.90);
+  margin-bottom: 3px;
+}
+
+.id-client__modal-point p {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.81rem;
+  color: rgba(255, 255, 255, 0.48);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.id-client__modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.id-client__modal-cta {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  padding: 10px 22px;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+.id-client__modal-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.id-client__modal-cta--reach       { background: #8263FF; color: #fff;     box-shadow: 0 0 22px rgba(130, 99, 255, 0.40); }
+.id-client__modal-cta--attribution { background: #8EE7F1; color: #030810;  box-shadow: 0 0 22px rgba(142, 231, 241, 0.40); }
+.id-client__modal-cta--audit       { background: #AEF33E; color: #080808;  box-shadow: 0 0 22px rgba(174, 243, 62, 0.40); }
+
+.id-client__modal-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.32);
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  font-size: 0.78rem;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.id-client__modal-dismiss:hover { color: rgba(255, 255, 255, 0.68); }
