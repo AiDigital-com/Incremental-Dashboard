@@ -75,7 +75,7 @@ export function CoverPage({ onComplete }: Props) {
   const exit = useCallback(() => {
     setPhase(prev => {
       if (prev === 'exiting') return prev
-      setTimeout(onComplete, 700)
+      setTimeout(onComplete, 850)
       return 'exiting'
     })
   }, [onComplete])

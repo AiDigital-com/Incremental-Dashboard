@@ -212,12 +212,12 @@ a { color: inherit; text-decoration: none; }
   z-index: 9999;
   cursor: pointer;
   user-select: none;
-  opacity: 1;
-  transition: opacity 0.75s cubic-bezier(0.4, 0, 1, 1);
+  clip-path: circle(150% at 50% 50%);
+  transition: clip-path 0.85s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .id-cover--exiting {
-  opacity: 0;
+  clip-path: circle(0% at 50% 50%);
   pointer-events: none;
 }
 
