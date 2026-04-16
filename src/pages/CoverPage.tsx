@@ -83,7 +83,7 @@ export function CoverPage({ onComplete }: Props) {
   // Auto-advance 2.8 s after animation completes
   useEffect(() => {
     if (phase !== 'complete') return
-    const t = setTimeout(exit, 2800)
+    const t = setTimeout(exit, 1400)
     return () => clearTimeout(t)
   }, [phase, exit])
 
