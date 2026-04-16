@@ -139,7 +139,6 @@ export const GlobeBackground = memo(function GlobeBackground({
                       fillOpacity: isActive ? 0.38 : 0.25,
                       stroke: isActive ? color : 'rgba(80,120,200,0.2)',
                       strokeWidth: 0.4,
-                      filter: isActive ? 'url(#globe-glow)' : 'none',
                       transition: 'fill 1.4s ease, fill-opacity 1.4s ease, stroke 1.4s ease',
                       outline: 'none',
                     },

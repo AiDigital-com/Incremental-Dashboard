@@ -732,7 +732,7 @@
   background: rgba(8, 16, 32, 0.52);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-color) 70%, transparent);
   border-radius: 20px;
   width: 375px;
   /* Fixed height so all cards are identical regardless of label line-count */
@@ -757,34 +757,6 @@
     background 0.25s ease;
 }
 
-/* ── Orbit orb — moving glow that traces the border on hover ─────────────── */
-
-.id-home__card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  /* Solid circle — glow begins right at its edge with no gap */
-  background: var(--card-color);
-  box-shadow:
-    0 0 3px 0px var(--card-glow),
-    0 0 6px 0px var(--card-glow);
-  /* Path traces the 375×334 card border with 20px corner radius */
-  offset-path: path('M 20,0 L 355,0 Q 375,0 375,20 L 375,314 Q 375,334 355,334 L 20,334 Q 0,334 0,314 L 0,20 Q 0,0 20,0 Z');
-  offset-rotate: 0deg;
-  animation: orbit-card 8.75s linear infinite;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.id-home__card:hover::after {
-  opacity: 1;
-}
 
 /* ── Card positions ──────────────────────────────────────────────────────── */
 
