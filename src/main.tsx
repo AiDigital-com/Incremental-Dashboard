@@ -18,21 +18,20 @@ function Root() {
     () => !sessionStorage.getItem('id-cover-shown')
   )
 
-  if (showCover) {
-    return (
-      <CoverPage
-        onComplete={() => {
-          sessionStorage.setItem('id-cover-shown', '1')
-          setShowCover(false)
-        }}
-      />
-    )
-  }
-
   return (
-    <ClerkProvider publishableKey={publishableKey}>
-      <App />
-    </ClerkProvider>
+    <>
+      <ClerkProvider publishableKey={publishableKey}>
+        <App />
+      </ClerkProvider>
+      {showCover && (
+        <CoverPage
+          onComplete={() => {
+            sessionStorage.setItem('id-cover-shown', '1')
+            setShowCover(false)
+          }}
+        />
+      )}
+    </>
   )
 }
 
