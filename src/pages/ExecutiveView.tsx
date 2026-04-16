@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
 import { feature as topoFeature } from 'topojson-client'
+import { GlobeBackground } from '../components/GlobeBackground'
 
 // ── Geo data ──────────────────────────────────────────────────────────────────
 
@@ -243,6 +244,8 @@ export function ExecutiveView({ onBack }: Props) {
   return (
     <div className="id-exec">
 
+      <GlobeBackground />
+
       {/* Header */}
       <div className="id-exec__header">
         <button className="id-back-btn" onClick={onBack}>
@@ -424,9 +427,6 @@ export function ExecutiveView({ onBack }: Props) {
                         strokeWidth: '2',
                         paintOrder: 'stroke fill',
                         letterSpacing: '0.14em',
-                        filter: isHovered
-                          ? `drop-shadow(0 0 10px ${color}) drop-shadow(0 0 6px rgba(255,255,255,0.70))`
-                          : `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 4px rgba(255,255,255,0.55))`,
                         pointerEvents: 'none',
                         userSelect: 'none',
                         transition: 'filter 0.15s',

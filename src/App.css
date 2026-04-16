@@ -117,16 +117,16 @@
 [data-theme="dark"] .id-send-email-btn,
 .dark .id-send-email-btn,
 .id-dashboard .id-send-email-btn {
-  border-color: rgba(174, 243, 62, 0.35);
-  color: #AEF33E;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.70);
 }
 
 [data-theme="dark"] .id-send-email-btn:hover,
 .dark .id-send-email-btn:hover,
 .id-dashboard .id-send-email-btn:hover {
-  background: rgba(174, 243, 62, 0.09);
-  border-color: rgba(174, 243, 62, 0.65);
-  box-shadow: 0 0 8px rgba(174, 243, 62, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.40);
+  box-shadow: none;
 }
 
 /* Executive View sidebar variant — always on dark background */
@@ -904,14 +904,9 @@
   gap: 12px;
   min-height: 0;
   overflow: hidden;
-  /* Extend behind AppShell header/border — matches .id-home treatment */
   margin: -1px;
-  /* Aurora mesh gradient — full-bleed left→right */
-  background:
-    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
-    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
-    #050510;
+  background: #030810;
+  position: relative;
 }
 
 .id-exec__header {
@@ -919,6 +914,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
+  z-index: 2;
 }
 
 .id-exec__title {
@@ -1175,6 +1172,8 @@
   min-height: 0;
   display: flex;
   gap: 14px;
+  position: relative;
+  z-index: 2;
 }
 
 /* ── Regional metrics panel ──────────────────────────────────────────────── */
