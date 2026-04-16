@@ -56,18 +56,82 @@
 
 .id-dashboard__header-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-/* ── Download button — brand pill style ──────────────────────────────────── */
+/* ── Inline header filter selects (Region / GD) ──────────────────────────── */
+
+.id-header-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.id-header-filter-label {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+  padding-left: 10px;
+}
+
+.id-header-select-wrap {
+  position: relative;
+}
+
+.id-header-filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(8, 16, 32, 0.52);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 100px;
+  color: rgba(255, 255, 255, 0.80);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.78rem;
+  padding: 6px 28px 6px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+  min-width: 140px;
+}
+
+.id-header-filter-select:focus {
+  border-color: rgba(255, 255, 255, 0.40);
+}
+
+.id-header-filter-select:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.id-header-select-chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.60rem;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Download button ─────────────────────────────────────────────────────── */
 
 .id-download-btn {
-  background: #0009DC;
-  border: none;
+  background: rgba(8, 16, 32, 0.52);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 100px;
-  color: #F9F9F9;
+  color: rgba(255, 255, 255, 0.80);
   cursor: pointer;
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-size: 0.75rem;
@@ -75,11 +139,15 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 7px 18px;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
   white-space: nowrap;
+  align-self: flex-end;
 }
 
-.id-download-btn:hover:not(:disabled) { background: #0007b8; }
+.id-download-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.40);
+}
 .id-download-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── Send Email button ───────────────────────────────────────────────────── */
@@ -391,7 +459,7 @@
   display: inline-block;
 }
 
-.id-perf-badge--above { background: #AEF33E; color: #080808; }
+.id-perf-badge--above { background: rgba(169, 190, 248, 0.14); color: rgba(209, 225, 252, 0.90); }
 .id-perf-badge--near  { background: rgba(246, 173, 85, 0.18); color: #8a5c00; }
 .id-perf-badge--below { background: rgba(220, 0, 0, 0.1); color: #cc0000; }
 

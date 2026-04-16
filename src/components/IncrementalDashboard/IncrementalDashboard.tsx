@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { GlobeBackground } from '../GlobeBackground'
+import { REGIONS, REGION_GDS } from '../AppSidebar/AppSidebar'
+import type { Region } from '../AppSidebar/AppSidebar'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +26,10 @@ interface Props {
   onPlanNameChange: (name: string) => void
   onCampaignsChange: (campaigns: Campaign[]) => void
   onBack?: () => void
+  selectedRegion?: string
+  selectedGD?: string
+  onRegionChange?: (r: string) => void
+  onGDChange?: (gd: string) => void
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -108,9 +114,10 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
+export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegion = '', selectedGD = '', onRegionChange, onGDChange }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
   const [zoomContinent, setZoomContinent] = useState<number | null>(null)
+  const gds = selectedRegion ? REGION_GDS[selectedRegion as Region] ?? [] : []
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -156,7 +163,42 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
           <h2 className="id-dashboard__title-text">{planName}</h2>
         </div>
         <div className="id-dashboard__header-actions">
-          {/* Download always exports all active campaigns across all pages */}
+
+          {/* Region filter */}
+          <div className="id-header-filter-group">
+            <label className="id-header-filter-label" htmlFor="region-select">Region</label>
+            <div className="id-header-select-wrap">
+              <select
+                id="region-select"
+                className="id-header-filter-select"
+                value={selectedRegion}
+                onChange={e => { onRegionChange?.(e.target.value); onGDChange?.('') }}
+              >
+                <option value="">All Regions</option>
+                {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+              <span className="id-header-select-chevron" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
+          {/* Growth Director filter */}
+          <div className="id-header-filter-group">
+            <label className="id-header-filter-label" htmlFor="gd-select">Growth Director</label>
+            <div className="id-header-select-wrap">
+              <select
+                id="gd-select"
+                className="id-header-filter-select"
+                value={selectedGD}
+                onChange={e => onGDChange?.(e.target.value)}
+                disabled={!selectedRegion}
+              >
+                <option value="">{selectedRegion ? 'All Directors' : 'Select region first'}</option>
+                {gds.map(gd => <option key={gd} value={gd}>{gd}</option>)}
+              </select>
+              <span className="id-header-select-chevron" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
           <button
             className="id-download-btn"
             onClick={() => downloadCSV(activeCampaigns, planName)}
@@ -164,6 +206,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
           >
             ↓ Download
           </button>
+
         </div>
       </div>
 

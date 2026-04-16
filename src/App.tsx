@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'
 import type { Campaign } from './components/IncrementalDashboard'
-import { AppSidebar, REGION_GDS } from './components/AppSidebar/AppSidebar'
+import { REGION_GDS } from './components/AppSidebar/AppSidebar'
 import { HomePage } from './pages/HomePage'
 import { ExecutiveView } from './pages/ExecutiveView'
 import { ClientView } from './pages/ClientView'
@@ -323,18 +323,6 @@ export default function App() {
     ? `${selectedRegion} Region`
     : 'Campaign Overview'
 
-  // Sidebar: only GD view uses the filter sidebar; all others have no sidebar
-  const sidebar = currentView === 'gd'
-    ? (
-      <AppSidebar
-        selectedRegion={selectedRegion}
-        selectedGD={selectedGD}
-        onRegionChange={setSelectedRegion}
-        onGDChange={setSelectedGD}
-      />
-    )
-    : undefined
-
   return (
     <AppShell
       appTitle={APP_TITLE}
@@ -342,7 +330,6 @@ export default function App() {
       auth={{ SignIn, UserButton, useAuth }}
       supabaseConfig={supabaseConfig}
       helpUrl="/help"
-      sidebar={sidebar}
     >
       {() => {
         switch (currentView) {
@@ -365,6 +352,10 @@ export default function App() {
                 onPlanNameChange={() => {}}
                 onCampaignsChange={() => {}}
                 onBack={() => setCurrentView('home')}
+                selectedRegion={selectedRegion}
+                selectedGD={selectedGD}
+                onRegionChange={setSelectedRegion}
+                onGDChange={setSelectedGD}
               />
             )
           case 'client':
