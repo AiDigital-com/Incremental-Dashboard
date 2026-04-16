@@ -8,6 +8,7 @@
 
 /* ── Hide DS chrome we don't need ───────────────────────────────────────────── */
 .aidl-trial-banner { display: none !important; }
+.aidl-theme-toggle { display: none !important; }
 
 /* ── Dashboard layout ────────────────────────────────────────────────────── */
 
