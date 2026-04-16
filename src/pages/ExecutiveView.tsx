@@ -9,12 +9,12 @@ const GEO_URL = '/states-10m.json'
 // ── Region definitions ────────────────────────────────────────────────────────
 
 const REGION_COLORS: Record<string, string> = {
-  Northeast: '#0009DC',
-  Southeast: '#4E9018',
-  Midwest:   '#FF7CF5',
-  Central:   '#38b6ff',
-  West:      '#8263FF',
-  House:     '#FF6A00',
+  Northeast: '#8EE7F1',  // Bright Aqua
+  Southeast: '#DDA7EF',  // Digital Lilac
+  Midwest:   '#A9BEF8',  // Skywave
+  Central:   '#38b6ff',  // Neon Azure
+  West:      '#8263FF',  // Violet Pulse
+  House:     '#aef33e',  // Neon Lime
 }
 
 // Geographic centroids for region name labels [longitude, latitude]

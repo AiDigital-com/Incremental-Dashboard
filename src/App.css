@@ -884,14 +884,14 @@
 
 [data-theme="dark"] .id-back-btn,
 .dark .id-back-btn {
-  color: #AEF33E;
-  border-color: rgba(174, 243, 62, 0.3);
+  color: rgba(255, 255, 255, 0.70);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 [data-theme="dark"] .id-back-btn:hover,
 .dark .id-back-btn:hover {
-  background: rgba(174, 243, 62, 0.08);
-  border-color: #AEF33E;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.40);
 }
 
 /* ── Executive View ──────────────────────────────────────────────────────── */
@@ -924,8 +924,8 @@
 .id-exec__title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 900;
-  font-size: 1.15rem;
-  letter-spacing: -0.01em;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   color: #0009DC;
   margin: 0;
@@ -933,7 +933,7 @@
 }
 
 [data-theme="dark"] .id-exec__title,
-.dark .id-exec__title { color: #AEF33E; }
+.dark .id-exec__title { color: rgba(255, 255, 255, 0.92); }
 
 .id-exec__subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
