@@ -685,8 +685,7 @@
   font-size: 5.5rem;
   letter-spacing: -0.025em;
   text-transform: uppercase;
-  /* Always Lime on the forced-dark background */
-  color: #AEF33E;
+  color: rgba(255, 255, 255, 0.92);
   line-height: 1;
   margin: 0;
 }
@@ -730,9 +729,10 @@
   position: absolute;
   top: 0;
   left: 50%;
-  /* Uniform dark-navy background — matches the Executive View card specifically */
-  background: color-mix(in srgb, #0009DC 25%, #04040a);
-  border: 1.5px solid var(--card-color);
+  background: rgba(8, 16, 32, 0.52);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
   border-radius: 20px;
   width: 375px;
   /* Fixed height so all cards are identical regardless of label line-count */
@@ -745,11 +745,10 @@
   justify-content: center;
   gap: 14px;
   outline: none;
-  /* Full glow always on — matches old hover intensity */
   box-shadow:
-    0 0 54px var(--card-glow),
-    0 0 16px var(--card-glow),
-    inset 0 0 20px rgba(255, 255, 255, 0.04);
+    0 0 32px var(--card-glow-subtle),
+    0 0 8px var(--card-glow-subtle),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
   /* Smooth transitions for cycling + hover */
   transition:
     transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
@@ -798,10 +797,10 @@
 .id-home__card--center:hover {
   transform: translateX(-50%) scale(1.03) translateY(-6px);
   box-shadow:
-    0 0 80px var(--card-glow),
-    0 0 24px var(--card-glow),
-    inset 0 0 28px rgba(255, 255, 255, 0.06);
-  background: color-mix(in srgb, #0009DC 38%, #04040a);
+    0 0 60px var(--card-glow),
+    0 0 18px var(--card-glow),
+    inset 0 0 28px rgba(255, 255, 255, 0.05);
+  background: rgba(12, 24, 52, 0.70);
 }
 
 .id-home__card--left {

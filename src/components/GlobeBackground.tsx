@@ -112,7 +112,7 @@ export const GlobeBackground = memo(function GlobeBackground({
       >
         <defs>
           <filter id="globe-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -136,7 +136,7 @@ export const GlobeBackground = memo(function GlobeBackground({
                   style={{
                     default: {
                       fill: isActive ? color : '#0d1b30',
-                      fillOpacity: isActive ? 0.72 : 0.58,
+                      fillOpacity: isActive ? 0.38 : 0.25,
                       stroke: isActive ? color : 'rgba(80,120,200,0.2)',
                       strokeWidth: 0.4,
                       filter: isActive ? 'url(#globe-glow)' : 'none',
