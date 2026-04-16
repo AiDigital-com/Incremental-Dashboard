@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react'
+import { GlobeBackground } from '../components/GlobeBackground'
+
 // ── Client View (placeholder) ─────────────────────────────────────────────────
 
 interface Props {
@@ -5,8 +8,17 @@ interface Props {
 }
 
 export function ClientView({ onBack }: Props) {
+  const [zoomContinent, setZoomContinent] = useState<number | null>(null)
+
+  useEffect(() => {
+    const t = setTimeout(() => setZoomContinent(0), 80)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <div className="id-dashboard">
+
+      <GlobeBackground zoomContinent={zoomContinent} />
 
       <div className="id-dashboard__header">
         <button className="id-back-btn" onClick={onBack}>

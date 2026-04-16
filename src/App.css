@@ -18,18 +18,12 @@
   padding: 12px 24px 14px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 300;
-  /* Fill aidl-app-main flex column — enables static pagination */
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  /* Extend behind AppShell header/border — matches .id-exec and .id-home */
   margin: -1px;
-  /* Aurora mesh gradient — identical to Executive View */
-  background:
-    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
-    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
-    #050510;
+  background: #030810;
+  position: relative;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -40,6 +34,8 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
 }
 
 .id-dashboard__title-wrap { flex: 1; min-width: 0; }
@@ -158,6 +154,8 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 @media (max-width: 900px) {
@@ -228,9 +226,10 @@
   overflow-x: auto;
   overflow-y: hidden;
   background: #F9F9F9;
-  /* Expand to fill remaining space — pushes pagination to bottom */
   flex: 1;
   min-height: 0;
+  position: relative;
+  z-index: 2;
 }
 
 [data-theme="dark"] .id-dashboard__table-wrap,
@@ -1341,15 +1340,15 @@
    that have light defaults so they match the executive view's dark aesthetic.
    ─────────────────────────────────────────────────────────────────────────── */
 
-.id-dashboard .id-dashboard__title-text { color: #AEF33E; }
+.id-dashboard .id-dashboard__title-text { color: rgba(255, 255, 255, 0.92); font-size: 2rem; }
 
 .id-dashboard .id-back-btn {
-  color: #AEF33E;
-  border-color: rgba(174, 243, 62, 0.3);
+  color: rgba(255, 255, 255, 0.70);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .id-dashboard .id-back-btn:hover {
-  background: rgba(174, 243, 62, 0.08);
-  border-color: #AEF33E;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.40);
 }
 
 /* KPI tiles */
@@ -1358,7 +1357,7 @@
   border-color: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
 }
-.id-dashboard .id-kpi-tile::before { background: #AEF33E; }
+.id-dashboard .id-kpi-tile::before { background: rgba(255, 255, 255, 0.30); }
 .id-dashboard .id-kpi-tile__label  { color: rgba(255, 255, 255, 0.45); }
 .id-dashboard .id-kpi-tile__value  { color: #F9F9F9; }
 
@@ -1372,7 +1371,7 @@
 /* Table header */
 .id-dashboard .id-table th {
   background: rgba(0, 0, 0, 0.65);
-  border-bottom-color: #AEF33E;
+  border-bottom-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Table rows */
@@ -1380,15 +1379,15 @@
   color: #F9F9F9;
   border-bottom-color: rgba(255, 255, 255, 0.07);
 }
-.id-dashboard .id-table__row:hover td { background: rgba(174, 243, 62, 0.04); }
-.id-dashboard .id-table__client      { color: #AEF33E; }
+.id-dashboard .id-table__row:hover td { background: rgba(255, 255, 255, 0.04); }
+.id-dashboard .id-table__client      { color: rgba(255, 255, 255, 0.92); }
 .id-dashboard .id-table__name        { color: #F9F9F9; }
 .id-dashboard .id-table__date        { color: rgba(255, 255, 255, 0.50); }
-.id-dashboard .id-table__incremental { color: #AEF33E; }
+.id-dashboard .id-table__incremental { color: rgba(255, 255, 255, 0.92); }
 .id-dashboard .id-table__kpi-num     { color: #F9F9F9; }
 .id-dashboard .id-table__kpi-chip {
-  background: rgba(174, 243, 62, 0.12);
-  color: #AEF33E;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.80);
 }
 .id-dashboard .id-table__empty { color: rgba(255, 255, 255, 0.45); }
 
@@ -1400,11 +1399,11 @@
   color: #F9F9F9;
 }
 .id-dashboard .id-pagination__btn:hover:not(:disabled) {
-  background: rgba(174, 243, 62, 0.08);
-  border-color: #AEF33E;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.40);
 }
 .id-dashboard .id-pagination__btn--active {
-  background: #AEF33E;
+  background: rgba(255, 255, 255, 0.90);
   color: #080808;
-  border-color: #AEF33E;
+  border-color: rgba(255, 255, 255, 0.90);
 }

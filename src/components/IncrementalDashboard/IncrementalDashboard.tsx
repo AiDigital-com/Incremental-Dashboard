@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { GlobeBackground } from '../GlobeBackground'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,6 +110,12 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 
 export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
+  const [zoomContinent, setZoomContinent] = useState<number | null>(null)
+
+  useEffect(() => {
+    const t = setTimeout(() => setZoomContinent(0), 80)
+    return () => clearTimeout(t)
+  }, [])
 
   // Only show campaigns at or above goal
   const activeCampaigns = campaigns.filter(c => c.performanceMultiplier >= 1.0)
@@ -135,6 +142,8 @@ export function IncrementalDashboard({ planName, campaigns, onBack }: Props) {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="id-dashboard">
+
+      <GlobeBackground zoomContinent={zoomContinent} />
 
       {/* Header */}
       <div className="id-dashboard__header">
