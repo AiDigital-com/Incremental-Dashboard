@@ -593,12 +593,7 @@
 }
 
 .id-home {
-  /* Aurora mesh gradient — dark left → deep purple → blue → teal right */
-  background:
-    radial-gradient(ellipse 75% 85% at 92% 48%, rgba(8, 168, 200, 0.72) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 80% at 62% 42%, rgba(16, 56, 180, 0.78) 0%, transparent 52%),
-    radial-gradient(ellipse 68% 78% at 32% 52%, rgba(76, 10, 156, 0.82) 0%, transparent 56%),
-    #050510;
+  background: #030810;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -611,6 +606,23 @@
   margin: -1px;
   position: relative;
   overflow: hidden;
+}
+
+/* ── Globe background ────────────────────────────────────────────────────── */
+
+.globe-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #030810;
+}
+
+.globe-bg__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 46%, transparent 30%, rgba(3, 8, 16, 0.6) 100%);
+  pointer-events: none;
 }
 
 /* ── Diagonal watermark ──────────────────────────────────────────────────── */
@@ -697,6 +709,8 @@
   gap: 20px;
   animation: home-carousel-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   margin-top: 36px;
+  position: relative;
+  z-index: 2;
 }
 
 /* ── Cards stage ─────────────────────────────────────────────────────────── */

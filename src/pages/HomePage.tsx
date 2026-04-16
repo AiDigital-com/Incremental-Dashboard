@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import type { AppView } from '../App'
+import { GlobeBackground } from '../components/GlobeBackground'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -45,9 +46,6 @@ const VIEWS: {
   },
 ]
 
-// Watermark text repeated enough times to fill 2× any viewport width seamlessly
-const WATERMARK_REPS = Array.from({ length: 20 }, (_, i) => i)
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getPos(idx: number, active: number, total: number): 'center' | 'left' | 'right' {
@@ -81,23 +79,8 @@ export function HomePage({ onViewSelect, activeIdx, onIdxChange }: Props) {
   return (
     <div className="id-home">
 
-      {/* ── Diagonal watermark ──────────────────────────────────────────── */}
-      <div className="id-home__watermark" aria-hidden="true">
-        <div className="id-home__watermark-row">
-          <div className="id-home__watermark-track">
-            {WATERMARK_REPS.map(i => (
-              <span key={i} className="id-home__watermark-text">AI LABS</span>
-            ))}
-          </div>
-        </div>
-        <div className="id-home__watermark-row id-home__watermark-row--2">
-          <div className="id-home__watermark-track id-home__watermark-track--2">
-            {WATERMARK_REPS.map(i => (
-              <span key={i} className="id-home__watermark-text">AI LABS</span>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* ── Globe background ─────────────────────────────────────────────── */}
+      <GlobeBackground />
 
       <div className="id-home__header">
         <h1 className="id-home__title">Incremental Suite</h1>

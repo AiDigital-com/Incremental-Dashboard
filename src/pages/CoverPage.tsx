@@ -24,13 +24,13 @@ interface LetterDef {
   col: number
   row: number
   delay: number
-  type: 'ailabs' | 'incremental' | 'suite' | 'shared'
+  type: 'ailabs' | 'incremental' | 'suite' | 'shared-i' | 'shared-e'
 }
 
 const LETTERS: LetterDef[] = [
   // ── AI LABS — reveal left to right at row 1 ──────────────────────────────
   { char: 'A', col: 4,  row: 1,  delay: 0,    type: 'ailabs' },
-  { char: 'I', col: 5,  row: 1,  delay: 130,  type: 'shared' },  // ← shared with INCREMENTAL
+  { char: 'I', col: 5,  row: 1,  delay: 130,  type: 'shared-i' },  // ← shared with INCREMENTAL
   // col 6 = space — intentionally empty
   { char: 'L', col: 7,  row: 1,  delay: 320,  type: 'ailabs' },
   { char: 'A', col: 8,  row: 1,  delay: 450,  type: 'ailabs' },
@@ -41,7 +41,7 @@ const LETTERS: LetterDef[] = [
   { char: 'N', col: 5,  row: 2,  delay: 930,  type: 'incremental' },
   { char: 'C', col: 5,  row: 3,  delay: 1040, type: 'incremental' },
   { char: 'R', col: 5,  row: 4,  delay: 1150, type: 'incremental' },
-  { char: 'E', col: 5,  row: 5,  delay: 1260, type: 'shared' },          // ← shared with SUITE
+  { char: 'E', col: 5,  row: 5,  delay: 1260, type: 'shared-e' },          // ← shared with SUITE
   { char: 'M', col: 5,  row: 6,  delay: 1370, type: 'incremental' },
   { char: 'E', col: 5,  row: 7,  delay: 1480, type: 'incremental' },
   { char: 'N', col: 5,  row: 8,  delay: 1590, type: 'incremental' },

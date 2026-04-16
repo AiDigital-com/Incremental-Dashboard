@@ -258,9 +258,13 @@ a { color: inherit; text-decoration: none; }
   color: #ffffff;
   font-weight: 600;
 }
-/* Shared letters (intersection points) — accent color */
-.id-cover__letter--shared {
-  color: var(--accent);
+/* Shared letters (intersection points) — brand secondary colors */
+.id-cover__letter--shared-i {
+  color: #8EE7F1;  /* Bright Aqua */
+  font-weight: 600;
+}
+.id-cover__letter--shared-e {
+  color: #8263FF;  /* Violet Pulse */
   font-weight: 600;
 }
 
