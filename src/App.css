@@ -1192,10 +1192,21 @@
 .id-exec__legend {
   flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  column-gap: 28px;
+  row-gap: 10px;
   padding: 0 0 4px;
+}
+
+@media (max-width: 1500px) {
+  .id-exec__legend {
+    column-gap: 16px;
+  }
+  .id-exec__legend-label {
+    font-size: 1.05rem;
+  }
 }
 
 .id-exec__legend-item {
