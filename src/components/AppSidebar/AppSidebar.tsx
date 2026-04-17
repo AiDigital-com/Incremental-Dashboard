@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 // ── Region / Growth Director data (replace with API response when ready) ──────
 
-export const REGIONS = ['Northeast', 'Southeast', 'Midwest', 'Central', 'West', 'Political', 'Regional Majors', 'Retail Solutions'] as const
+export const REGIONS = ['Northeast', 'Southeast', 'Midwest', 'Central', 'West', 'Political', 'Regional Majors', 'Retail Solutions', 'House'] as const
 export type Region = typeof REGIONS[number]
 
 export const REGION_GDS: Record<Region, string[]> = {
@@ -14,6 +14,7 @@ export const REGION_GDS: Record<Region, string[]> = {
   Political:          ['Michael Bell', 'Nicole Meade', 'Jonathan Phelps', 'Taylor Fritsch'],
   'Regional Majors':  ['Thomas Buell', 'Greg Kupfner', 'Andrew Davis'],
   'Retail Solutions': ['Andy Kemp', 'Daniel Friscia', 'Geoff Halsema'],
+  House:              ['House'],
 }
 
 // ── Props ──────────────────────────────────────────────────────────────────────

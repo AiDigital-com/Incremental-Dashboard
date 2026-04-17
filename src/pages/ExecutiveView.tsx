@@ -19,16 +19,25 @@ const REGION_COLORS: Record<string, string> = {
   Political:          '#FF7CF5',  // Hot Pink
   'Regional Majors':  '#F6AD55',  // Amber
   'Retail Solutions': '#AEF33E',  // Neon Lime
+  House:              '#FF9F43',  // Warm Orange
 }
 
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
-  Northeast: [-73,   41.5],
-  Southeast: [-87,   32.5],
-  Midwest:   [-95,   43  ],
-  Central:   [-99,   30.7],
-  West:      [-115,  40.6],
+  Northeast:          [-72,   42  ],
+  Southeast:          [-87,   32.5],
+  Midwest:            [-95,   43  ],
+  Central:            [-99,   30.7],
+  West:               [-115,  40.6],
+  House:              [-76.5, 43.5],
 }
+
+// Special inset/small-area markers: [longitude, latitude, label, color-key]
+const INSET_MARKERS: { coords: [number, number]; label: string; region: string; isDC?: boolean }[] = [
+  { coords: [-77.03, 38.91], label: 'D.C.',             region: 'Political',        isDC: true },
+  { coords: [-157,   20.5 ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
+  { coords: [-153,   64   ], label: 'RETAIL SOLUTIONS', region: 'Retail Solutions'             },
+]
 
 // Total incremental — computed from real campaign data
 const TOTAL_INCREMENTAL_NUM = CAMPAIGNS.reduce((sum, c) => sum + c.incrementalDollars, 0)
@@ -87,11 +96,15 @@ const REGION_TOP_CLIENTS = buildRegionTopClients()
 
 // CSS transform zoom params per region (geographic regions only)
 const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
-  Northeast: { scale: 3.2, origin: '85% 22%' },
-  Southeast: { scale: 2.8, origin: '72% 64%' },
-  Midwest:   { scale: 2.4, origin: '52% 28%' },
-  Central:   { scale: 2.7, origin: '41% 62%' },
-  West:      { scale: 2.4, origin: '13% 38%' },
+  Northeast:          { scale: 3.2, origin: '85% 22%' },
+  Southeast:          { scale: 2.8, origin: '72% 64%' },
+  Midwest:            { scale: 2.4, origin: '52% 28%' },
+  Central:            { scale: 2.7, origin: '41% 62%' },
+  West:               { scale: 2.4, origin: '13% 38%' },
+  House:              { scale: 3.5, origin: '83% 18%' },
+  Political:          { scale: 8.0, origin: '80% 55%' },
+  'Regional Majors':  { scale: 5.0, origin: '24% 86%' },
+  'Retail Solutions': { scale: 3.5, origin: '10% 78%' },
 }
 
 // Monthly incremental data — Jan–Apr 2026 YTD ($K)
@@ -104,6 +117,7 @@ const REGION_MONTHLY_DATA: Record<string, number[]> = {
   Political:          [ 105,  110,  130,  133],
   'Regional Majors':  [ 100,  112,  125,  125],
   'Retail Solutions': [ 165,  180,  210,  213],
+  House:              [3200, 3600, 4100, 4400],
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr']
@@ -182,11 +196,19 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
 
 // All 50 states assigned to a region
 const STATE_REGIONS: Record<string, string> = {
-  // Northeast (11)
+  // Northeast (10) — New York reassigned to House
   Connecticut: 'Northeast', Delaware: 'Northeast', Maine: 'Northeast',
   Maryland: 'Northeast', Massachusetts: 'Northeast', 'New Hampshire': 'Northeast',
-  'New Jersey': 'Northeast', 'New York': 'Northeast', Pennsylvania: 'Northeast',
+  'New Jersey': 'Northeast', Pennsylvania: 'Northeast',
   'Rhode Island': 'Northeast', Vermont: 'Northeast',
+
+  // House (1)
+  'New York': 'House',
+
+  // D.C. / Hawaii / Alaska
+  'District of Columbia': 'Political',
+  Hawaii: 'Regional Majors',
+  Alaska: 'Retail Solutions',
 
   // Southeast (12)
   Alabama: 'Southeast', Arkansas: 'Southeast', Florida: 'Southeast',
@@ -426,7 +448,6 @@ export function ExecutiveView({ onBack }: Props) {
               {/* Region name labels — always at full hover brightness */}
               {Object.entries(REGION_CENTROIDS).map(([region, coords]) => {
                 const color = REGION_COLORS[region]
-                const isHovered = hoveredRegion === region
                 return (
                   <Marker key={region} coordinates={coords}>
                     <text
@@ -444,6 +465,47 @@ export function ExecutiveView({ onBack }: Props) {
                       }}
                     >
                       {region.toUpperCase()}
+                    </text>
+                  </Marker>
+                )
+              })}
+
+              {/* Inset / small-area region markers (D.C., Hawaii, Alaska) */}
+              {INSET_MARKERS.map(({ coords, label, region, isDC }) => {
+                const color = REGION_COLORS[region]
+                const isHovered = hoveredRegion === region
+                return (
+                  <Marker
+                    key={region}
+                    coordinates={coords}
+                    onClick={() => handleRegionClick(region)}
+                    onMouseEnter={() => setHoveredRegion(region)}
+                    onMouseLeave={() => setHoveredRegion(null)}
+                  >
+                    {isDC && (
+                      <circle
+                        r={isHovered ? 9 : 7}
+                        fill={isHovered ? color : `${color}cc`}
+                        stroke={color}
+                        strokeWidth={1.5}
+                        style={{ cursor: 'pointer', transition: 'r 0.15s' }}
+                      />
+                    )}
+                    <text
+                      textAnchor="middle"
+                      dy={isDC ? -14 : -4}
+                      style={{
+                        fontFamily: "'Barlow Semi Condensed', sans-serif",
+                        fontWeight: 700,
+                        fontSize: isDC ? '18px' : '22px',
+                        fill: color,
+                        letterSpacing: '0.10em',
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {label}
                     </text>
                   </Marker>
                 )
