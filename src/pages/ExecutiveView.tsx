@@ -30,20 +30,26 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
   West:      [-115,  40.6],
 }
 
-// Total incremental available across all regions
-const TOTAL_INCREMENTAL = '$32.8M'
+// Total incremental — computed from real campaign data
+const TOTAL_INCREMENTAL_NUM = CAMPAIGNS.reduce((sum, c) => sum + c.incrementalDollars, 0)
+const TOTAL_INCREMENTAL = TOTAL_INCREMENTAL_NUM >= 1_000_000
+  ? `$${(TOTAL_INCREMENTAL_NUM / 1_000_000).toFixed(1)}M`
+  : `$${Math.round(TOTAL_INCREMENTAL_NUM / 1000)}K`
 
-// Incremental available by region (real data)
-const REGION_INCREMENTAL: Record<string, string> = {
-  Northeast:          '$2.0M',
-  Southeast:          '$7.5M',
-  Midwest:            '$7.7M',
-  Central:            '$8.3M',
-  West:               '$5.6M',
-  Political:          '$478K',
-  'Regional Majors':  '$462K',
-  'Retail Solutions': '$768K',
+// Incremental available by region — computed from real campaign data
+function buildRegionIncrementalTotals(): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const [region, sellers] of Object.entries(REGION_GDS)) {
+    const total = CAMPAIGNS
+      .filter(c => sellers.includes(c.seller ?? ''))
+      .reduce((sum, c) => sum + c.incrementalDollars, 0)
+    result[region] = total >= 1_000_000
+      ? `$${(total / 1_000_000).toFixed(1)}M`
+      : `$${Math.round(total / 1000)}K`
+  }
+  return result
 }
+const REGION_INCREMENTAL = buildRegionIncrementalTotals()
 
 // Top clients per region — derived from real campaign data
 function buildRegionTopClients(): Record<string, { gd: string; client: string; incremental: string }[]> {
@@ -102,66 +108,23 @@ const REGION_MONTHLY_DATA: Record<string, number[]> = {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr']
 
-// YTD incremental by seller ($K) — real seller names
-const REGION_GD_YTD: Record<string, { name: string; ytdK: number }[]> = {
-  Northeast: [
-    { name: 'Danielle Whiting', ytdK: 425 },
-    { name: 'Steven Miller',    ytdK: 390 },
-    { name: 'Grayson Vickers',  ytdK: 415 },
-    { name: 'Amy Murray',       ytdK: 380 },
-    { name: 'Cailin Murphy',    ytdK: 390 },
-  ],
-  Southeast: [
-    { name: 'Scott Welton',    ytdK: 1400 },
-    { name: 'Larry Tucker',    ytdK: 1100 },
-    { name: 'Jodie Dover',     ytdK: 1250 },
-    { name: 'Shane Miller',    ytdK: 1200 },
-    { name: 'Kelly Calderone', ytdK: 1300 },
-    { name: 'Ramon Brayan',    ytdK: 1250 },
-  ],
-  Midwest: [
-    { name: 'Sophie Denault',  ytdK: 1600 },
-    { name: 'Jill Puerto',     ytdK: 1500 },
-    { name: "Amy O'Hara",      ytdK: 1650 },
-    { name: 'Grace Dominique', ytdK: 1500 },
-    { name: 'Katie Johnson',   ytdK: 1450 },
-  ],
-  Central: [
-    { name: 'Stephanie Jurney', ytdK: 1100 },
-    { name: 'Ross Peters',      ytdK:  950 },
-    { name: 'Jenny DeBono',     ytdK: 1050 },
-    { name: 'Scott Wright',     ytdK: 1000 },
-    { name: 'Matt Musgrave',    ytdK: 1100 },
-    { name: 'Dayna Schram',     ytdK: 1050 },
-    { name: 'Gargi Bhakta',     ytdK: 1000 },
-    { name: 'Lane Johnson',     ytdK: 1050 },
-  ],
-  West: [
-    { name: 'Tessa Walsh',      ytdK: 850 },
-    { name: 'Josh Darden',      ytdK: 780 },
-    { name: 'Joshua Gallo',     ytdK: 800 },
-    { name: 'Jacob Kearney',    ytdK: 820 },
-    { name: 'Jeff DePew',       ytdK: 790 },
-    { name: 'Kyle McBride',     ytdK: 780 },
-    { name: 'Adriana Richards', ytdK: 780 },
-  ],
-  Political: [
-    { name: 'Michael Bell',    ytdK: 125 },
-    { name: 'Nicole Meade',    ytdK: 115 },
-    { name: 'Jonathan Phelps', ytdK: 125 },
-    { name: 'Taylor Fritsch',  ytdK: 113 },
-  ],
-  'Regional Majors': [
-    { name: 'Thomas Buell',  ytdK: 165 },
-    { name: 'Greg Kupfner',  ytdK: 148 },
-    { name: 'Andrew Davis',  ytdK: 149 },
-  ],
-  'Retail Solutions': [
-    { name: 'Andy Kemp',      ytdK: 275 },
-    { name: 'Daniel Friscia', ytdK: 248 },
-    { name: 'Geoff Halsema',  ytdK: 245 },
-  ],
+// YTD incremental by seller — computed from real campaign data
+function buildRegionGdYtd(): Record<string, { name: string; ytdK: number }[]> {
+  const result: Record<string, { name: string; ytdK: number }[]> = {}
+  for (const [region, sellers] of Object.entries(REGION_GDS)) {
+    const sellerTotals = new Map<string, number>()
+    for (const c of CAMPAIGNS) {
+      if (sellers.includes(c.seller ?? '')) {
+        sellerTotals.set(c.seller!, (sellerTotals.get(c.seller!) ?? 0) + c.incrementalDollars)
+      }
+    }
+    result[region] = [...sellerTotals.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, total]) => ({ name, ytdK: Math.round(total / 1000) }))
+  }
+  return result
 }
+const REGION_GD_YTD = buildRegionGdYtd()
 
 // ── Inline bar chart component ────────────────────────────────────────────────
 

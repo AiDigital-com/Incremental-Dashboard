@@ -132,6 +132,7 @@ const RAW: Raw[] = [
   { clientName:'Nazareth University',                   name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:40000   },
   { clientName:'The Martin Group',                      name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:246500  },
   { clientName:'Wahl Media',                            name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:43000   },
+  { clientName:'Gelia-Media, Inc',                      name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:32000   },
 
   // ── Steven Miller — Northeast ─────────────────────────────────────────────
   { clientName:'Heartbeat',                             name:'Display',        seller:'Steven Miller',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:150000  },
@@ -241,6 +242,7 @@ const RAW: Raw[] = [
   { clientName:'Ten Acre Marketing',                    name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:158702  },
   { clientName:'Walz Tetrick',                          name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:52500   },
   { clientName:'Wyffels',                               name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:125591  },
+  { clientName:"Spawn Ideas, Inc.",                     name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:113206  },
 
   // ── Jill Puerto — Midwest ─────────────────────────────────────────────────
   { clientName:'BlueSnap',                              name:'CTV',            seller:'Jill Puerto',      startDate:'4/1/2026',   endDate:'6/30/2026',  budget:8000    },
@@ -374,6 +376,7 @@ const RAW: Raw[] = [
   { clientName:'REQ',                                   name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:5000    },
   { clientName:'True Media Canada',                     name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:67182   },
   { clientName:'UpBrand',                               name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:613350  },
+  { clientName:'Lunar Solar Group, LLC',                name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:180000  },
 
   // ── Josh Darden — West ────────────────────────────────────────────────────
   { clientName:'Hippo Media',                           name:'Display',        seller:'Josh Darden',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:108000  },
