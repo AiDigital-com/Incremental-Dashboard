@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import ReactDOM from 'react-dom/client'
-import { ClerkProvider } from '@clerk/react'
+import { ClerkProvider, useAuth } from '@clerk/react'
 import { applyTheme, resolveTheme } from '@AiDigital-com/design-system'
 import '@AiDigital-com/design-system/style.css'
 import App from './App'
@@ -12,26 +12,41 @@ const isHelpPage = window.location.pathname === '/help'
 
 applyTheme(resolveTheme())
 
-// ── Root: shows cover page once per session, then the app ────────────────────
-function Root() {
-  const [showCover, setShowCover] = useState(
+// Holds the CoverPage until both its animation is done AND Clerk has loaded,
+// so the "AI Labs — Incremental Dashboard" loading screen is never visible.
+function CoverGate() {
+  const { isLoaded } = useAuth()
+  const [animDone, setAnimDone] = useState(false)
+  const [show, setShow] = useState(
     () => !sessionStorage.getItem('id-cover-shown')
   )
 
+  const tryDismiss = useCallback((clerkReady: boolean, done: boolean) => {
+    if (clerkReady && done) {
+      sessionStorage.setItem('id-cover-shown', '1')
+      setShow(false)
+    }
+  }, [])
+
+  useEffect(() => { tryDismiss(isLoaded, animDone) }, [isLoaded, animDone, tryDismiss])
+
+  if (!show) return null
+
   return (
-    <>
-      <ClerkProvider publishableKey={publishableKey}>
-        <App />
-      </ClerkProvider>
-      {showCover && (
-        <CoverPage
-          onComplete={() => {
-            sessionStorage.setItem('id-cover-shown', '1')
-            setShowCover(false)
-          }}
-        />
-      )}
-    </>
+    <CoverPage onComplete={() => {
+      setAnimDone(true)
+      tryDismiss(isLoaded, true)
+    }} />
+  )
+}
+
+// ── Root ──────────────────────────────────────────────────────────────────────
+function Root() {
+  return (
+    <ClerkProvider publishableKey={publishableKey}>
+      <App />
+      <CoverGate />
+    </ClerkProvider>
   )
 }
 
