@@ -24,18 +24,18 @@ const REGION_COLORS: Record<string, string> = {
 
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
-  Northeast:          [-72,   42  ],
+  Northeast:          [-67.5, 47.5],
   Southeast:          [-87,   32.5],
   Midwest:            [-95,   43  ],
   Central:            [-99,   30.7],
   West:               [-115,  40.6],
-  House:              [-76.5, 43.5],
+  House:              [-78,   42.5],
 }
 
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
 const INSET_MARKERS: { coords: [number, number]; label: string; region: string; isDC?: boolean }[] = [
-  { coords: [-77.03, 38.91], label: 'D.C.',             region: 'Political',        isDC: true },
-  { coords: [-157,   20.5 ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
+  { coords: [-77.03, 38.91], label: 'POLITICAL',         region: 'Political',        isDC: true },
+  { coords: [-157,   17   ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
   { coords: [-153,   64   ], label: 'RETAIL SOLUTIONS', region: 'Retail Solutions'             },
 ]
 
@@ -497,7 +497,7 @@ export function ExecutiveView({ onBack }: Props) {
                       style={{
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
-                        fontSize: isDC ? '18px' : '22px',
+                        fontSize: isDC ? '33px' : '22px',
                         fill: color,
                         letterSpacing: '0.10em',
                         pointerEvents: 'none',
