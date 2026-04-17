@@ -2,16 +2,18 @@ import { useState } from 'react'
 
 // ── Region / Growth Director data (replace with API response when ready) ──────
 
-export const REGIONS = ['House', 'Northeast', 'Southeast', 'Midwest', 'Central', 'West'] as const
+export const REGIONS = ['Northeast', 'Southeast', 'Midwest', 'Central', 'West', 'Political', 'Regional Majors', 'Retail Solutions'] as const
 export type Region = typeof REGIONS[number]
 
 export const REGION_GDS: Record<Region, string[]> = {
-  House:     ['Marcus Webb', 'Priya Nair', 'Derek Fontaine', 'Chloe Osei', 'Jared Alcott'],
-  Northeast: ['Simone Liang', 'Patrick Voss', 'Amara Diallo', 'Tyler Behn', 'Lucia Ferreira'],
-  Southeast: ['Brent Caldwell', 'Nadia Torres', 'Evan Marsh', 'Kayla Nguyen', 'Darius King'],
-  Midwest:   ['Fiona Chen', 'Marcus Holloway', 'Sophie Wick', 'Andre Beaumont', 'Harper Raines'],
-  Central:   ['Jess Okafor', 'Cameron Vega', 'Tara Stiles', 'Noah Brennan', 'Mia Patel'],
-  West:      ['Owen Larkin', 'Yara Solano', 'Blake Fischer', 'Naomi Hart', 'Remy Castillo'],
+  Northeast:          ['Danielle Whiting', 'Steven Miller', 'Grayson Vickers', 'Amy Murray', 'Cailin Murphy'],
+  Southeast:          ['Scott Welton', 'Larry Tucker', 'Jodie Dover', 'Shane Miller', 'Kelly Calderone', 'Ramon Brayan'],
+  Midwest:            ['Sophie Denault', 'Jill Puerto', "Amy O'Hara", 'Grace Dominique', 'Katie Johnson'],
+  Central:            ['Stephanie Jurney', 'Ross Peters', 'Jenny DeBono', 'Scott Wright', 'Matt Musgrave', 'Dayna Schram', 'Gargi Bhakta', 'Lane Johnson'],
+  West:               ['Tessa Walsh', 'Josh Darden', 'Joshua Gallo', 'Jacob Kearney', 'Jeff DePew', 'Kyle McBride', 'Adriana Richards'],
+  Political:          ['Michael Bell', 'Nicole Meade', 'Jonathan Phelps', 'Taylor Fritsch'],
+  'Regional Majors':  ['Thomas Buell', 'Greg Kupfner', 'Andrew Davis'],
+  'Retail Solutions': ['Andy Kemp', 'Daniel Friscia', 'Geoff Halsema'],
 }
 
 // ── Props ──────────────────────────────────────────────────────────────────────

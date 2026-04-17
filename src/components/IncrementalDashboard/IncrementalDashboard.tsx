@@ -9,6 +9,7 @@ export interface Campaign {
   id: string
   name: string
   clientName: string
+  seller?: string                 // Growth Director / seller name
   startDate: string               // 'YYYY-MM-DD'
   endDate: string                 // 'YYYY-MM-DD'
   budget: number                  // current budget in dollars

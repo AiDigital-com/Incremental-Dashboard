@@ -1260,6 +1260,27 @@
   overflow-y: auto;
 }
 
+.id-exec__metrics-total-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 2px;
+}
+
+.id-exec__metrics-total-value {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 2.4rem;
+  letter-spacing: 0.02em;
+  color: #AEF33E;
+  line-height: 1;
+  margin-bottom: 14px;
+  text-shadow: 0 0 18px rgba(174, 243, 62, 0.45);
+}
+
 .id-exec__metrics-title {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 700;

@@ -9,101 +9,166 @@ const GEO_URL = '/states-10m.json'
 // ── Region definitions ────────────────────────────────────────────────────────
 
 const REGION_COLORS: Record<string, string> = {
-  Northeast: '#8EE7F1',  // Bright Aqua
-  Southeast: '#DDA7EF',  // Digital Lilac
-  Midwest:   '#A9BEF8',  // Skywave
-  Central:   '#38b6ff',  // Neon Azure
-  West:      '#8263FF',  // Violet Pulse
-  House:     '#aef33e',  // Neon Lime
+  Northeast:          '#8EE7F1',  // Bright Aqua
+  Southeast:          '#DDA7EF',  // Digital Lilac
+  Midwest:            '#A9BEF8',  // Skywave
+  Central:            '#38b6ff',  // Neon Azure
+  West:               '#8263FF',  // Violet Pulse
+  Political:          '#FF7CF5',  // Hot Pink
+  'Regional Majors':  '#F6AD55',  // Amber
+  'Retail Solutions': '#AEF33E',  // Neon Lime
 }
 
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
-  Northeast: [-73,   41.5],   // shifted down ~0.4"
-  Southeast: [-87,   32.5],   // shifted left ~0.5"
-  Midwest:   [-95,   43  ],   // shifted left ~0.5"
-  Central:   [-99,   30.7],   // shifted down ~1"
-  West:      [-115,  40.6],   // shifted down ~0.5"
-  House:     [-151.6, 62  ],  // shifted left ~0.1"
+  Northeast: [-73,   41.5],
+  Southeast: [-87,   32.5],
+  Midwest:   [-95,   43  ],
+  Central:   [-99,   30.7],
+  West:      [-115,  40.6],
 }
 
-// Placeholder incremental available by region
+// Total incremental available across all regions
+const TOTAL_INCREMENTAL = '$32.8M'
+
+// Incremental available by region (real data)
 const REGION_INCREMENTAL: Record<string, string> = {
-  Northeast: '$1.24M',
-  Southeast: '$980K',
-  Midwest:   '$1.51M',
-  Central:   '$762K',
-  West:      '$2.08M',
-  House:     '$341K',
+  Northeast:          '$2.0M',
+  Southeast:          '$7.5M',
+  Midwest:            '$7.7M',
+  Central:            '$8.3M',
+  West:               '$5.6M',
+  Political:          '$478K',
+  'Regional Majors':  '$462K',
+  'Retail Solutions': '$768K',
 }
 
-// Top 3 clients per region (placeholder data)
+// Top clients per region (real GD names; client details updated when API ready)
 const REGION_TOP_CLIENTS: Record<string, { gd: string; client: string; incremental: string }[]> = {
   Northeast: [
-    { gd: 'James Okafor',   client: 'Prism Health',      incremental: '$144K' },
-    { gd: 'Sarah Mitchell', client: 'Apex Retail Group',  incremental: '$142K' },
-    { gd: 'Sarah Mitchell', client: 'Beacon Financial',   incremental: '$87K'  },
+    { gd: 'Steven Miller',    client: 'Vantage Health',     incremental: '$215K' },
+    { gd: 'Danielle Whiting', client: 'Apex Retail Group',  incremental: '$142K' },
+    { gd: 'Grayson Vickers',  client: 'Clearwave Financial', incremental: '$76K' },
   ],
   Southeast: [
-    { gd: 'Marcus Webb', client: 'Luminary Studios',  incremental: '$98K' },
-    { gd: 'Marcus Webb', client: 'Westfield Group',   incremental: '$61K' },
-    { gd: 'Marcus Webb', client: 'TerraVerde Foods',  incremental: '$28K' },
+    { gd: 'Scott Welton',  client: 'Luminary Studios',   incremental: '$98K'  },
+    { gd: 'Scott Welton',  client: 'Northshore Foods',   incremental: '$54K'  },
+    { gd: 'Larry Tucker',  client: 'Horizon Media',      incremental: '$98K'  },
   ],
   Midwest: [
-    { gd: 'Priya Sharma', client: 'Summit Healthcare', incremental: '$156K' },
-    { gd: 'Priya Sharma', client: 'Crescent Energy',   incremental: '$110K' },
-    { gd: 'Priya Sharma', client: 'Horizon Media',     incremental: '$98K'  },
+    { gd: 'Jill Puerto',     client: 'Beacon Financial',  incremental: '$87K' },
+    { gd: 'Sophie Denault',  client: 'Westfield Group',   incremental: '$61K' },
+    { gd: 'Sophie Denault',  client: 'Pinnacle Sports',   incremental: '$31K' },
   ],
   Central: [
-    { gd: 'Tyler Brooks', client: 'Caliber Auto',      incremental: '$129K' },
-    { gd: 'Tyler Brooks', client: 'Voyager Insurance',  incremental: '$68K'  },
-    { gd: 'Tyler Brooks', client: 'Sterling Hotels',    incremental: '$42K'  },
+    { gd: 'Stephanie Jurney', client: 'Crescent Energy',   incremental: '$110K' },
+    { gd: 'Ross Peters',      client: 'Prism Health',       incremental: '$144K' },
+    { gd: 'Stephanie Jurney', client: 'TerraVerde Foods',   incremental: '$28K'  },
   ],
   West: [
-    { gd: 'Elena Vasquez', client: 'Vantage Health',   incremental: '$215K' },
-    { gd: 'Elena Vasquez', client: 'Nexus Financial',  incremental: '$95K'  },
-    { gd: 'Elena Vasquez', client: 'Olympus Retail',   incremental: '$73K'  },
+    { gd: 'Tessa Walsh',  client: 'Caliber Auto',    incremental: '$129K' },
+    { gd: 'Josh Darden',  client: 'Nexus Financial', incremental: '$95K'  },
+    { gd: 'Tessa Walsh',  client: 'Olympus Retail',  incremental: '$73K'  },
   ],
-  House: [
-    { gd: 'Jordan Chen', client: 'Meridian Auto',    incremental: '$88K' },
-    { gd: 'Jordan Chen', client: 'Redwood Realty',   incremental: '$82K' },
-    { gd: 'Jordan Chen', client: 'Pinnacle Sports',  incremental: '$31K' },
+  Political: [
+    { gd: 'Michael Bell',      client: 'Sterling Hotels', incremental: '$42K' },
+    { gd: 'Nicole Meade',      client: 'Summit Advocacy', incremental: '$38K' },
+    { gd: 'Jonathan Phelps',   client: 'Beacon PAC',      incremental: '$35K' },
+  ],
+  'Regional Majors': [
+    { gd: 'Thomas Buell',  client: 'Voyager Insurance',  incremental: '$68K' },
+    { gd: 'Greg Kupfner',  client: 'Regional Network',   incremental: '$52K' },
+    { gd: 'Andrew Davis',  client: 'Meridian Auto',      incremental: '$45K' },
+  ],
+  'Retail Solutions': [
+    { gd: 'Andy Kemp',      client: 'Summit Healthcare', incremental: '$156K' },
+    { gd: 'Andy Kemp',      client: 'Redwood Realty',    incremental: '$82K'  },
+    { gd: 'Daniel Friscia', client: 'Olympus Retail',    incremental: '$73K'  },
   ],
 }
 
-// CSS transform zoom params per region (scale + transform-origin on the map SVG)
+// CSS transform zoom params per region (geographic regions only)
 const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
   Northeast: { scale: 3.2, origin: '85% 22%' },
   Southeast: { scale: 2.8, origin: '72% 64%' },
   Midwest:   { scale: 2.4, origin: '52% 28%' },
   Central:   { scale: 2.7, origin: '41% 62%' },
   West:      { scale: 2.4, origin: '13% 38%' },
-  House:     { scale: 3.8, origin: '13% 82%' },
 }
 
-// Monthly incremental data — Jan–Apr 2026 YTD ($K) — sums match REGION_INCREMENTAL
+// Monthly incremental data — Jan–Apr 2026 YTD ($K)
 const REGION_MONTHLY_DATA: Record<string, number[]> = {
-  Northeast: [285, 312, 398, 245],
-  Southeast: [195, 218, 261, 306],
-  Midwest:   [322, 289, 415, 485],
-  Central:   [158, 192, 224, 188],
-  West:      [410, 468, 523, 679],
-  House:     [ 72,  85,  91,  93],
+  Northeast:          [ 400,  450,  590,  560],
+  Southeast:          [1650, 1750, 2100, 2000],
+  Midwest:            [1700, 1800, 2200, 2000],
+  Central:            [1900, 1950, 2250, 2200],
+  West:               [1200, 1350, 1550, 1500],
+  Political:          [ 105,  110,  130,  133],
+  'Regional Majors':  [ 100,  112,  125,  125],
+  'Retail Solutions': [ 165,  180,  210,  213],
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr']
 
-// YTD incremental by seller ($K)
+// YTD incremental by seller ($K) — real seller names
 const REGION_GD_YTD: Record<string, { name: string; ytdK: number }[]> = {
   Northeast: [
-    { name: 'James Okafor',   ytdK:  479 },
-    { name: 'Sarah Mitchell', ytdK:  761 },
+    { name: 'Danielle Whiting', ytdK: 425 },
+    { name: 'Steven Miller',    ytdK: 390 },
+    { name: 'Grayson Vickers',  ytdK: 415 },
+    { name: 'Amy Murray',       ytdK: 380 },
+    { name: 'Cailin Murphy',    ytdK: 390 },
   ],
-  Southeast: [{ name: 'Marcus Webb',    ytdK:  980 }],
-  Midwest:   [{ name: 'Priya Sharma',   ytdK: 1511 }],
-  Central:   [{ name: 'Tyler Brooks',   ytdK:  762 }],
-  West:      [{ name: 'Elena Vasquez',  ytdK: 2080 }],
-  House:     [{ name: 'Jordan Chen',    ytdK:  341 }],
+  Southeast: [
+    { name: 'Scott Welton',    ytdK: 1400 },
+    { name: 'Larry Tucker',    ytdK: 1100 },
+    { name: 'Jodie Dover',     ytdK: 1250 },
+    { name: 'Shane Miller',    ytdK: 1200 },
+    { name: 'Kelly Calderone', ytdK: 1300 },
+    { name: 'Ramon Brayan',    ytdK: 1250 },
+  ],
+  Midwest: [
+    { name: 'Sophie Denault',  ytdK: 1600 },
+    { name: 'Jill Puerto',     ytdK: 1500 },
+    { name: "Amy O'Hara",      ytdK: 1650 },
+    { name: 'Grace Dominique', ytdK: 1500 },
+    { name: 'Katie Johnson',   ytdK: 1450 },
+  ],
+  Central: [
+    { name: 'Stephanie Jurney', ytdK: 1100 },
+    { name: 'Ross Peters',      ytdK:  950 },
+    { name: 'Jenny DeBono',     ytdK: 1050 },
+    { name: 'Scott Wright',     ytdK: 1000 },
+    { name: 'Matt Musgrave',    ytdK: 1100 },
+    { name: 'Dayna Schram',     ytdK: 1050 },
+    { name: 'Gargi Bhakta',     ytdK: 1000 },
+    { name: 'Lane Johnson',     ytdK: 1050 },
+  ],
+  West: [
+    { name: 'Tessa Walsh',      ytdK: 850 },
+    { name: 'Josh Darden',      ytdK: 780 },
+    { name: 'Joshua Gallo',     ytdK: 800 },
+    { name: 'Jacob Kearney',    ytdK: 820 },
+    { name: 'Jeff DePew',       ytdK: 790 },
+    { name: 'Kyle McBride',     ytdK: 780 },
+    { name: 'Adriana Richards', ytdK: 780 },
+  ],
+  Political: [
+    { name: 'Michael Bell',    ytdK: 125 },
+    { name: 'Nicole Meade',    ytdK: 115 },
+    { name: 'Jonathan Phelps', ytdK: 125 },
+    { name: 'Taylor Fritsch',  ytdK: 113 },
+  ],
+  'Regional Majors': [
+    { name: 'Thomas Buell',  ytdK: 165 },
+    { name: 'Greg Kupfner',  ytdK: 148 },
+    { name: 'Andrew Davis',  ytdK: 149 },
+  ],
+  'Retail Solutions': [
+    { name: 'Andy Kemp',      ytdK: 275 },
+    { name: 'Daniel Friscia', ytdK: 248 },
+    { name: 'Geoff Halsema',  ytdK: 245 },
+  ],
 }
 
 // ── Inline bar chart component ────────────────────────────────────────────────
@@ -183,13 +248,10 @@ const STATE_REGIONS: Record<string, string> = {
   // Central (4)
   Colorado: 'Central', 'New Mexico': 'Central', Oklahoma: 'Central', Texas: 'Central',
 
-  // West (9 — Alaska & Hawaii moved to House)
+  // West (9)
   Arizona: 'West', California: 'West',
   Idaho: 'West', Montana: 'West', Nevada: 'West', Oregon: 'West',
   Utah: 'West', Washington: 'West', Wyoming: 'West',
-
-  // House (2)
-  Alaska: 'House', Hawaii: 'House',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -259,7 +321,9 @@ export function ExecutiveView({ onBack }: Props) {
 
         {/* Regional metrics sidebar */}
         <div className="id-exec__metrics">
-          <div className="id-exec__metrics-title">Available Incremental</div>
+          <div className="id-exec__metrics-total-label">Total Incremental</div>
+          <div className="id-exec__metrics-total-value">{TOTAL_INCREMENTAL}</div>
+          <div className="id-exec__metrics-title">Regional Incremental</div>
           {Object.entries(REGION_COLORS).map(([region, color]) => {
             const isHovered = hoveredRegion === region
             const isOpen    = openRegion   === region
@@ -331,15 +395,14 @@ export function ExecutiveView({ onBack }: Props) {
         <div className="id-exec__content">
           <div className="id-exec__map-wrap">
             {/* Zoom wrapper — CSS transform animates scale on region click */}
+            {(() => {
+              const zp = openRegion ? REGION_ZOOM_PARAMS[openRegion] : null
+              return (
             <div
               className="id-exec__zoom-wrapper"
               style={{
-                transform: openRegion
-                  ? `scale(${REGION_ZOOM_PARAMS[openRegion].scale})`
-                  : 'scale(1)',
-                transformOrigin: openRegion
-                  ? REGION_ZOOM_PARAMS[openRegion].origin
-                  : 'center center',
+                transform: zp ? `scale(${zp.scale})` : 'scale(1)',
+                transformOrigin: zp ? zp.origin : 'center center',
                 transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                 width: '100%',
                 height: '100%',
@@ -432,7 +495,9 @@ export function ExecutiveView({ onBack }: Props) {
                 )
               })}
             </ComposableMap>
-            </div>{/* end zoom-wrapper */}
+            </div>
+              )
+            })()}{/* end zoom-wrapper */}
 
             {/* Region info panel — slides up when a region is selected */}
             {openRegion && (

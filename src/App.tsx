@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'
 import type { Campaign } from './components/IncrementalDashboard'
-import { REGION_GDS } from './components/AppSidebar/AppSidebar'
 import { HomePage } from './pages/HomePage'
 import { ExecutiveView } from './pages/ExecutiveView'
 import { ClientView } from './pages/ClientView'
@@ -29,6 +28,7 @@ export type AppView = 'home' | 'executive' | 'gd' | 'client'
 const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   {
     id: '1',
+    seller: 'Danielle Whiting',
     clientName: 'Apex Retail Group',
     name: 'Q2 Paid Search — Brand',
     startDate: '2026-04-01',
@@ -42,6 +42,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '2',
+    seller: 'Danielle Whiting',
     clientName: 'Meridian Auto',
     name: 'Spring Display Prospecting',
     startDate: '2026-03-15',
@@ -50,11 +51,12 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
     kpiLabel: 'ROAS',
     kpiValue: 3.8,
     kpiUnit: 'x',
-    performanceMultiplier: 0.84,
+    performanceMultiplier: 1.12,
     incrementalDollars: 88000,
   },
   {
     id: '3',
+    seller: 'Steven Miller',
     clientName: 'Vantage Health',
     name: 'Connected TV — Awareness',
     startDate: '2026-04-15',
@@ -68,6 +70,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '4',
+    seller: 'Grayson Vickers',
     clientName: 'Clearwave Financial',
     name: 'Paid Social — Retargeting',
     startDate: '2026-01-01',
@@ -81,6 +84,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '5',
+    seller: 'Scott Welton',
     clientName: 'Northshore Foods',
     name: 'Programmatic — In-Market',
     startDate: '2026-04-01',
@@ -89,11 +93,12 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
     kpiLabel: 'CTR',
     kpiValue: 1.8,
     kpiUnit: '%',
-    performanceMultiplier: 0.86,
+    performanceMultiplier: 1.08,
     incrementalDollars: 54000,
   },
   {
     id: '6',
+    seller: 'Scott Welton',
     clientName: 'Luminary Studios',
     name: 'YouTube Pre-Roll',
     startDate: '2026-02-01',
@@ -107,6 +112,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '7',
+    seller: 'Larry Tucker',
     clientName: 'Horizon Media',
     name: 'National Brand Awareness — CTV',
     startDate: '2026-02-01',
@@ -120,6 +126,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '8',
+    seller: 'Sophie Denault',
     clientName: 'Pinnacle Sports',
     name: 'Summer Retargeting Push',
     startDate: '2026-05-01',
@@ -128,11 +135,12 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
     kpiLabel: 'ROAS',
     kpiValue: 2.9,
     kpiUnit: 'x',
-    performanceMultiplier: 0.79,
+    performanceMultiplier: 1.04,
     incrementalDollars: 31000,
   },
   {
     id: '9',
+    seller: 'Sophie Denault',
     clientName: 'Westfield Group',
     name: 'Geo-Fenced Display',
     startDate: '2026-03-01',
@@ -146,6 +154,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '10',
+    seller: 'Jill Puerto',
     clientName: 'Beacon Financial',
     name: 'Search Brand Defense',
     startDate: '2026-01-15',
@@ -159,6 +168,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '11',
+    seller: 'Stephanie Jurney',
     clientName: 'Crescent Energy',
     name: 'Video Pre-Roll Blitz',
     startDate: '2026-04-01',
@@ -172,6 +182,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '12',
+    seller: 'Stephanie Jurney',
     clientName: 'TerraVerde Foods',
     name: 'In-Market Programmatic',
     startDate: '2026-03-15',
@@ -180,11 +191,12 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
     kpiLabel: 'CTR',
     kpiValue: 1.2,
     kpiUnit: '%',
-    performanceMultiplier: 0.82,
+    performanceMultiplier: 1.03,
     incrementalDollars: 28000,
   },
   {
     id: '13',
+    seller: 'Ross Peters',
     clientName: 'Prism Health',
     name: 'Connected TV Reach',
     startDate: '2026-02-15',
@@ -198,6 +210,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '14',
+    seller: 'Tessa Walsh',
     clientName: 'Olympus Retail',
     name: 'Paid Search Non-Brand',
     startDate: '2026-04-01',
@@ -211,6 +224,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '15',
+    seller: 'Tessa Walsh',
     clientName: 'Caliber Auto',
     name: 'Social Conquest Campaign',
     startDate: '2026-03-01',
@@ -224,6 +238,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '16',
+    seller: 'Josh Darden',
     clientName: 'Nexus Financial',
     name: 'Display Prospecting',
     startDate: '2026-05-01',
@@ -237,6 +252,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '17',
+    seller: 'Michael Bell',
     clientName: 'Sterling Hotels',
     name: 'Travel Awareness Video',
     startDate: '2026-04-15',
@@ -245,11 +261,12 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
     kpiLabel: 'VTR',
     kpiValue: 38,
     kpiUnit: '%',
-    performanceMultiplier: 0.88,
+    performanceMultiplier: 1.06,
     incrementalDollars: 42000,
   },
   {
     id: '18',
+    seller: 'Thomas Buell',
     clientName: 'Voyager Insurance',
     name: 'Search Remarketing',
     startDate: '2026-02-01',
@@ -263,6 +280,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '19',
+    seller: 'Andy Kemp',
     clientName: 'Summit Healthcare',
     name: 'OTT Awareness Campaign',
     startDate: '2026-03-01',
@@ -276,6 +294,7 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
   {
     id: '20',
+    seller: 'Andy Kemp',
     clientName: 'Redwood Realty',
     name: 'Native Advertising Push',
     startDate: '2026-04-01',
@@ -289,21 +308,6 @@ const PLACEHOLDER_CAMPAIGNS: Campaign[] = [
   },
 ]
 
-// ── GD → campaign ID mapping ──────────────────────────────────────────────────
-
-const GD_CAMPAIGN_PATTERNS: string[][] = [
-  ['1', '3', '7', '9', '10'],
-  ['2', '4', '11', '13', '14'],
-  ['1', '6', '15', '16', '18'],
-  ['3', '9', '13', '19', '20'],
-  ['4', '6', '7', '10', '11', '14', '15', '16', '18', '19'],
-]
-
-const GD_CAMPAIGNS: Record<string, string[]> = {}
-Object.values(REGION_GDS).flat().forEach((gd, i) => {
-  GD_CAMPAIGNS[gd] = GD_CAMPAIGN_PATTERNS[i % GD_CAMPAIGN_PATTERNS.length]
-})
-
 // ── Root component ────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -312,9 +316,9 @@ export default function App() {
   const [selectedRegion, setSelectedRegion] = useState('')
   const [selectedGD, setSelectedGD] = useState('')
 
-  // Filter campaigns by selected GD (when region+GD chosen); otherwise show all
+  // Filter campaigns by selected GD's seller field; otherwise show all
   const visibleCampaigns = selectedGD
-    ? PLACEHOLDER_CAMPAIGNS.filter(c => GD_CAMPAIGNS[selectedGD]?.includes(c.id))
+    ? PLACEHOLDER_CAMPAIGNS.filter(c => c.seller === selectedGD)
     : PLACEHOLDER_CAMPAIGNS
 
   const planName = selectedGD
