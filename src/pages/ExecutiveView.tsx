@@ -35,7 +35,7 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
 const INSET_MARKERS: { coords: [number, number]; label: string; region: string; isDC?: boolean }[] = [
   { coords: [-77.03, 38.91], label: 'POLITICAL',         region: 'Political',        isDC: true },
-  { coords: [-157,   17   ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
+  { coords: [-157,   19.2 ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
   { coords: [-153,   64   ], label: 'RETAIL SOLUTIONS', region: 'Retail Solutions'             },
 ]
 
