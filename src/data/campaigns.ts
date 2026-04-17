@@ -148,6 +148,9 @@ const RAW: Raw[] = [
   { clientName:'NewsCom',                    name:'Display',        seller:'Danielle Whiting', startDate:'2/1/2026',   endDate:'8/31/2026',  budget:50000   },
   { clientName:'NewsCom',                    name:'CTV/OTT',        seller:'Danielle Whiting', startDate:'2/1/2026',   endDate:'8/31/2026',  budget:75000   },
   { clientName:'NewsCom',                    name:'Video',          seller:'Danielle Whiting', startDate:'2/1/2026',   endDate:'8/31/2026',  budget:40000   },
+  { clientName:'The Martin Group',           name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:246500  },
+  { clientName:'Nazareth University',        name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:40000   },
+  { clientName:'Wahl Media',                 name:'Display',        seller:'Danielle Whiting', startDate:'1/1/2026',   endDate:'12/31/2026', budget:43000   },
 
   // ── Steven Miller — Northeast ─────────────────────────────────────────────
   { clientName:'IRAOS',                      name:'Display',        seller:'Steven Miller',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:70000   },
@@ -194,6 +197,9 @@ const RAW: Raw[] = [
   { clientName:'Newmark Real Estate',        name:'Display',        seller:'Steven Miller',    startDate:'3/1/2026',   endDate:'8/31/2026',  budget:60000   },
   { clientName:'Newmark Real Estate',        name:'CTV/OTT',        seller:'Steven Miller',    startDate:'3/1/2026',   endDate:'8/31/2026',  budget:90000   },
   { clientName:'Newmark Real Estate',        name:'Video',          seller:'Steven Miller',    startDate:'3/1/2026',   endDate:'8/31/2026',  budget:45000   },
+  { clientName:'Heartbeat',                  name:'Display',        seller:'Steven Miller',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:150000  },
+  { clientName:'Vested',                     name:'Display',        seller:'Steven Miller',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:137500  },
+  { clientName:'Sonsray',                    name:'Display',        seller:'Steven Miller',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:50500   },
 
   // ── Grayson Vickers — Northeast ───────────────────────────────────────────
   { clientName:'GWP',                        name:'YouTube',        seller:'Grayson Vickers',  startDate:'1/1/2026',   endDate:'12/31/2026', budget:24000   },
@@ -226,6 +232,8 @@ const RAW: Raw[] = [
   { clientName:'FKQ',                        name:'YouTube',        seller:'Scott Welton',     startDate:'3/31/2026',  endDate:'7/19/2026',  budget:4000    },
   { clientName:'FKQ',                        name:'CTV',            seller:'Scott Welton',     startDate:'3/31/2026',  endDate:'7/19/2026',  budget:7000    },
   { clientName:'FKQ',                        name:'Video',          seller:'Scott Welton',     startDate:'3/31/2026',  endDate:'7/19/2026',  budget:3000    },
+  { clientName:'Lamont Digital',             name:'Display',        seller:'Scott Welton',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:1040000 },
+  { clientName:'Mosaic Advertising',         name:'Display',        seller:'Scott Welton',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:50000   },
 
   // ── Larry Tucker — Southeast ──────────────────────────────────────────────
   { clientName:'3Headed Monster : Yum! Brands', name:'TikTok',      seller:'Larry Tucker',     startDate:'3/23/2026',  endDate:'6/1/2026',   budget:22000   },
@@ -252,9 +260,30 @@ const RAW: Raw[] = [
   { clientName:'Grapevine CVB',              name:'CTV/OTT',        seller:'Larry Tucker',     startDate:'3/1/2026',   endDate:'9/30/2026',  budget:22000   },
   { clientName:'Grapevine CVB',              name:'Meta',           seller:'Larry Tucker',     startDate:'3/1/2026',   endDate:'9/30/2026',  budget:11000   },
   { clientName:'Grapevine CVB',              name:'Google Search',  seller:'Larry Tucker',     startDate:'3/1/2026',   endDate:'9/30/2026',  budget:63500   },
+  { clientName:'TruHearing',                 name:'Display',        seller:'Larry Tucker',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:150000  },
+  { clientName:'The Lee Group',              name:'Display',        seller:'Larry Tucker',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:17100   },
 
   // ── Kelly Calderone — Southeast ───────────────────────────────────────────
   { clientName:'Curiosity Marketing',        name:'Native',         seller:'Kelly Calderone',  startDate:'2/26/2026',  endDate:'5/25/2026',  budget:3000    },
+  { clientName:'Portside Advertising',       name:'Display',        seller:'Kelly Calderone',  startDate:'1/1/2026',   endDate:'12/31/2026', budget:181300  },
+  { clientName:'Intrinsic Media',            name:'Display',        seller:'Kelly Calderone',  startDate:'1/1/2026',   endDate:'12/31/2026', budget:81300   },
+
+  // ── Jodie Dover — Southeast ───────────────────────────────────────────────
+  { clientName:'Helms Workshop',             name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:300000  },
+  { clientName:'Hooky Entertainment',        name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:718500  },
+  { clientName:'Meals on Wheels CTX',        name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:60000   },
+  { clientName:'New Braunfels CVB',          name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:664300  },
+  { clientName:'SandersWingo',               name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:324000  },
+  { clientName:"St. Edward's University",    name:'Display',        seller:'Jodie Dover',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:743800  },
+
+  // ── Shane Miller — Southeast ──────────────────────────────────────────────
+  { clientName:'Johnson Group',              name:'Display',        seller:'Shane Miller',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:19700   },
+  { clientName:'PPK',                        name:'Display',        seller:'Shane Miller',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:1890000 },
+  { clientName:'TDS Marketing Group : Trinchero', name:'Display',   seller:'Shane Miller',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:15000   },
+
+  // ── Ramon Brayan — Southeast ──────────────────────────────────────────────
+  { clientName:'Redline Media Group',        name:'Display',        seller:'Ramon Brayan',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:14400   },
+  { clientName:'Rouge Wave Agency',          name:'Display',        seller:'Ramon Brayan',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:132000  },
 
   // ── Amy O'Hara — Midwest ──────────────────────────────────────────────────
   { clientName:'Agri Sciences Biologicals',  name:'Native',         seller:"Amy O'Hara",       startDate:'3/16/2026',  endDate:'7/31/2026',  budget:10800   },
@@ -274,6 +303,13 @@ const RAW: Raw[] = [
   { clientName:'Bader Rutter',               name:'Video',          seller:"Amy O'Hara",       startDate:'11/10/2025', endDate:'5/31/2026',  budget:72341   },
   { clientName:'Dearing Group',              name:'CTV',            seller:"Amy O'Hara",       startDate:'3/4/2026',   endDate:'5/31/2026',  budget:6000    },
   { clientName:'Dearing Group',              name:'Display',        seller:"Amy O'Hara",       startDate:'3/4/2026',   endDate:'5/31/2026',  budget:3000    },
+  { clientName:'Strategic America',          name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:2700000 },
+  { clientName:'John Deere',                 name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:1070000 },
+  { clientName:'Wyffels',                    name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:125600  },
+  { clientName:'Ten Acre Marketing',         name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:158700  },
+  { clientName:'Spawn Ideas',                name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:113200  },
+  { clientName:'Rhycom',                     name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:70600   },
+  { clientName:'Walz Tetrick',               name:'Display',        seller:"Amy O'Hara",       startDate:'1/1/2026',   endDate:'12/31/2026', budget:52500   },
 
   // ── Jill Puerto — Midwest ─────────────────────────────────────────────────
   { clientName:'BlueSnap',                   name:'CTV',            seller:'Jill Puerto',      startDate:'4/1/2026',   endDate:'6/30/2026',  budget:8000    },
@@ -355,6 +391,15 @@ const RAW: Raw[] = [
   { clientName:'Onyx Media',                 name:'Video',          seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:95000   },
   { clientName:'Onyx Media',                 name:'Audio',          seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:85000   },
   { clientName:'Onyx Media',                 name:'Native',         seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:65000   },
+  { clientName:'Wheelhouse',                 name:'Display',        seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:510000  },
+  { clientName:'Vermont Federal',            name:'Display',        seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:180000  },
+  { clientName:'Makiaris Media',             name:'Display',        seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:175000  },
+  { clientName:'o2kl',                       name:'Display',        seller:'Jill Puerto',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:146500  },
+
+  // ── Sophie Denault — Midwest ──────────────────────────────────────────────
+  { clientName:'M5',                         name:'Display',        seller:'Sophie Denault',   startDate:'1/1/2026',   endDate:'12/31/2026', budget:122000  },
+  { clientName:'Oasis Communications',       name:'Display',        seller:'Sophie Denault',   startDate:'1/1/2026',   endDate:'12/31/2026', budget:144100  },
+  { clientName:'Republik',                   name:'Display',        seller:'Sophie Denault',   startDate:'1/1/2026',   endDate:'12/31/2026', budget:7300    },
 
   // ── Grace Dominique — Midwest ─────────────────────────────────────────────
   { clientName:'Flint Group',                name:'CTV',            seller:'Grace Dominique',  startDate:'2/10/2026',  endDate:'12/31/2026', budget:5100    },
@@ -368,6 +413,9 @@ const RAW: Raw[] = [
 
   // ── Katie Johnson — Midwest ───────────────────────────────────────────────
   { clientName:'Curious Plot',               name:'Display',        seller:'Katie Johnson',    startDate:'3/13/2026',  endDate:'3/31/2027',  budget:17550   },
+  { clientName:'Karma Group',               name:'Display',        seller:'Katie Johnson',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:105700  },
+  { clientName:'Pixel and Plume',           name:'Display',        seller:'Katie Johnson',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:362500  },
+  { clientName:'True Media',                name:'Display',        seller:'Katie Johnson',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:46000   },
 
   // ── Stephanie Jurney — Central ────────────────────────────────────────────
   { clientName:'Accelerate Impact Digital',  name:'Audio',          seller:'Stephanie Jurney', startDate:'3/26/2026',  endDate:'12/31/2026', budget:11875   },
@@ -404,6 +452,8 @@ const RAW: Raw[] = [
   { clientName:'Outwire Media',              name:'Video',          seller:'Ross Peters',      startDate:'1/15/2026',  endDate:'12/31/2026', budget:42000   },
   { clientName:'Outwire Media',              name:'CTV/OTT',        seller:'Ross Peters',      startDate:'1/15/2026',  endDate:'12/31/2026', budget:68000   },
   { clientName:'Outwire Media',              name:'Audio',          seller:'Ross Peters',      startDate:'1/15/2026',  endDate:'12/31/2026', budget:28000   },
+  { clientName:'Metropolis Technologies',    name:'Display',        seller:'Ross Peters',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:855000  },
+  { clientName:'Romph & Pou',               name:'Display',        seller:'Ross Peters',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:159600  },
 
   // ── Jenny DeBono — Central ────────────────────────────────────────────────
   { clientName:'Anson Stoner',               name:'CTV/OTT',        seller:'Jenny DeBono',     startDate:'4/1/2026',   endDate:'6/30/2026',  budget:25725   },
@@ -445,6 +495,19 @@ const RAW: Raw[] = [
   { clientName:'iCrossing',                  name:'Video',          seller:'Jeffrey Saunders', startDate:'4/22/2026',  endDate:'9/30/2026',  budget:100000  },
   { clientName:'iCrossing',                  name:'Display',        seller:'Jeffrey Saunders', startDate:'4/22/2026',  endDate:'9/30/2026',  budget:100000  },
 
+  // ── Matt Musgrave — Central ───────────────────────────────────────────────
+  { clientName:'Jones PR',                   name:'Display',        seller:'Matt Musgrave',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:75000   },
+  { clientName:'WandB Partners',             name:'Display',        seller:'Matt Musgrave',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:15000   },
+
+  // ── Dayna Schram — Central ────────────────────────────────────────────────
+  { clientName:'ICG',                        name:'Display',        seller:'Dayna Schram',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:86200   },
+  { clientName:'Pegasus Media',              name:'Display',        seller:'Dayna Schram',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:94000   },
+  { clientName:'TCL',                        name:'Display',        seller:'Dayna Schram',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:3200000 },
+
+  // ── Lane Johnson — Central ────────────────────────────────────────────────
+  { clientName:"Layne's Chicken Fingers",    name:'Display',        seller:'Lane Johnson',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:800000  },
+  { clientName:'Northwestern Mutual',        name:'Display',        seller:'Lane Johnson',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:153300  },
+
   // ── Tessa Walsh — West ────────────────────────────────────────────────────
   { clientName:'Conroy Media',               name:'Display',        seller:'Tessa Walsh',      startDate:'3/19/2026',  endDate:'4/19/2026',  budget:18725   },
   { clientName:'Kickoff',                    name:'CTV/OTT',        seller:'Tessa Walsh',      startDate:'3/15/2026',  endDate:'4/30/2026',  budget:8000    },
@@ -453,6 +516,16 @@ const RAW: Raw[] = [
   { clientName:'Montana Board of Tourism',   name:'Video',          seller:'Tessa Walsh',      startDate:'2/1/2026',   endDate:'12/31/2026', budget:45000   },
   { clientName:'Moore County Tourism',       name:'Display',        seller:'Tessa Walsh',      startDate:'2/1/2026',   endDate:'12/31/2026', budget:30000   },
   { clientName:'Moore County Tourism',       name:'CTV/OTT',        seller:'Tessa Walsh',      startDate:'2/1/2026',   endDate:'12/31/2026', budget:45000   },
+  { clientName:'Kick Media',                 name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:16200   },
+  { clientName:'Lunar Solar Group',          name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:180000  },
+  { clientName:'Northwest State Community College', name:'Display', seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:30000   },
+  { clientName:'True Media Canada',          name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:67200   },
+  { clientName:'UpBrand',                    name:'Display',        seller:'Tessa Walsh',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:613400  },
+
+  // ── Josh Darden — West ────────────────────────────────────────────────────
+  { clientName:'Hippo Media',                name:'Display',        seller:'Josh Darden',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:108000  },
+  { clientName:'Ideas Collide',              name:'Display',        seller:'Josh Darden',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:150000  },
+  { clientName:'Lisa Scott Communications', name:'Display',         seller:'Josh Darden',      startDate:'1/1/2026',   endDate:'12/31/2026', budget:906300  },
 
   // ── Joshua Gallo — West ───────────────────────────────────────────────────
   { clientName:'Explore Communications',     name:'Display',        seller:'Joshua Gallo',     startDate:'3/30/2026',  endDate:'11/1/2026',  budget:12000   },
@@ -508,6 +581,9 @@ const RAW: Raw[] = [
   { clientName:'Nissan',                     name:'Display',        seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:150000  },
   { clientName:'Nissan',                     name:'CTV/OTT',        seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:225000  },
   { clientName:'Nissan',                     name:'Video',          seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:125000  },
+  { clientName:'Seattle Reign FC',           name:'Display',        seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:257000  },
+  { clientName:'Seattle Sounders FC',        name:'Display',        seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:440200  },
+  { clientName:'Senior Helpers',             name:'Display',        seller:'Jacob Kearney',    startDate:'1/1/2026',   endDate:'12/31/2026', budget:1700000 },
 
   // ── Jeff DePew — West ─────────────────────────────────────────────────────
   { clientName:'eMedia Marketing Solutions', name:'Display',        seller:'Jeff DePew',       startDate:'4/1/2026',   endDate:'4/30/2026',  budget:2400    },
@@ -530,6 +606,9 @@ const RAW: Raw[] = [
   { clientName:'Imminence Media',            name:'Display',        seller:'Kyle McBride',     startDate:'3/9/2026',   endDate:'8/31/2026',  budget:38000   },
   { clientName:'Imminence Media',            name:'Video',          seller:'Kyle McBride',     startDate:'1/1/2026',   endDate:'6/30/2026',  budget:15000   },
   { clientName:"Kellogg's Brand Activation", name:'Display',        seller:'Kyle McBride',     startDate:'2/1/2026',   endDate:'12/31/2026', budget:50000   },
+  { clientName:'nutpods',                    name:'Display',        seller:'Kyle McBride',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:638200  },
+  { clientName:'Workshop Digital:RMH',       name:'Display',        seller:'Kyle McBride',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:3000    },
+  { clientName:'Workshop Digital:S&P Global',name:'Display',        seller:'Kyle McBride',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:20000   },
 
   // ── Adriana Richards — West ───────────────────────────────────────────────
   { clientName:'Bio-Techne',                 name:'Display',        seller:'Adriana Richards', startDate:'3/12/2026',  endDate:'6/30/2026',  budget:3500    },
@@ -602,12 +681,25 @@ const RAW: Raw[] = [
   { clientName:'Micro Plastics Inc.',        name:'Display',        seller:'Greg Kupfner',     startDate:'3/1/2026',   endDate:'12/31/2026', budget:25000   },
   { clientName:'Neurochem International',    name:'Display',        seller:'Greg Kupfner',     startDate:'4/1/2026',   endDate:'12/31/2026', budget:25000   },
 
+  // ── Andrew Davis — Regional Majors ───────────────────────────────────────
+  { clientName:'Liechty Auto Group',         name:'Display',        seller:'Andrew Davis',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:171300  },
+  { clientName:'Real Talk Communications',   name:'Display',        seller:'Andrew Davis',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:12000   },
+  { clientName:'Vobile Inc.',                name:'Display',        seller:'Andrew Davis',     startDate:'1/1/2026',   endDate:'12/31/2026', budget:30000   },
+
   // ── Geoff Halsema — Retail Solutions ──────────────────────────────────────
   { clientName:'Fox Dealer',                 name:'CTV',            seller:'Geoff Halsema',    startDate:'4/14/2026',  endDate:'6/30/2026',  budget:144000  },
   { clientName:'KAR Auction Services',       name:'Display',        seller:'Geoff Halsema',    startDate:'1/15/2026',  endDate:'12/31/2026', budget:252000  },
   { clientName:'KAR Auction Services',       name:'CTV',            seller:'Geoff Halsema',    startDate:'2/1/2026',   endDate:'5/31/2026',  budget:50000   },
   { clientName:'KAR Auction Services',       name:'Display',        seller:'Geoff Halsema',    startDate:'2/1/2026',   endDate:'12/31/2026', budget:108000  },
   { clientName:'KAR Auction Services',       name:'CTV',            seller:'Geoff Halsema',    startDate:'3/1/2026',   endDate:'12/31/2026', budget:300000  },
+
+  // ── Andy Kemp — Retail Solutions ─────────────────────────────────────────
+  { clientName:'Lazy Boy Agency',            name:'Display',        seller:'Andy Kemp',        startDate:'1/1/2026',   endDate:'12/31/2026', budget:312400  },
+  { clientName:'Marcus Thomas',              name:'Display',        seller:'Andy Kemp',        startDate:'1/1/2026',   endDate:'12/31/2026', budget:240000  },
+  { clientName:'USA Marketing Partners',     name:'Display',        seller:'Andy Kemp',        startDate:'1/1/2026',   endDate:'12/31/2026', budget:44700   },
+
+  // ── Daniel Friscia — Retail Solutions ────────────────────────────────────
+  { clientName:'The Yaffe Group',            name:'Display',        seller:'Daniel Friscia',   startDate:'1/1/2026',   endDate:'12/31/2026', budget:27000   },
 ]
 
 export const CAMPAIGNS: Campaign[] = RAW.map((r, i) => ({
