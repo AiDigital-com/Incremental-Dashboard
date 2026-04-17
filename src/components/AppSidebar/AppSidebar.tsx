@@ -9,7 +9,7 @@ export const REGION_GDS: Record<Region, string[]> = {
   Northeast:          ['Danielle Whiting', 'Steven Miller', 'Grayson Vickers', 'Amy Murray', 'Cailin Murphy'],
   Southeast:          ['Scott Welton', 'Larry Tucker', 'Jodie Dover', 'Shane Miller', 'Kelly Calderone', 'Ramon Brayan'],
   Midwest:            ['Sophie Denault', 'Jill Puerto', "Amy O'Hara", 'Grace Dominique', 'Katie Johnson'],
-  Central:            ['Stephanie Jurney', 'Ross Peters', 'Jenny DeBono', 'Scott Wright', 'Matt Musgrave', 'Dayna Schram', 'Gargi Bhakta', 'Lane Johnson'],
+  Central:            ['Stephanie Jurney', 'Ross Peters', 'Jenny DeBono', 'Scott Wright', 'Matt Musgrave', 'Dayna Schram', 'Gargi Bhakta', 'Lane Johnson', 'Jeffrey Saunders'],
   West:               ['Tessa Walsh', 'Josh Darden', 'Joshua Gallo', 'Jacob Kearney', 'Jeff DePew', 'Kyle McBride', 'Adriana Richards'],
   Political:          ['Michael Bell', 'Nicole Meade', 'Jonathan Phelps', 'Taylor Fritsch'],
   'Regional Majors':  ['Thomas Buell', 'Greg Kupfner', 'Andrew Davis'],
