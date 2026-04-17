@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { GlobeBackground } from '../GlobeBackground'
 import { REGIONS, REGION_GDS } from '../AppSidebar/AppSidebar'
 import type { Region } from '../AppSidebar/AppSidebar'
@@ -31,6 +31,8 @@ interface Props {
   selectedGD?: string
   onRegionChange?: (r: string) => void
   onGDChange?: (gd: string) => void
+  selectedClient?: string
+  onClientChange?: (c: string) => void
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -115,7 +117,7 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegion = '', selectedGD = '', onRegionChange, onGDChange }: Props) {
+export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegion = '', selectedGD = '', onRegionChange, onGDChange, selectedClient = '', onClientChange }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
   const [zoomContinent, setZoomContinent] = useState<number | null>(null)
   const gds = selectedRegion ? REGION_GDS[selectedRegion as Region] ?? [] : []
@@ -125,13 +127,30 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     return () => clearTimeout(t)
   }, [])
 
-  // Only show campaigns at or above goal
-  const activeCampaigns = campaigns.filter(c => c.performanceMultiplier >= 1.0)
+  // All campaigns at or above goal (before client filter)
+  const allActiveCampaigns = useMemo(
+    () => campaigns.filter(c => c.performanceMultiplier >= 1.0),
+    [campaigns]
+  )
 
-  // Reset to page 1 whenever the campaign set changes (filter change)
+  // Unique client names for the client dropdown
+  const uniqueClients = useMemo(
+    () => [...new Set(allActiveCampaigns.map(c => c.clientName))].sort(),
+    [allActiveCampaigns]
+  )
+
+  // Apply client filter
+  const activeCampaigns = useMemo(
+    () => selectedClient
+      ? allActiveCampaigns.filter(c => c.clientName === selectedClient)
+      : allActiveCampaigns,
+    [allActiveCampaigns, selectedClient]
+  )
+
+  // Reset to page 1 whenever the campaign set or client filter changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [campaigns])
+  }, [campaigns, selectedClient])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(activeCampaigns.length / PAGE_SIZE))
@@ -173,7 +192,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
                 id="region-select"
                 className="id-header-filter-select"
                 value={selectedRegion}
-                onChange={e => { onRegionChange?.(e.target.value); onGDChange?.('') }}
+                onChange={e => { onRegionChange?.(e.target.value); onGDChange?.(''); onClientChange?.('') }}
               >
                 <option value="">All Regions</option>
                 {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -190,11 +209,33 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
                 id="gd-select"
                 className="id-header-filter-select"
                 value={selectedGD}
-                onChange={e => onGDChange?.(e.target.value)}
+                onChange={e => { onGDChange?.(e.target.value); onClientChange?.('') }}
                 disabled={!selectedRegion}
               >
                 <option value="">{selectedRegion ? 'All Directors' : 'Select region first'}</option>
                 {gds.map(gd => <option key={gd} value={gd}>{gd}</option>)}
+              </select>
+              <span className="id-header-select-chevron" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
+          {/* Client filter */}
+          <div className="id-header-filter-group">
+            <label className="id-header-filter-label" htmlFor="client-select">Client</label>
+            <div className="id-header-select-wrap">
+              <select
+                id="client-select"
+                className="id-header-filter-select"
+                value={selectedClient}
+                onChange={e => onClientChange?.(e.target.value)}
+                disabled={!selectedRegion || !selectedGD}
+              >
+                <option value="">
+                  {selectedRegion && selectedGD ? 'All Clients' : 'Select GD first'}
+                </option>
+                {uniqueClients.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
               <span className="id-header-select-chevron" aria-hidden="true">▾</span>
             </div>

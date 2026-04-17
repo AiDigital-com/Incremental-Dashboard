@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
 import { feature as topoFeature } from 'topojson-client'
+import { CAMPAIGNS } from '../data/campaigns'
+import { REGION_GDS } from '../components/AppSidebar/AppSidebar'
 
 // ── Geo data ──────────────────────────────────────────────────────────────────
 
@@ -43,49 +45,39 @@ const REGION_INCREMENTAL: Record<string, string> = {
   'Retail Solutions': '$768K',
 }
 
-// Top clients per region (real GD names; client details updated when API ready)
-const REGION_TOP_CLIENTS: Record<string, { gd: string; client: string; incremental: string }[]> = {
-  Northeast: [
-    { gd: 'Steven Miller',    client: 'Vantage Health',     incremental: '$215K' },
-    { gd: 'Danielle Whiting', client: 'Apex Retail Group',  incremental: '$142K' },
-    { gd: 'Grayson Vickers',  client: 'Clearwave Financial', incremental: '$76K' },
-  ],
-  Southeast: [
-    { gd: 'Scott Welton',  client: 'Luminary Studios',   incremental: '$98K'  },
-    { gd: 'Scott Welton',  client: 'Northshore Foods',   incremental: '$54K'  },
-    { gd: 'Larry Tucker',  client: 'Horizon Media',      incremental: '$98K'  },
-  ],
-  Midwest: [
-    { gd: 'Jill Puerto',     client: 'Beacon Financial',  incremental: '$87K' },
-    { gd: 'Sophie Denault',  client: 'Westfield Group',   incremental: '$61K' },
-    { gd: 'Sophie Denault',  client: 'Pinnacle Sports',   incremental: '$31K' },
-  ],
-  Central: [
-    { gd: 'Stephanie Jurney', client: 'Crescent Energy',   incremental: '$110K' },
-    { gd: 'Ross Peters',      client: 'Prism Health',       incremental: '$144K' },
-    { gd: 'Stephanie Jurney', client: 'TerraVerde Foods',   incremental: '$28K'  },
-  ],
-  West: [
-    { gd: 'Tessa Walsh',  client: 'Caliber Auto',    incremental: '$129K' },
-    { gd: 'Josh Darden',  client: 'Nexus Financial', incremental: '$95K'  },
-    { gd: 'Tessa Walsh',  client: 'Olympus Retail',  incremental: '$73K'  },
-  ],
-  Political: [
-    { gd: 'Michael Bell',      client: 'Sterling Hotels', incremental: '$42K' },
-    { gd: 'Nicole Meade',      client: 'Summit Advocacy', incremental: '$38K' },
-    { gd: 'Jonathan Phelps',   client: 'Beacon PAC',      incremental: '$35K' },
-  ],
-  'Regional Majors': [
-    { gd: 'Thomas Buell',  client: 'Voyager Insurance',  incremental: '$68K' },
-    { gd: 'Greg Kupfner',  client: 'Regional Network',   incremental: '$52K' },
-    { gd: 'Andrew Davis',  client: 'Meridian Auto',      incremental: '$45K' },
-  ],
-  'Retail Solutions': [
-    { gd: 'Andy Kemp',      client: 'Summit Healthcare', incremental: '$156K' },
-    { gd: 'Andy Kemp',      client: 'Redwood Realty',    incremental: '$82K'  },
-    { gd: 'Daniel Friscia', client: 'Olympus Retail',    incremental: '$73K'  },
-  ],
+// Top clients per region — derived from real campaign data
+function buildRegionTopClients(): Record<string, { gd: string; client: string; incremental: string }[]> {
+  const result: Record<string, { gd: string; client: string; incremental: string }[]> = {}
+  for (const [region, sellers] of Object.entries(REGION_GDS)) {
+    const regionCampaigns = CAMPAIGNS.filter(c => sellers.includes(c.seller ?? ''))
+    const clientMap = new Map<string, { total: number; sellerTotals: Map<string, number> }>()
+    for (const c of regionCampaigns) {
+      const entry = clientMap.get(c.clientName)
+      if (entry) {
+        entry.total += c.incrementalDollars
+        entry.sellerTotals.set(c.seller ?? '', (entry.sellerTotals.get(c.seller ?? '') ?? 0) + c.incrementalDollars)
+      } else {
+        const sellerTotals = new Map<string, number>()
+        sellerTotals.set(c.seller ?? '', c.incrementalDollars)
+        clientMap.set(c.clientName, { total: c.incrementalDollars, sellerTotals })
+      }
+    }
+    const top5 = [...clientMap.entries()]
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, 5)
+    result[region] = top5.map(([client, data]) => {
+      const topSeller = [...data.sellerTotals.entries()].sort((a, b) => b[1] - a[1])[0][0]
+      const amt = data.total
+      const formatted = amt >= 1_000_000
+        ? `$${(amt / 1_000_000).toFixed(1)}M`
+        : `$${Math.round(amt / 1000)}K`
+      return { gd: topSeller, client, incremental: formatted }
+    })
+  }
+  return result
 }
+
+const REGION_TOP_CLIENTS = buildRegionTopClients()
 
 // CSS transform zoom params per region (geographic regions only)
 const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
@@ -205,7 +197,7 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
               }}>
-              ${val}K
+              ${(val / 1000).toFixed(1)}M
             </text>
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
               style={{
@@ -323,7 +315,6 @@ export function ExecutiveView({ onBack }: Props) {
         <div className="id-exec__metrics">
           <div className="id-exec__metrics-total-label">Total Incremental</div>
           <div className="id-exec__metrics-total-value">{TOTAL_INCREMENTAL}</div>
-          <div className="id-exec__metrics-title">Regional Incremental</div>
           {Object.entries(REGION_COLORS).map(([region, color]) => {
             const isHovered = hoveredRegion === region
             const isOpen    = openRegion   === region

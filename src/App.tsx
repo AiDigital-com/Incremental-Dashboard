@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'
 import { CAMPAIGNS } from './data/campaigns'
+import { REGION_GDS } from './components/AppSidebar/AppSidebar'
+import type { Region } from './components/AppSidebar/AppSidebar'
 import { HomePage } from './pages/HomePage'
 import { ExecutiveView } from './pages/ExecutiveView'
 import { ClientView } from './pages/ClientView'
@@ -30,9 +32,12 @@ export default function App() {
   const [homeCardIdx, setHomeCardIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState('')
   const [selectedGD, setSelectedGD] = useState('')
+  const [selectedClient, setSelectedClient] = useState('')
 
   const visibleCampaigns = selectedGD
     ? CAMPAIGNS.filter(c => c.seller === selectedGD)
+    : selectedRegion
+    ? CAMPAIGNS.filter(c => (REGION_GDS[selectedRegion as Region] ?? []).includes(c.seller ?? ''))
     : CAMPAIGNS
 
   const planName = selectedGD
@@ -72,8 +77,10 @@ export default function App() {
                 onBack={() => setCurrentView('home')}
                 selectedRegion={selectedRegion}
                 selectedGD={selectedGD}
-                onRegionChange={setSelectedRegion}
-                onGDChange={setSelectedGD}
+                onRegionChange={r => { setSelectedRegion(r); setSelectedGD(''); setSelectedClient('') }}
+                onGDChange={gd => { setSelectedGD(gd); setSelectedClient('') }}
+                selectedClient={selectedClient}
+                onClientChange={setSelectedClient}
               />
             )
           case 'client':
