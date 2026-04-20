@@ -36,7 +36,7 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
 
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
 const INSET_MARKERS: { coords: [number, number]; label: string; region: string }[] = [
-  { coords: [-164, 19.2], label: 'REGIONAL MAJORS', region: 'Regional Majors' },
+  { coords: [-159, 19.2], label: 'REGIONAL MAJORS', region: 'Regional Majors' },
 ]
 
 // Total incremental — computed from real campaign data
