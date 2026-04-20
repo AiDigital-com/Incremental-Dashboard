@@ -189,7 +189,7 @@ const SELLER_TOP_CLIENTS = buildSellerTopClients()
 
 // ── Inline bar chart component ────────────────────────────────────────────────
 
-function IncrementalBarChart({ data, color }: { data: number[]; color: string }) {
+function IncrementalBarChart({ data, color, useK }: { data: number[]; color: string; useK?: boolean }) {
   const max = Math.max(...data, 1)
   const H = 175
   const barW = 46
@@ -224,7 +224,7 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
                   fontFamily: "'Barlow Semi Condensed',sans-serif",
                   fontWeight: 700,
                 }}>
-                ${(val / 1000).toFixed(1)}M
+                {useK ? `$${val}K` : `$${(val / 1000).toFixed(1)}M`}
               </text>
             )}
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
@@ -317,7 +317,8 @@ interface Props {
 export function ExecutiveView({ onBack }: Props) {
   const [hoveredRegion,  setHoveredRegion]  = useState<string | null>(null)
   const [openRegion,     setOpenRegion]     = useState<string | null>(null)
-  const [selectedSeller, setSelectedSeller] = useState<string | null>(null)
+  const [selectedSeller,   setSelectedSeller]   = useState<string | null>(null)
+  const [hoveredSellerRow, setHoveredSellerRow] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nationFeature,  setNationFeature]  = useState<any>(null)
 
@@ -610,7 +611,7 @@ export function ExecutiveView({ onBack }: Props) {
                   {/* Monthly bar chart */}
                   <div className="id-exec__panel-chart">
                     <div className="id-exec__panel-section-label">Monthly Won</div>
-                    <IncrementalBarChart data={chartData} color={color} />
+                    <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} />
                   </div>
 
                   <div className="id-exec__panel-hdivider" />
@@ -625,13 +626,19 @@ export function ExecutiveView({ onBack }: Props) {
                         <div
                           key={seller.name}
                           className="id-exec__panel-seller-row"
-                          style={{ cursor: selectedSeller ? 'default' : 'pointer' }}
+                          style={{
+                            cursor: selectedSeller ? 'default' : 'pointer',
+                            background: !selectedSeller && hoveredSellerRow === seller.name
+                              ? `${color}18`
+                              : 'transparent',
+                            borderRadius: 6,
+                            transition: 'background 0.15s',
+                          }}
                           onClick={() => { if (!selectedSeller) setSelectedSeller(seller.name) }}
+                          onMouseEnter={() => { if (!selectedSeller) setHoveredSellerRow(seller.name) }}
+                          onMouseLeave={() => setHoveredSellerRow(null)}
                         >
-                          <span
-                            className="id-exec__panel-seller-name"
-                            style={{ color: !selectedSeller ? color : undefined, textDecoration: !selectedSeller ? 'underline' : undefined }}
-                          >
+                          <span className="id-exec__panel-seller-name">
                             {seller.name}
                           </span>
                           <div className="id-exec__panel-seller-track">
