@@ -107,20 +107,20 @@ const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
   'Retail Solutions': { scale: 5.0, origin: '8%  12%' },
 }
 
-// Monthly incremental data — Jan–Apr 2026 YTD ($K)
+// Monthly incremental data — full year 2026 ($K); May–Dec not yet occurred
 const REGION_MONTHLY_DATA: Record<string, number[]> = {
-  Northeast:          [ 400,  450,  590,  560],
-  Southeast:          [1650, 1750, 2100, 2000],
-  Midwest:            [1700, 1800, 2200, 2000],
-  Central:            [1900, 1950, 2250, 2200],
-  West:               [1200, 1350, 1550, 1500],
-  Political:          [ 105,  110,  130,  133],
-  'Regional Majors':  [ 100,  112,  125,  125],
-  'Retail Solutions': [ 165,  180,  210,  213],
-  House:              [3200, 3600, 4100, 4400],
+  Northeast:          [ 400,  450,  590,  560, 0, 0, 0, 0, 0, 0, 0, 0],
+  Southeast:          [1650, 1750, 2100, 2000, 0, 0, 0, 0, 0, 0, 0, 0],
+  Midwest:            [1700, 1800, 2200, 2000, 0, 0, 0, 0, 0, 0, 0, 0],
+  Central:            [1900, 1950, 2250, 2200, 0, 0, 0, 0, 0, 0, 0, 0],
+  West:               [1200, 1350, 1550, 1500, 0, 0, 0, 0, 0, 0, 0, 0],
+  Political:          [ 105,  110,  130,  133, 0, 0, 0, 0, 0, 0, 0, 0],
+  'Regional Majors':  [ 100,  112,  125,  125, 0, 0, 0, 0, 0, 0, 0, 0],
+  'Retail Solutions': [ 165,  180,  210,  213, 0, 0, 0, 0, 0, 0, 0, 0],
+  House:              [3200, 3600, 4100, 4400, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 // YTD incremental by seller — computed from real campaign data
 function buildRegionGdYtd(): Record<string, { name: string; ytdK: number }[]> {
@@ -140,13 +140,60 @@ function buildRegionGdYtd(): Record<string, { name: string; ytdK: number }[]> {
 }
 const REGION_GD_YTD = buildRegionGdYtd()
 
+// Monthly incremental by seller — proportional share of region monthly totals
+function buildSellerMonthlyData(): Record<string, Record<string, number[]>> {
+  const result: Record<string, Record<string, number[]>> = {}
+  for (const [region, sellers] of Object.entries(REGION_GDS)) {
+    result[region] = {}
+    const regionMonthly = REGION_MONTHLY_DATA[region]
+    if (!regionMonthly) continue
+    const regionSellers = REGION_GD_YTD[region] ?? []
+    const totalYtd = regionSellers.reduce((sum, s) => sum + s.ytdK, 0)
+    for (const seller of regionSellers) {
+      const share = totalYtd > 0 ? seller.ytdK / totalYtd : 0
+      result[region][seller.name] = regionMonthly.map(m => Math.round(m * share))
+    }
+    // include any sellers from REGION_GDS not in regionSellers
+    for (const seller of sellers) {
+      if (!result[region][seller]) result[region][seller] = regionMonthly.map(() => 0)
+    }
+  }
+  return result
+}
+const SELLER_MONTHLY_DATA = buildSellerMonthlyData()
+
+// Top clients per seller — derived from real campaign data
+function buildSellerTopClients(): Record<string, Record<string, { client: string; incremental: string }[]>> {
+  const result: Record<string, Record<string, { client: string; incremental: string }[]>> = {}
+  for (const [region, sellers] of Object.entries(REGION_GDS)) {
+    result[region] = {}
+    for (const seller of sellers) {
+      const clientMap = new Map<string, number>()
+      for (const c of CAMPAIGNS) {
+        if (c.seller === seller) {
+          clientMap.set(c.clientName, (clientMap.get(c.clientName) ?? 0) + c.incrementalDollars)
+        }
+      }
+      const top5 = [...clientMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
+      result[region][seller] = top5.map(([client, amt]) => ({
+        client,
+        incremental: amt >= 1_000_000
+          ? `$${(amt / 1_000_000).toFixed(1)}M`
+          : `$${Math.round(amt / 1000)}K`,
+      }))
+    }
+  }
+  return result
+}
+const SELLER_TOP_CLIENTS = buildSellerTopClients()
+
 // ── Inline bar chart component ────────────────────────────────────────────────
 
 function IncrementalBarChart({ data, color }: { data: number[]; color: string }) {
-  const max = Math.max(...data)
+  const max = Math.max(...data, 1)
   const H = 175
-  const barW = 90
-  const gap = 25
+  const barW = 46
+  const gap = 10
   const totalW = (barW + gap) * data.length - gap
 
   return (
@@ -157,29 +204,33 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
       style={{ overflow: 'visible', display: 'block' }}
     >
       {data.map((val, i) => {
-        const barH = Math.max(4, Math.round((val / max) * H))
+        const barH = val > 0 ? Math.max(4, Math.round((val / max) * H)) : 0
         const x = i * (barW + gap)
         const y = H - barH
-        const isPeak = val === max
+        const isPeak = val > 0 && val === max
         return (
           <g key={i}>
-            <rect x={x} y={0} width={barW} height={H} rx={5}
+            <rect x={x} y={0} width={barW} height={H} rx={4}
               fill="rgba(255,255,255,0.05)" />
-            <rect x={x} y={y} width={barW} height={barH} rx={5}
-              fill={isPeak ? color : `${color}88`} />
-            <text x={x + barW / 2} y={y - 7} textAnchor="middle"
-              style={{
-                fontSize: '11px',
-                fill: isPeak ? color : 'rgba(255,255,255,0.72)',
-                fontFamily: "'Barlow Semi Condensed',sans-serif",
-                fontWeight: 700,
-              }}>
-              ${(val / 1000).toFixed(1)}M
-            </text>
+            {val > 0 && (
+              <rect x={x} y={y} width={barW} height={barH} rx={4}
+                fill={isPeak ? color : `${color}88`} />
+            )}
+            {val > 0 && (
+              <text x={x + barW / 2} y={y - 6} textAnchor="middle"
+                style={{
+                  fontSize: '10px',
+                  fill: isPeak ? color : 'rgba(255,255,255,0.72)',
+                  fontFamily: "'Barlow Semi Condensed',sans-serif",
+                  fontWeight: 700,
+                }}>
+                ${(val / 1000).toFixed(1)}M
+              </text>
+            )}
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
               style={{
-                fontSize: '11px',
-                fill: 'rgba(255,255,255,0.68)',
+                fontSize: '10px',
+                fill: val > 0 ? 'rgba(255,255,255,0.68)' : 'rgba(255,255,255,0.28)',
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
                 letterSpacing: '0.06em',
@@ -266,6 +317,7 @@ interface Props {
 export function ExecutiveView({ onBack }: Props) {
   const [hoveredRegion,  setHoveredRegion]  = useState<string | null>(null)
   const [openRegion,     setOpenRegion]     = useState<string | null>(null)
+  const [selectedSeller, setSelectedSeller] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nationFeature,  setNationFeature]  = useState<any>(null)
 
@@ -281,6 +333,9 @@ export function ExecutiveView({ onBack }: Props) {
         }
       })
   }, [])
+
+  // Reset seller drill-down whenever the region changes
+  useEffect(() => { setSelectedSeller(null) }, [openRegion])
 
   const handleRegionClick = (region: string) => {
     setOpenRegion(prev => prev === region ? null : region)
@@ -513,32 +568,49 @@ export function ExecutiveView({ onBack }: Props) {
             })()}{/* end zoom-wrapper */}
 
             {/* Region info panel — slides up when a region is selected */}
-            {openRegion && (
+            {openRegion && (() => {
+              const color = REGION_COLORS[openRegion]
+              // Resolve data sources based on drill-down state
+              const chartData = selectedSeller
+                ? (SELLER_MONTHLY_DATA[openRegion]?.[selectedSeller] ?? REGION_MONTHLY_DATA[openRegion])
+                : REGION_MONTHLY_DATA[openRegion]
+
+              const allSellers = REGION_GD_YTD[openRegion] ?? []
+              const visibleSellers = selectedSeller
+                ? allSellers.filter(s => s.name === selectedSeller)
+                : allSellers
+              const maxYtd = Math.max(...allSellers.map(s => s.ytdK), 1)
+
+              const rawClients = selectedSeller
+                ? (SELLER_TOP_CLIENTS[openRegion]?.[selectedSeller] ?? []).map(c => ({ ...c, gd: selectedSeller }))
+                : (REGION_TOP_CLIENTS[openRegion] ?? [])
+              const maxClientVal = Math.max(...rawClients.map(c => {
+                const n = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                return c.incremental.includes('M') ? n * 1000 : n
+              }), 1)
+
+              return (
               <div className="id-exec__region-panel">
                 <div className="id-exec__panel-header">
-                  <span
-                    className="id-exec__panel-title"
-                    style={{ color: REGION_COLORS[openRegion] }}
-                  >
+                  <span className="id-exec__panel-title" style={{ color }}>
                     {openRegion}
                   </span>
-                  <span className="id-exec__panel-subtitle">YTD Incremental</span>
+                  <span className="id-exec__panel-subtitle">
+                    {selectedSeller ? selectedSeller : 'YTD Incremental'}
+                  </span>
                   <button
                     className="id-exec__panel-close"
-                    onClick={() => setOpenRegion(null)}
-                    aria-label="Close region panel"
+                    onClick={() => selectedSeller ? setSelectedSeller(null) : setOpenRegion(null)}
+                    aria-label={selectedSeller ? 'Back to region' : 'Close region panel'}
                   >
                     ← Back
                   </button>
                 </div>
                 <div className="id-exec__panel-body">
-                  {/* Monthly bar chart — full width */}
+                  {/* Monthly bar chart */}
                   <div className="id-exec__panel-chart">
                     <div className="id-exec__panel-section-label">Monthly Won</div>
-                    <IncrementalBarChart
-                      data={REGION_MONTHLY_DATA[openRegion]}
-                      color={REGION_COLORS[openRegion]}
-                    />
+                    <IncrementalBarChart data={chartData} color={color} />
                   </div>
 
                   <div className="id-exec__panel-hdivider" />
@@ -549,31 +621,35 @@ export function ExecutiveView({ onBack }: Props) {
                     {/* Seller YTD progress bars */}
                     <div className="id-exec__panel-sellers">
                       <div className="id-exec__panel-section-label">Seller YTD</div>
-                      {REGION_GD_YTD[openRegion].map(seller => {
-                        const maxYtd = Math.max(...REGION_GD_YTD[openRegion].map(s => s.ytdK))
-                        return (
-                          <div key={seller.name} className="id-exec__panel-seller-row">
-                            <span className="id-exec__panel-seller-name">{seller.name}</span>
-                            <div className="id-exec__panel-seller-track">
-                              <div
-                                className="id-exec__panel-seller-fill"
-                                style={{
-                                  width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
-                                  background: REGION_COLORS[openRegion],
-                                }}
-                              />
-                            </div>
-                            <span
-                              className="id-exec__panel-seller-amount"
-                              style={{ color: REGION_COLORS[openRegion] }}
-                            >
-                              {seller.ytdK >= 1000
-                                ? `$${(seller.ytdK / 1000).toFixed(2)}M`
-                                : `$${seller.ytdK}K`}
-                            </span>
+                      {visibleSellers.map(seller => (
+                        <div
+                          key={seller.name}
+                          className="id-exec__panel-seller-row"
+                          style={{ cursor: selectedSeller ? 'default' : 'pointer' }}
+                          onClick={() => { if (!selectedSeller) setSelectedSeller(seller.name) }}
+                        >
+                          <span
+                            className="id-exec__panel-seller-name"
+                            style={{ color: !selectedSeller ? color : undefined, textDecoration: !selectedSeller ? 'underline' : undefined }}
+                          >
+                            {seller.name}
+                          </span>
+                          <div className="id-exec__panel-seller-track">
+                            <div
+                              className="id-exec__panel-seller-fill"
+                              style={{
+                                width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
+                                background: color,
+                              }}
+                            />
                           </div>
-                        )
-                      })}
+                          <span className="id-exec__panel-seller-amount" style={{ color }}>
+                            {seller.ytdK >= 1000
+                              ? `$${(seller.ytdK / 1000).toFixed(2)}M`
+                              : `$${seller.ytdK}K`}
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="id-exec__panel-divider" />
@@ -581,43 +657,34 @@ export function ExecutiveView({ onBack }: Props) {
                     {/* Client YTD progress bars */}
                     <div className="id-exec__panel-clients">
                       <div className="id-exec__panel-section-label">Client YTD</div>
-                      {(() => {
-                        const clients = REGION_TOP_CLIENTS[openRegion] ?? []
-                        const maxVal = Math.max(...clients.map(c => {
-                          const n = parseFloat(c.incremental.replace(/[$KM]/g, ''))
-                          return c.incremental.includes('M') ? n * 1000 : n
-                        }))
-                        return clients.map(c => {
-                          const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
-                          const valK = c.incremental.includes('M') ? raw * 1000 : raw
-                          return (
-                            <div key={c.client} className="id-exec__panel-seller-row">
-                              <span className="id-exec__panel-seller-name">{c.client}</span>
-                              <div className="id-exec__panel-seller-track">
-                                <div
-                                  className="id-exec__panel-seller-fill"
-                                  style={{
-                                    width: `${Math.round((valK / maxVal) * 100)}%`,
-                                    background: REGION_COLORS[openRegion],
-                                  }}
-                                />
-                              </div>
-                              <span
-                                className="id-exec__panel-seller-amount"
-                                style={{ color: REGION_COLORS[openRegion] }}
-                              >
-                                {c.incremental}
-                              </span>
+                      {rawClients.map(c => {
+                        const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                        const valK = c.incremental.includes('M') ? raw * 1000 : raw
+                        return (
+                          <div key={c.client} className="id-exec__panel-seller-row">
+                            <span className="id-exec__panel-seller-name">{c.client}</span>
+                            <div className="id-exec__panel-seller-track">
+                              <div
+                                className="id-exec__panel-seller-fill"
+                                style={{
+                                  width: `${Math.round((valK / maxClientVal) * 100)}%`,
+                                  background: color,
+                                }}
+                              />
                             </div>
-                          )
-                        })
-                      })()}
+                            <span className="id-exec__panel-seller-amount" style={{ color }}>
+                              {c.incremental}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
 
                   </div>
                 </div>
               </div>
-            )}
+              )
+            })()}
           </div>
 
           {/* Legend */}
