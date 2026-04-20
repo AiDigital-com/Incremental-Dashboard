@@ -523,6 +523,9 @@ const RAW: Raw[] = [
   { clientName:'Ze3no CONN3CT',                          name:'Display',        seller:'House',            startDate:'1/15/2026',  endDate:'3/31/2026',  budget:379300   },
 ]
 
+const _today = new Date()
+_today.setHours(0, 0, 0, 0)
+
 export const CAMPAIGNS: Campaign[] = RAW.map((r, i) => ({
   id: String(i + 1),
   clientName: r.clientName,
@@ -532,4 +535,7 @@ export const CAMPAIGNS: Campaign[] = RAW.map((r, i) => ({
   endDate: d(r.endDate),
   budget: r.budget,
   ...kpi(r.name, r.budget, i),
-}))
+})).filter(c => {
+  const [y, m, day] = c.endDate.split('-').map(Number)
+  return new Date(y, m - 1, day) >= _today
+})

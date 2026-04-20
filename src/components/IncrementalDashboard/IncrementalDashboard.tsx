@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { GlobeBackground } from '../GlobeBackground'
 import { REGIONS, REGION_GDS } from '../AppSidebar/AppSidebar'
 import type { Region } from '../AppSidebar/AppSidebar'
@@ -122,7 +123,12 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
   const [zoomContinent, setZoomContinent] = useState<number | null>(null)
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
-  const [campaignTypeFilter, setCampaignTypeFilter] = useState('')
+  const [campaignTypeFilters, setCampaignTypeFilters] = useState<string[]>([])
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false)
+  const [typeDropdownPos, setTypeDropdownPos] = useState({ top: 0, left: 0 })
+  const typeDropdownRef = useRef<HTMLTableCellElement>(null)
+  const typeDropdownBtnRef = useRef<HTMLButtonElement>(null)
+  const typeDropdownPanelRef = useRef<HTMLDivElement>(null)
   const gds = selectedRegion ? REGION_GDS[selectedRegion as Region] ?? [] : []
 
   useEffect(() => {
@@ -158,8 +164,8 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
 
   // Apply campaign type filter and sort
   const sortedCampaigns = useMemo(() => {
-    let rows = campaignTypeFilter
-      ? activeCampaigns.filter(c => c.name === campaignTypeFilter)
+    let rows = campaignTypeFilters.length > 0
+      ? activeCampaigns.filter(c => campaignTypeFilters.includes(c.name))
       : activeCampaigns
 
     if (sortKey) {
@@ -180,12 +186,24 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     }
 
     return rows
-  }, [activeCampaigns, sortKey, sortDir, campaignTypeFilter])
+  }, [activeCampaigns, sortKey, sortDir, campaignTypeFilters])
+
+  // Close campaign type dropdown on outside click
+  useEffect(() => {
+    if (!showTypeDropdown) return
+    function handler(e: MouseEvent) {
+      const inBtn   = typeDropdownRef.current?.contains(e.target as Node)
+      const inPanel = typeDropdownPanelRef.current?.contains(e.target as Node)
+      if (!inBtn && !inPanel) setShowTypeDropdown(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showTypeDropdown])
 
   // Reset to page 1 whenever the campaign set, filters, or sort changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [campaigns, selectedClient, sortKey, sortDir, campaignTypeFilter])
+  }, [campaigns, selectedClient, sortKey, sortDir, campaignTypeFilters])
 
   function handleSort(key: string) {
     if (sortKey === key) {
@@ -342,16 +360,28 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
               <th className="id-th--sortable" onClick={() => handleSort('clientName')}>
                 Client Name{sortIcon('clientName')}
               </th>
-              <th className="id-th--filter">
-                <select
-                  className="id-th-type-select"
-                  value={campaignTypeFilter}
-                  onChange={e => { setCampaignTypeFilter(e.target.value); setCurrentPage(1) }}
+              <th className="id-th--filter" ref={typeDropdownRef}>
+                <button
+                  ref={typeDropdownBtnRef}
+                  className={`id-th-type-btn${campaignTypeFilters.length > 0 ? ' id-th-type-btn--active' : ''}`}
+                  onClick={() => {
+                    if (!showTypeDropdown && typeDropdownBtnRef.current) {
+                      const r = typeDropdownBtnRef.current.getBoundingClientRect()
+                      setTypeDropdownPos({ top: r.bottom + 4, left: r.left })
+                    }
+                    setShowTypeDropdown(v => !v)
+                  }}
+                  type="button"
                 >
-                  <option value="">Campaign Name</option>
-                  {campaignTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-                <span className="id-th-select-chevron" aria-hidden="true">▾</span>
+                  <span className="id-th-type-btn-label">
+                    {campaignTypeFilters.length === 0
+                      ? 'Campaign Name'
+                      : campaignTypeFilters.length === 1
+                      ? campaignTypeFilters[0]
+                      : `Campaign (${campaignTypeFilters.length})`}
+                  </span>
+                  <span className="id-th-sort-icon">{showTypeDropdown ? '▴' : '▾'}</span>
+                </button>
               </th>
               <th className="id-th--sortable" onClick={() => handleSort('startDate')}>
                 Start Date{sortIcon('startDate')}
@@ -477,6 +507,41 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
             </button>
           </div>
         </div>
+      )}
+
+      {/* Campaign type dropdown portal — rendered to body to escape table overflow clipping */}
+      {showTypeDropdown && createPortal(
+        <div
+          ref={typeDropdownPanelRef}
+          className="id-th-type-dropdown id-th-type-dropdown--dark"
+          style={{ position: 'fixed', top: typeDropdownPos.top, left: typeDropdownPos.left }}
+        >
+          {campaignTypes.map(t => (
+            <label key={t} className="id-th-type-option">
+              <input
+                type="checkbox"
+                checked={campaignTypeFilters.includes(t)}
+                onChange={e => {
+                  setCampaignTypeFilters(prev =>
+                    e.target.checked ? [...prev, t] : prev.filter(x => x !== t)
+                  )
+                  setCurrentPage(1)
+                }}
+              />
+              <span>{t}</span>
+            </label>
+          ))}
+          {campaignTypeFilters.length > 0 && (
+            <button
+              className="id-th-type-clear"
+              type="button"
+              onClick={() => { setCampaignTypeFilters([]); setCurrentPage(1); setShowTypeDropdown(false) }}
+            >
+              Clear all
+            </button>
+          )}
+        </div>,
+        document.body
       )}
 
     </div>
