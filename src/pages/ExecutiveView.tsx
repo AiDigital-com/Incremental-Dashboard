@@ -29,14 +29,14 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
   Midwest:            [-95,   43  ],
   Central:            [-99,   30.7],
   West:               [-115,  40.6],
-  House:              [-81.5, 28.5],
+  House:              [-81.5, 27.5],
   Political:          [-77.5, 37.8],
   'Retail Solutions': [-120.5, 47.5],
 }
 
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
 const INSET_MARKERS: { coords: [number, number]; label: string; region: string }[] = [
-  { coords: [-157, 19.2], label: 'REGIONAL MAJORS', region: 'Regional Majors' },
+  { coords: [-164, 19.2], label: 'REGIONAL MAJORS', region: 'Regional Majors' },
 ]
 
 // Total incremental — computed from real campaign data
