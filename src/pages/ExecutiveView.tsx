@@ -811,9 +811,8 @@ export function ExecutiveView({ onBack }: Props) {
                   className="id-exec__legend-dot"
                   style={{
                     background: color,
-                    boxShadow: hoveredRegion === region
-                      ? `0 0 10px ${color}, 0 0 4px ${color}`
-                      : `0 0 6px ${color}`,
+                    boxShadow: hoveredRegion === region ? `0 0 6px ${color}` : 'none',
+                    opacity: hoveredRegion === region ? 1 : 0.7,
                   }}
                 />
                 <span className="id-exec__legend-label" style={{ color: hoveredRegion === region ? color : undefined }}>

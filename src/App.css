@@ -1224,11 +1224,11 @@
 }
 
 .id-exec__legend-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
   flex-shrink: 0;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, opacity 0.15s;
 }
 
 .id-exec__legend-label {
