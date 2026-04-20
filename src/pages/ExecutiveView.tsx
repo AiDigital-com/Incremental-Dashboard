@@ -615,7 +615,7 @@ export function ExecutiveView({ onBack }: Props) {
                   {/* Monthly bar chart */}
                   <div className="id-exec__panel-chart">
                     <div className="id-exec__panel-section-label">Incremental Won by Month</div>
-                    <div style={{ marginTop: 64 }}>
+                    <div style={{ marginTop: 30 }}>
                       <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} />
                     </div>
                   </div>
