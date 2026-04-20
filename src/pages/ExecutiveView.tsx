@@ -29,14 +29,13 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
   Midwest:            [-95,   43  ],
   Central:            [-99,   30.7],
   West:               [-115,  40.6],
-  House:              [-78,   42.5],
+  House:              [-81.5, 28.5],
 }
 
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
 const INSET_MARKERS: { coords: [number, number]; label: string; region: string; isDC?: boolean }[] = [
-  { coords: [-77.03, 38.91], label: 'POLITICAL',         region: 'Political',        isDC: true },
-  { coords: [-157,   19.2 ], label: 'REGIONAL MAJORS',  region: 'Regional Majors'              },
-  { coords: [-153,   64   ], label: 'RETAIL SOLUTIONS', region: 'Retail Solutions'             },
+  { coords: [-77.03, 38.91], label: 'POLITICAL',        region: 'Political',       isDC: true },
+  { coords: [-157,   19.2 ], label: 'REGIONAL MAJORS', region: 'Regional Majors'             },
 ]
 
 // Total incremental — computed from real campaign data
@@ -101,10 +100,10 @@ const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
   Midwest:            { scale: 2.4, origin: '52% 28%' },
   Central:            { scale: 2.7, origin: '41% 62%' },
   West:               { scale: 2.4, origin: '13% 38%' },
-  House:              { scale: 3.5, origin: '83% 18%' },
-  Political:          { scale: 8.0, origin: '80% 55%' },
+  House:              { scale: 5.0, origin: '74% 77%' },
+  Political:          { scale: 5.5, origin: '82% 42%' },
   'Regional Majors':  { scale: 5.0, origin: '24% 86%' },
-  'Retail Solutions': { scale: 3.5, origin: '10% 78%' },
+  'Retail Solutions': { scale: 5.0, origin: '8%  12%' },
 }
 
 // Monthly incremental data — Jan–Apr 2026 YTD ($K)
@@ -196,25 +195,32 @@ function IncrementalBarChart({ data, color }: { data: number[]; color: string })
 
 // All 50 states assigned to a region
 const STATE_REGIONS: Record<string, string> = {
-  // Northeast (10) — New York reassigned to House
+  // Northeast (11) — New York restored
   Connecticut: 'Northeast', Delaware: 'Northeast', Maine: 'Northeast',
-  Maryland: 'Northeast', Massachusetts: 'Northeast', 'New Hampshire': 'Northeast',
-  'New Jersey': 'Northeast', Pennsylvania: 'Northeast',
+  Massachusetts: 'Northeast', 'New Hampshire': 'Northeast',
+  'New Jersey': 'Northeast', 'New York': 'Northeast', Pennsylvania: 'Northeast',
   'Rhode Island': 'Northeast', Vermont: 'Northeast',
 
-  // House (1)
-  'New York': 'House',
+  // House (1) — Florida
+  Florida: 'House',
 
-  // D.C. / Hawaii / Alaska
+  // Political — D.C. + Virginia + Maryland
   'District of Columbia': 'Political',
-  Hawaii: 'Regional Majors',
-  Alaska: 'Retail Solutions',
+  Maryland: 'Political',
+  Virginia: 'Political',
 
-  // Southeast (12)
-  Alabama: 'Southeast', Arkansas: 'Southeast', Florida: 'Southeast',
+  // Regional Majors — Hawaii + Alaska
+  Hawaii: 'Regional Majors',
+  Alaska: 'Regional Majors',
+
+  // Retail Solutions — Washington state
+  Washington: 'Retail Solutions',
+
+  // Southeast (10) — Virginia & Florida moved out
+  Alabama: 'Southeast', Arkansas: 'Southeast',
   Georgia: 'Southeast', Kentucky: 'Southeast', Louisiana: 'Southeast',
   Mississippi: 'Southeast', 'North Carolina': 'Southeast', 'South Carolina': 'Southeast',
-  Tennessee: 'Southeast', Virginia: 'Southeast', 'West Virginia': 'Southeast',
+  Tennessee: 'Southeast', 'West Virginia': 'Southeast',
 
   // Midwest (12)
   Illinois: 'Midwest', Indiana: 'Midwest', Iowa: 'Midwest',
@@ -225,10 +231,10 @@ const STATE_REGIONS: Record<string, string> = {
   // Central (4)
   Colorado: 'Central', 'New Mexico': 'Central', Oklahoma: 'Central', Texas: 'Central',
 
-  // West (9)
+  // West (8) — Washington moved to Retail Solutions
   Arizona: 'West', California: 'West',
   Idaho: 'West', Montana: 'West', Nevada: 'West', Oregon: 'West',
-  Utah: 'West', Washington: 'West', Wyoming: 'West',
+  Utah: 'West', Wyoming: 'West',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
