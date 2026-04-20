@@ -224,7 +224,9 @@ function IncrementalBarChart({ data, color, useK }: { data: number[]; color: str
                   fontFamily: "'Barlow Semi Condensed',sans-serif",
                   fontWeight: 700,
                 }}>
-                {useK ? `$${val}K` : `$${(val / 1000).toFixed(1)}M`}
+                {useK
+                  ? val >= 1000 ? `$${(val / 1000).toFixed(2)}M` : `$${val}K`
+                  : `$${(val / 1000).toFixed(1)}M`}
               </text>
             )}
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
