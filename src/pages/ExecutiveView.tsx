@@ -623,11 +623,11 @@ export function ExecutiveView({ onBack }: Props) {
                   {/* Bottom row */}
                   <div className="id-exec__panel-bottom-row">
 
-                    {/* Left box: Seller YTD (region) → Client YTD (seller drill-down) */}
+                    {/* Left box: Seller YTD (region) → Available Client Incremental (seller drill-down) */}
                     <div className="id-exec__panel-sellers">
                       {selectedSeller ? (
                         <>
-                          <div className="id-exec__panel-section-label">Client YTD</div>
+                          <div className="id-exec__panel-section-label">Available Client Incremental</div>
                           {rawClients.map(c => {
                             const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
                             const valK = c.incremental.includes('M') ? raw * 1000 : raw
@@ -706,7 +706,7 @@ export function ExecutiveView({ onBack }: Props) {
                         return (
                           <>
                             <div className="id-exec__panel-section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <span>Campaign Incremental</span>
+                              <span>Available Campaign Incremental</span>
                               {totalPages > 1 && (
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                   <button
