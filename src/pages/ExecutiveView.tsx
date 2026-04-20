@@ -30,6 +30,7 @@ const REGION_CENTROIDS: Record<string, [number, number]> = {
   Central:            [-99,   30.7],
   West:               [-115,  40.6],
   House:              [-81.5, 28.5],
+  Political:          [-77.5, 37.8],
   'Retail Solutions': [-120.5, 47.5],
 }
 
@@ -489,16 +490,16 @@ export function ExecutiveView({ onBack }: Props) {
                   >
                     <text
                       textAnchor="middle"
-                      dy={-4}
+                      dy="-4"
                       style={{
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
-                        fontSize: '22px',
+                        fontSize: '33px',
                         fill: color,
-                        letterSpacing: '0.10em',
+                        letterSpacing: '0.14em',
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        cursor: 'pointer',
+                        transition: 'filter 0.15s',
                       }}
                     >
                       {label}
