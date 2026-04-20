@@ -120,6 +120,9 @@ function downloadCSV(campaigns: Campaign[], filename: string) {
 export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegion = '', selectedGD = '', onRegionChange, onGDChange, selectedClient = '', onClientChange }: Props) {
   const [currentPage, setCurrentPage] = useState(1)
   const [zoomContinent, setZoomContinent] = useState<number | null>(null)
+  const [sortKey, setSortKey] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [campaignTypeFilter, setCampaignTypeFilter] = useState('')
   const gds = selectedRegion ? REGION_GDS[selectedRegion as Region] ?? [] : []
 
   useEffect(() => {
@@ -139,6 +142,12 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     [allActiveCampaigns]
   )
 
+  // Unique campaign types for the Campaign Name filter dropdown
+  const campaignTypes = useMemo(
+    () => [...new Set(allActiveCampaigns.map(c => c.name))].sort(),
+    [allActiveCampaigns]
+  )
+
   // Apply client filter
   const activeCampaigns = useMemo(
     () => selectedClient
@@ -147,14 +156,54 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     [allActiveCampaigns, selectedClient]
   )
 
-  // Reset to page 1 whenever the campaign set or client filter changes
+  // Apply campaign type filter and sort
+  const sortedCampaigns = useMemo(() => {
+    let rows = campaignTypeFilter
+      ? activeCampaigns.filter(c => c.name === campaignTypeFilter)
+      : activeCampaigns
+
+    if (sortKey) {
+      rows = [...rows].sort((a, b) => {
+        let av: string | number
+        let bv: string | number
+        if (sortKey === 'clientName')        { av = a.clientName.toLowerCase();  bv = b.clientName.toLowerCase() }
+        else if (sortKey === 'startDate')    { av = a.startDate;                 bv = b.startDate }
+        else if (sortKey === 'endDate')      { av = a.endDate;                   bv = b.endDate }
+        else if (sortKey === 'budget')       { av = a.budget;                    bv = b.budget }
+        else if (sortKey === 'incremental')  { av = a.incrementalDollars;        bv = b.incrementalDollars }
+        else if (sortKey === 'daysLeft')     { av = daysLeft(a.endDate);         bv = daysLeft(b.endDate) }
+        else return 0
+        if (av < bv) return sortDir === 'asc' ? -1 : 1
+        if (av > bv) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    return rows
+  }, [activeCampaigns, sortKey, sortDir, campaignTypeFilter])
+
+  // Reset to page 1 whenever the campaign set, filters, or sort changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [campaigns, selectedClient])
+  }, [campaigns, selectedClient, sortKey, sortDir, campaignTypeFilter])
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  function sortIcon(key: string) {
+    if (sortKey !== key) return <span className="id-th-sort-icon">↕</span>
+    return <span className="id-th-sort-icon id-th-sort-icon--active">{sortDir === 'asc' ? '↑' : '↓'}</span>
+  }
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(activeCampaigns.length / PAGE_SIZE))
-  const pagedCampaigns = activeCampaigns.slice(
+  const totalPages = Math.max(1, Math.ceil(sortedCampaigns.length / PAGE_SIZE))
+  const pagedCampaigns = sortedCampaigns.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   )
@@ -290,20 +339,42 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
           </colgroup>
           <thead>
             <tr>
-              <th>Client Name</th>
-              <th>Campaign Name</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Budget</th>
+              <th className="id-th--sortable" onClick={() => handleSort('clientName')}>
+                Client Name{sortIcon('clientName')}
+              </th>
+              <th className="id-th--filter">
+                <select
+                  className="id-th-type-select"
+                  value={campaignTypeFilter}
+                  onChange={e => { setCampaignTypeFilter(e.target.value); setCurrentPage(1) }}
+                >
+                  <option value="">Campaign Name</option>
+                  {campaignTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <span className="id-th-select-chevron" aria-hidden="true">▾</span>
+              </th>
+              <th className="id-th--sortable" onClick={() => handleSort('startDate')}>
+                Start Date{sortIcon('startDate')}
+              </th>
+              <th className="id-th--sortable" onClick={() => handleSort('endDate')}>
+                End Date{sortIcon('endDate')}
+              </th>
+              <th className="id-th--sortable" onClick={() => handleSort('budget')}>
+                Budget{sortIcon('budget')}
+              </th>
               <th>KPI</th>
               <th>Performance vs. Goal</th>
-              <th>Incremental Availability</th>
-              <th>Days Left</th>
+              <th className="id-th--sortable" onClick={() => handleSort('incremental')}>
+                Incremental Availability{sortIcon('incremental')}
+              </th>
+              <th className="id-th--sortable" onClick={() => handleSort('daysLeft')}>
+                Days Left{sortIcon('daysLeft')}
+              </th>
               <th>Initiate Outreach</th>
             </tr>
           </thead>
           <tbody>
-            {activeCampaigns.length === 0 && (
+            {sortedCampaigns.length === 0 && (
               <tr>
                 <td colSpan={10} className="id-table__empty">
                   No qualifying campaigns match the selected filters.
@@ -374,7 +445,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
       {totalPages > 1 && (
         <div className="id-pagination">
           <span className="id-pagination__info">
-            {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, activeCampaigns.length)} of {activeCampaigns.length}
+            {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedCampaigns.length)} of {sortedCampaigns.length}
           </span>
           <div className="id-pagination__controls">
             <button
