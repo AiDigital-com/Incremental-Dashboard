@@ -319,6 +319,7 @@ export function ExecutiveView({ onBack }: Props) {
   const [openRegion,     setOpenRegion]     = useState<string | null>(null)
   const [selectedSeller,   setSelectedSeller]   = useState<string | null>(null)
   const [hoveredSellerRow, setHoveredSellerRow] = useState<string | null>(null)
+  const [campaignPage,     setCampaignPage]     = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nationFeature,  setNationFeature]  = useState<any>(null)
 
@@ -335,8 +336,9 @@ export function ExecutiveView({ onBack }: Props) {
       })
   }, [])
 
-  // Reset seller drill-down whenever the region changes
+  // Reset seller drill-down and campaign page whenever the region or seller changes
   useEffect(() => { setSelectedSeller(null) }, [openRegion])
+  useEffect(() => { setCampaignPage(0) }, [selectedSeller])
 
   const handleRegionClick = (region: string) => {
     setOpenRegion(prev => prev === region ? null : region)
@@ -691,19 +693,52 @@ export function ExecutiveView({ onBack }: Props) {
                     {/* Right box: Client YTD (region) → Campaign Incremental (seller drill-down) */}
                     <div className="id-exec__panel-clients">
                       {selectedSeller ? (() => {
+                        const PAGE_SIZE = 5
                         const sellerCampaigns = CAMPAIGNS
                           .filter(c => c.seller === selectedSeller && c.incrementalDollars > 0)
                           .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
+                        const totalPages = Math.ceil(sellerCampaigns.length / PAGE_SIZE)
+                        const page = Math.min(campaignPage, totalPages - 1)
+                        const pageCampaigns = sellerCampaigns.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
                         const maxInc = Math.max(...sellerCampaigns.map(c => c.incrementalDollars), 1)
                         return (
                           <>
-                            <div className="id-exec__panel-section-label">Campaign Incremental</div>
-                            {sellerCampaigns.map((c, i) => {
+                            <div className="id-exec__panel-section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span>Campaign Incremental</span>
+                              {totalPages > 1 && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <button
+                                    onClick={() => setCampaignPage(p => Math.max(0, p - 1))}
+                                    disabled={page === 0}
+                                    style={{
+                                      background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer',
+                                      color: page === 0 ? 'rgba(255,255,255,0.2)' : color,
+                                      fontSize: 14, padding: '0 4px', lineHeight: 1,
+                                    }}
+                                    aria-label="Previous campaigns"
+                                  >←</button>
+                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', minWidth: 32, textAlign: 'center' }}>
+                                    {page + 1} / {totalPages}
+                                  </span>
+                                  <button
+                                    onClick={() => setCampaignPage(p => Math.min(totalPages - 1, p + 1))}
+                                    disabled={page === totalPages - 1}
+                                    style={{
+                                      background: 'none', border: 'none', cursor: page === totalPages - 1 ? 'default' : 'pointer',
+                                      color: page === totalPages - 1 ? 'rgba(255,255,255,0.2)' : color,
+                                      fontSize: 14, padding: '0 4px', lineHeight: 1,
+                                    }}
+                                    aria-label="Next campaigns"
+                                  >→</button>
+                                </span>
+                              )}
+                            </div>
+                            {pageCampaigns.map((c, i) => {
                               const label = c.incrementalDollars >= 1_000_000
                                 ? `$${(c.incrementalDollars / 1_000_000).toFixed(1)}M`
                                 : `$${Math.round(c.incrementalDollars / 1000)}K`
                               return (
-                                <div key={i} className="id-exec__panel-seller-row">
+                                <div key={page * PAGE_SIZE + i} className="id-exec__panel-seller-row">
                                   <span className="id-exec__panel-seller-name" style={{ fontSize: '11px' }}>
                                     {c.clientName}
                                     <span style={{ opacity: 0.55, marginLeft: 4 }}>· {c.name}</span>
