@@ -1,5 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { GlobeBackground } from '../components/GlobeBackground'
+import { CAMPAIGNS } from '../data/campaigns'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatBudget(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
+  return `$${n}`
+}
 
 // ── Client View ───────────────────────────────────────────────────────────────
 
@@ -7,20 +16,7 @@ interface Props {
   onBack: () => void
 }
 
-type ModalType = 'reach' | 'attribution' | 'audit' | null
-
-function openGmailAudit() {
-  const subject = 'Strategy Audit Request'
-  const body = [
-    `Hi,`,
-    ``,
-    `I'd like to schedule a Strategy Audit to review our incremental opportunities.`,
-    ``,
-    `Please share your available times — looking forward to connecting.`,
-  ].join('\n')
-  const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  window.open(url, '_blank')
-}
+type ModalType = 'audience' | 'breakdown' | 'scenario' | null
 
 export function ClientView({ onBack }: Props) {
   const [zoomContinent, setZoomContinent] = useState<number | null>(null)
@@ -38,6 +34,15 @@ export function ClientView({ onBack }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [modal])
 
+  // KPI tile values — computed from active (at/above goal) campaigns
+  const activeCampaigns = useMemo(
+    () => CAMPAIGNS.filter(c => c.performanceMultiplier >= 1.0),
+    []
+  )
+  const activeCampaignCount = activeCampaigns.length
+  const activeBudget        = activeCampaigns.reduce((s, c) => s + c.budget, 0)
+  const availableIncremental = activeCampaigns.reduce((s, c) => s + c.incrementalDollars, 0)
+
   return (
     <div className="id-dashboard">
 
@@ -52,94 +57,95 @@ export function ClientView({ onBack }: Props) {
         </div>
       </div>
 
-      {/* Summary tiles — placeholder */}
+      {/* Summary tiles */}
       <div className="id-dashboard__kpis">
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Active Clients</span>
+          <span className="id-kpi-tile__label">Client Name</span>
           <span className="id-kpi-tile__value">—</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Total Campaigns</span>
-          <span className="id-kpi-tile__value">—</span>
+          <span className="id-kpi-tile__label">Active Campaign Count</span>
+          <span className="id-kpi-tile__value">{activeCampaignCount}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Total Budget</span>
-          <span className="id-kpi-tile__value">—</span>
+          <span className="id-kpi-tile__label">Active Budget</span>
+          <span className="id-kpi-tile__value">{formatBudget(activeBudget)}</span>
         </div>
         <div className="id-kpi-tile">
-          <span className="id-kpi-tile__label">Avg Performance</span>
-          <span className="id-kpi-tile__value">—</span>
+          <span className="id-kpi-tile__label">Available Incremental</span>
+          <span className="id-kpi-tile__value">{formatBudget(availableIncremental)}</span>
         </div>
       </div>
 
       {/* ── Action cards ──────────────────────────────────────────────────── */}
       <div className="id-client__cards">
 
-        {/* 1 — Unlock Hidden Reach */}
+        {/* 1 — Audience Expander */}
         <button
           className="id-client__card id-client__card--reach"
-          onClick={() => setModal('reach')}
+          onClick={() => setModal('audience')}
         >
           <div className="id-client__card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
-              <line x1="12" y1="2" x2="12" y2="4.5"/>
-              <line x1="12" y1="19.5" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="4.5" y2="12"/>
-              <line x1="19.5" y1="12" x2="22" y2="12"/>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <span className="id-client__card-kicker">Growth Opportunity</span>
-          <span className="id-client__card-title">Unlock Hidden Reach</span>
+          <span className="id-client__card-kicker">Budget Reach</span>
+          <span className="id-client__card-title">Audience Expander</span>
           <span className="id-client__card-desc">
-            Your strongest campaigns are building audiences beyond their last click. Discover where your media is quietly expanding — and where momentum is ready to scale.
+            See how your current budget can be stretched to reach entirely new audiences — beyond the segments your campaigns already touch.
           </span>
-          <span className="id-client__card-cta">Explore Reach Potential →</span>
+          <span className="id-client__card-cta">Explore Reach →</span>
         </button>
 
-        {/* 2 — Eliminate Attribution Blindspots */}
+        {/* 2 — Incremental Breakdown */}
         <button
           className="id-client__card id-client__card--attribution"
-          onClick={() => setModal('attribution')}
+          onClick={() => setModal('breakdown')}
         >
           <div className="id-client__card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+              <line x1="2" y1="20" x2="22" y2="20"/>
             </svg>
           </div>
-          <span className="id-client__card-kicker">Truth in Data</span>
-          <span className="id-client__card-title">Eliminate Attribution Blindspots</span>
+          <span className="id-client__card-kicker">Performance</span>
+          <span className="id-client__card-title">Incremental Breakdown</span>
           <span className="id-client__card-desc">
-            Standard attribution models only capture part of the picture. Incrementality testing reveals the true causal impact of every dollar — so you know exactly what's working.
+            Understand exactly where your budget is generating real incremental lift — ranked by your best-performing campaigns and channels.
           </span>
-          <span className="id-client__card-cta">Explore Measurement →</span>
+          <span className="id-client__card-cta">View Breakdown →</span>
         </button>
 
-        {/* 3 — Schedule a Strategy Audit */}
+        {/* 3 — Scenario Explorer */}
         <button
           className="id-client__card id-client__card--audit"
-          onClick={() => setModal('audit')}
+          onClick={() => setModal('scenario')}
         >
           <div className="id-client__card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-              <circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/>
-              <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/>
-              <circle cx="16" cy="15" r="1" fill="currentColor" stroke="none"/>
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/>
+              <line x1="9" y1="8" x2="15" y2="8"/>
+              <line x1="17" y1="16" x2="23" y2="16"/>
             </svg>
           </div>
-          <span className="id-client__card-kicker">We're Here to Help</span>
-          <span className="id-client__card-title">Book a Strategy Audit</span>
+          <span className="id-client__card-kicker">Budget Planning</span>
+          <span className="id-client__card-title">Scenario Explorer</span>
           <span className="id-client__card-desc">
-            Reserve 30 minutes with your Growth Director. Leave with a clear incremental opportunity map and a prioritized plan — not a pitch deck.
+            Have incremental budget available? Play around with different allocation scenarios to see which mix drives the highest projected lift.
           </span>
-          <span className="id-client__card-cta">Schedule Your Session →</span>
+          <span className="id-client__card-cta">Run Scenarios →</span>
         </button>
 
       </div>
@@ -160,45 +166,45 @@ export function ClientView({ onBack }: Props) {
               </svg>
             </button>
 
-            {/* Unlock Hidden Reach */}
-            {modal === 'reach' && (
+            {/* Audience Expander */}
+            {modal === 'audience' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--reach">
-                  <span className="id-client__modal-kicker">Growth Opportunity</span>
-                  <h3 className="id-client__modal-title">Unlock Hidden Reach</h3>
+                  <span className="id-client__modal-kicker">Budget Reach</span>
+                  <h3 className="id-client__modal-title">Audience Expander</h3>
                   <p className="id-client__modal-intro">
-                    The audiences your media builds don't always convert right away — but that doesn't make them any less real. Incrementality analysis reveals the true reach your campaigns generate beyond what attribution models ever credit.
+                    Your current budget is already working — but it may only be reaching audiences you already know. Audience Expander maps out how that same budget, repositioned, can generate net-new reach beyond your existing customer footprint.
                   </p>
                 </div>
                 <div className="id-client__modal-points">
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
                     <div>
-                      <strong>Beyond Last-Click</strong>
-                      <p>See which campaigns are generating real awareness lift — not just the conversions they happen to get credited for.</p>
+                      <strong>Net-New Audience Mapping</strong>
+                      <p>Identify untapped segments your current campaigns aren't reaching — and quantify the growth opportunity each represents.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
                     <div>
-                      <strong>Net-New Audience Discovery</strong>
-                      <p>Identify the incremental audiences your media is reaching for the first time — the growth attribution never shows you.</p>
+                      <strong>Budget Reallocation Modeling</strong>
+                      <p>See how shifting even a portion of your active budget toward expansion channels can meaningfully widen your reach.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
                     <div>
-                      <strong>Scale With Confidence</strong>
-                      <p>Once true reach is measured, invest more in channels genuinely expanding your market — not just claiming credit for it.</p>
+                      <strong>Incremental Audience Lift</strong>
+                      <p>Measure the audiences you're adding that would never have been reached through your existing campaign mix alone.</p>
                     </div>
                   </div>
                 </div>
                 <div className="id-client__modal-footer">
                   <button
                     className="id-client__modal-cta id-client__modal-cta--reach"
-                    onClick={() => setModal('audit')}
+                    onClick={() => setModal('scenario')}
                   >
-                    Book a Strategy Audit →
+                    Try Scenario Explorer →
                   </button>
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>
                     Close
@@ -207,45 +213,45 @@ export function ClientView({ onBack }: Props) {
               </>
             )}
 
-            {/* Eliminate Attribution Blindspots */}
-            {modal === 'attribution' && (
+            {/* Incremental Breakdown */}
+            {modal === 'breakdown' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--attribution">
-                  <span className="id-client__modal-kicker">Truth in Data</span>
-                  <h3 className="id-client__modal-title">Eliminate Attribution Blindspots</h3>
+                  <span className="id-client__modal-kicker">Performance</span>
+                  <h3 className="id-client__modal-title">Incremental Breakdown</h3>
                   <p className="id-client__modal-intro">
-                    Every attribution model — from last-click to data-driven — tells a story. Incrementality testing reveals whether that story is true. Instead of crediting the loudest channel, we measure actual causation.
+                    Not every campaign dollar produces the same result. Incremental Breakdown shows you exactly which campaigns are generating real lift — ranked by performance so you know where your budget is truly working hardest.
                   </p>
                 </div>
                 <div className="id-client__modal-points">
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8EE7F1' }}>◈</span>
                     <div>
-                      <strong>Causation Over Correlation</strong>
-                      <p>Incrementality testing isolates the true lift your media generates — not the lift it claims.</p>
+                      <strong>Campaign-Level Ranking</strong>
+                      <p>See your campaigns sorted by actual incremental output — identify your top performers and your underperformers at a glance.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8EE7F1' }}>◈</span>
                     <div>
-                      <strong>Channel-Level Truth</strong>
-                      <p>Understand which channels are genuinely driving incremental outcomes versus riding the wave of organic demand.</p>
+                      <strong>Channel Contribution Analysis</strong>
+                      <p>Understand which channels (CTV, Display, Search, Social) are driving the most incremental value relative to their spend.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#8EE7F1' }}>◈</span>
                     <div>
-                      <strong>Smarter Budget Allocation</strong>
-                      <p>Re-allocate spend based on measured reality — and stop paying for conversions that would have happened anyway.</p>
+                      <strong>Where to Apply Additional Budget</strong>
+                      <p>Based on current performance, see the highest-confidence destinations for any incremental budget you have available.</p>
                     </div>
                   </div>
                 </div>
                 <div className="id-client__modal-footer">
                   <button
                     className="id-client__modal-cta id-client__modal-cta--attribution"
-                    onClick={() => setModal('audit')}
+                    onClick={() => setModal('scenario')}
                   >
-                    Book a Strategy Audit →
+                    Try Scenario Explorer →
                   </button>
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>
                     Close
@@ -254,48 +260,48 @@ export function ClientView({ onBack }: Props) {
               </>
             )}
 
-            {/* Strategy Audit */}
-            {modal === 'audit' && (
+            {/* Scenario Explorer */}
+            {modal === 'scenario' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--audit">
-                  <span className="id-client__modal-kicker">We're Here to Help</span>
-                  <h3 className="id-client__modal-title">Book a Strategy Audit</h3>
+                  <span className="id-client__modal-kicker">Budget Planning</span>
+                  <h3 className="id-client__modal-title">Scenario Explorer</h3>
                   <p className="id-client__modal-intro">
-                    This isn't a sales call — it's a working session. You'll leave with a clear incremental opportunity map, an honest attribution assessment, and concrete next steps tailored to your business.
+                    Have incremental budget to deploy? Scenario Explorer lets you model different allocation strategies — across campaigns, channels, and timelines — to see which scenario is projected to generate the highest lift before you commit a dollar.
                   </p>
                 </div>
                 <div className="id-client__modal-points">
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
                     <div>
-                      <strong>30-Minute Deep Dive</strong>
-                      <p>A focused session with your Growth Director — no fluff, no pitch deck. Just your data and a clear path forward.</p>
+                      <strong>Drag-and-Drop Budget Allocation</strong>
+                      <p>Assign budget across your active campaigns and channels interactively — see projected incremental outcomes update in real time.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
                     <div>
-                      <strong>Incremental Opportunity Map</strong>
-                      <p>Walk away with a clear view of where your highest-confidence growth levers are right now.</p>
+                      <strong>Side-by-Side Scenario Comparison</strong>
+                      <p>Run multiple budget scenarios simultaneously and compare their projected incremental lift, reach, and efficiency side by side.</p>
                     </div>
                   </div>
                   <div className="id-client__modal-point">
                     <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
                     <div>
-                      <strong>Your Next Best Move</strong>
-                      <p>A prioritized action plan you can act on immediately — not a deck you'll read three weeks from now.</p>
+                      <strong>Commit With Confidence</strong>
+                      <p>Choose the scenario that aligns with your goals, then hand it directly to your Growth Director to activate — no guesswork required.</p>
                     </div>
                   </div>
                 </div>
                 <div className="id-client__modal-footer">
                   <button
                     className="id-client__modal-cta id-client__modal-cta--audit"
-                    onClick={() => { openGmailAudit(); setModal(null) }}
+                    onClick={() => setModal(null)}
                   >
-                    Schedule Your Session →
+                    Coming Soon
                   </button>
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>
-                    Maybe Later
+                    Close
                   </button>
                 </div>
               </>
