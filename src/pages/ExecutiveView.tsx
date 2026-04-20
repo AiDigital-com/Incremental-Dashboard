@@ -365,7 +365,7 @@ export function ExecutiveView({ onBack }: Props) {
 
         {/* Regional metrics sidebar */}
         <div className="id-exec__metrics">
-          <div className="id-exec__metrics-total-label">Total Incremental</div>
+          <div className="id-exec__metrics-total-label">Available Incremental</div>
           <div className="id-exec__metrics-total-value">{TOTAL_INCREMENTAL}</div>
           {Object.entries(REGION_COLORS).map(([region, color]) => {
             const isHovered = hoveredRegion === region
