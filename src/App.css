@@ -1312,7 +1312,7 @@
 
 .id-exec__metric-row {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 9px;
   padding: 6px 8px;
   border-radius: 6px;
@@ -1325,11 +1325,10 @@
 }
 
 .id-exec__metric-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 3px;
+  border-radius: 2px;
   flex-shrink: 0;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, opacity 0.15s;
 }
 
 .id-exec__metric-info {
@@ -1363,6 +1362,7 @@
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
+  align-self: center;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
   line-height: 1;
 }

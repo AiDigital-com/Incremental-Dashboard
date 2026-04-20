@@ -383,9 +383,8 @@ export function ExecutiveView({ onBack }: Props) {
                     className="id-exec__metric-dot"
                     style={{
                       background: color,
-                      boxShadow: isHovered
-                        ? `0 0 8px ${color}, 0 0 3px ${color}`
-                        : `0 0 5px ${color}`,
+                      boxShadow: isHovered ? `0 0 6px ${color}` : 'none',
+                      opacity: isHovered ? 1 : 0.7,
                     }}
                   />
                   <div className="id-exec__metric-info">
