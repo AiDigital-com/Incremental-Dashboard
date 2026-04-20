@@ -1312,7 +1312,7 @@
 
 .id-exec__metric-row {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 9px;
   padding: 6px 8px;
   border-radius: 6px;
@@ -1326,6 +1326,7 @@
 
 .id-exec__metric-dot {
   width: 3px;
+  align-self: stretch;
   border-radius: 2px;
   flex-shrink: 0;
   transition: box-shadow 0.15s, opacity 0.15s;
