@@ -616,75 +616,141 @@ export function ExecutiveView({ onBack }: Props) {
 
                   <div className="id-exec__panel-hdivider" />
 
-                  {/* Bottom row: Seller YTD + Client YTD */}
+                  {/* Bottom row */}
                   <div className="id-exec__panel-bottom-row">
 
-                    {/* Seller YTD progress bars */}
+                    {/* Left box: Seller YTD (region) → Client YTD (seller drill-down) */}
                     <div className="id-exec__panel-sellers">
-                      <div className="id-exec__panel-section-label">Seller YTD</div>
-                      {visibleSellers.map(seller => (
-                        <div
-                          key={seller.name}
-                          className="id-exec__panel-seller-row"
-                          style={{
-                            cursor: selectedSeller ? 'default' : 'pointer',
-                            background: !selectedSeller && hoveredSellerRow === seller.name
-                              ? `${color}18`
-                              : 'transparent',
-                            borderRadius: 6,
-                            transition: 'background 0.15s',
-                          }}
-                          onClick={() => { if (!selectedSeller) setSelectedSeller(seller.name) }}
-                          onMouseEnter={() => { if (!selectedSeller) setHoveredSellerRow(seller.name) }}
-                          onMouseLeave={() => setHoveredSellerRow(null)}
-                        >
-                          <span className="id-exec__panel-seller-name">
-                            {seller.name}
-                          </span>
-                          <div className="id-exec__panel-seller-track">
+                      {selectedSeller ? (
+                        <>
+                          <div className="id-exec__panel-section-label">Client YTD</div>
+                          {rawClients.map(c => {
+                            const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                            const valK = c.incremental.includes('M') ? raw * 1000 : raw
+                            return (
+                              <div key={c.client} className="id-exec__panel-seller-row">
+                                <span className="id-exec__panel-seller-name">{c.client}</span>
+                                <div className="id-exec__panel-seller-track">
+                                  <div
+                                    className="id-exec__panel-seller-fill"
+                                    style={{
+                                      width: `${Math.round((valK / maxClientVal) * 100)}%`,
+                                      background: color,
+                                    }}
+                                  />
+                                </div>
+                                <span className="id-exec__panel-seller-amount" style={{ color }}>
+                                  {c.incremental}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </>
+                      ) : (
+                        <>
+                          <div className="id-exec__panel-section-label">Seller YTD</div>
+                          {visibleSellers.map(seller => (
                             <div
-                              className="id-exec__panel-seller-fill"
+                              key={seller.name}
+                              className="id-exec__panel-seller-row"
                               style={{
-                                width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
-                                background: color,
+                                cursor: 'pointer',
+                                background: hoveredSellerRow === seller.name
+                                  ? `${color}18`
+                                  : 'transparent',
+                                borderRadius: 6,
+                                transition: 'background 0.15s',
                               }}
-                            />
-                          </div>
-                          <span className="id-exec__panel-seller-amount" style={{ color }}>
-                            {seller.ytdK >= 1000
-                              ? `$${(seller.ytdK / 1000).toFixed(2)}M`
-                              : `$${seller.ytdK}K`}
-                          </span>
-                        </div>
-                      ))}
+                              onClick={() => setSelectedSeller(seller.name)}
+                              onMouseEnter={() => setHoveredSellerRow(seller.name)}
+                              onMouseLeave={() => setHoveredSellerRow(null)}
+                            >
+                              <span className="id-exec__panel-seller-name">{seller.name}</span>
+                              <div className="id-exec__panel-seller-track">
+                                <div
+                                  className="id-exec__panel-seller-fill"
+                                  style={{
+                                    width: `${Math.round((seller.ytdK / maxYtd) * 100)}%`,
+                                    background: color,
+                                  }}
+                                />
+                              </div>
+                              <span className="id-exec__panel-seller-amount" style={{ color }}>
+                                {seller.ytdK >= 1000
+                                  ? `$${(seller.ytdK / 1000).toFixed(2)}M`
+                                  : `$${seller.ytdK}K`}
+                              </span>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
 
                     <div className="id-exec__panel-divider" />
 
-                    {/* Client YTD progress bars */}
+                    {/* Right box: Client YTD (region) → Campaign Incremental (seller drill-down) */}
                     <div className="id-exec__panel-clients">
-                      <div className="id-exec__panel-section-label">Client YTD</div>
-                      {rawClients.map(c => {
-                        const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
-                        const valK = c.incremental.includes('M') ? raw * 1000 : raw
+                      {selectedSeller ? (() => {
+                        const sellerCampaigns = CAMPAIGNS
+                          .filter(c => c.seller === selectedSeller && c.incrementalDollars > 0)
+                          .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
+                        const maxInc = Math.max(...sellerCampaigns.map(c => c.incrementalDollars), 1)
                         return (
-                          <div key={c.client} className="id-exec__panel-seller-row">
-                            <span className="id-exec__panel-seller-name">{c.client}</span>
-                            <div className="id-exec__panel-seller-track">
-                              <div
-                                className="id-exec__panel-seller-fill"
-                                style={{
-                                  width: `${Math.round((valK / maxClientVal) * 100)}%`,
-                                  background: color,
-                                }}
-                              />
-                            </div>
-                            <span className="id-exec__panel-seller-amount" style={{ color }}>
-                              {c.incremental}
-                            </span>
-                          </div>
+                          <>
+                            <div className="id-exec__panel-section-label">Campaign Incremental</div>
+                            {sellerCampaigns.map((c, i) => {
+                              const label = c.incrementalDollars >= 1_000_000
+                                ? `$${(c.incrementalDollars / 1_000_000).toFixed(1)}M`
+                                : `$${Math.round(c.incrementalDollars / 1000)}K`
+                              return (
+                                <div key={i} className="id-exec__panel-seller-row">
+                                  <span className="id-exec__panel-seller-name" style={{ fontSize: '11px' }}>
+                                    {c.clientName}
+                                    <span style={{ opacity: 0.55, marginLeft: 4 }}>· {c.name}</span>
+                                  </span>
+                                  <div className="id-exec__panel-seller-track">
+                                    <div
+                                      className="id-exec__panel-seller-fill"
+                                      style={{
+                                        width: `${Math.round((c.incrementalDollars / maxInc) * 100)}%`,
+                                        background: color,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="id-exec__panel-seller-amount" style={{ color }}>
+                                    {label}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </>
                         )
-                      })}
+                      })() : (
+                        <>
+                          <div className="id-exec__panel-section-label">Client YTD</div>
+                          {rawClients.map(c => {
+                            const raw = parseFloat(c.incremental.replace(/[$KM]/g, ''))
+                            const valK = c.incremental.includes('M') ? raw * 1000 : raw
+                            return (
+                              <div key={c.client} className="id-exec__panel-seller-row">
+                                <span className="id-exec__panel-seller-name">{c.client}</span>
+                                <div className="id-exec__panel-seller-track">
+                                  <div
+                                    className="id-exec__panel-seller-fill"
+                                    style={{
+                                      width: `${Math.round((valK / maxClientVal) * 100)}%`,
+                                      background: color,
+                                    }}
+                                  />
+                                </div>
+                                <span className="id-exec__panel-seller-amount" style={{ color }}>
+                                  {c.incremental}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </>
+                      )}
                     </div>
 
                   </div>
