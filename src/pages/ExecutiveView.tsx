@@ -356,7 +356,7 @@ export function ExecutiveView({ onBack }: Props) {
         </button>
         <div>
           <h2 className="id-exec__title">Executive View</h2>
-          <p className="id-exec__subtitle">Regional incremental performance — United States</p>
+          <p className="id-exec__subtitle">Regional Incremental Performance</p>
         </div>
       </div>
 
@@ -614,7 +614,7 @@ export function ExecutiveView({ onBack }: Props) {
                 <div className="id-exec__panel-body">
                   {/* Monthly bar chart */}
                   <div className="id-exec__panel-chart">
-                    <div className="id-exec__panel-section-label">Monthly Won</div>
+                    <div className="id-exec__panel-section-label">Incremental Won by Month</div>
                     <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} />
                   </div>
 
