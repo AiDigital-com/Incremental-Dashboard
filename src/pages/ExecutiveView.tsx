@@ -16,26 +16,26 @@ const REGION_COLORS: Record<string, string> = {
   Midwest:            '#A9BEF8',  // Skywave
   Central:            '#38b6ff',  // Neon Azure
   West:               '#8263FF',  // Violet Pulse
-  Political:          '#FF7CF5',  // Hot Pink
-  'Regional Majors':  '#F6AD55',  // Amber
-  'Retail Solutions': '#AEF33E',  // Neon Lime
+  Political:          '#AEF33E',  // Neon Lime
+  'Regional Majors':  '#FDE68A',  // Light Honey
+  'Retail Solutions': '#FF7CF5',  // Hot Pink
   House:              '#FF9F43',  // Warm Orange
 }
 
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
-  Northeast:          [-67.5, 47.5],
+  Northeast:          [-67.5, 45.5],
   Southeast:          [-87,   32.5],
   Midwest:            [-95,   43  ],
   Central:            [-99,   30.7],
   West:               [-115,  40.6],
   House:              [-81.5, 28.5],
+  'Retail Solutions': [-120.5, 47.5],
 }
 
 // Special inset/small-area markers: [longitude, latitude, label, color-key]
-const INSET_MARKERS: { coords: [number, number]; label: string; region: string; isDC?: boolean }[] = [
-  { coords: [-77.03, 38.91], label: 'POLITICAL',        region: 'Political',       isDC: true },
-  { coords: [-157,   19.2 ], label: 'REGIONAL MAJORS', region: 'Regional Majors'             },
+const INSET_MARKERS: { coords: [number, number]; label: string; region: string }[] = [
+  { coords: [-157, 19.2], label: 'REGIONAL MAJORS', region: 'Regional Majors' },
 ]
 
 // Total incremental — computed from real campaign data
@@ -476,10 +476,9 @@ export function ExecutiveView({ onBack }: Props) {
                 )
               })}
 
-              {/* Inset / small-area region markers (D.C., Hawaii, Alaska) */}
-              {INSET_MARKERS.map(({ coords, label, region, isDC }) => {
+              {/* Inset / small-area region markers (Hawaii, Alaska) */}
+              {INSET_MARKERS.map(({ coords, label, region }) => {
                 const color = REGION_COLORS[region]
-                const isHovered = hoveredRegion === region
                 return (
                   <Marker
                     key={region}
@@ -488,22 +487,13 @@ export function ExecutiveView({ onBack }: Props) {
                     onMouseEnter={() => setHoveredRegion(region)}
                     onMouseLeave={() => setHoveredRegion(null)}
                   >
-                    {isDC && (
-                      <circle
-                        r={isHovered ? 9 : 7}
-                        fill={isHovered ? color : `${color}cc`}
-                        stroke={color}
-                        strokeWidth={1.5}
-                        style={{ cursor: 'pointer', transition: 'r 0.15s' }}
-                      />
-                    )}
                     <text
                       textAnchor="middle"
-                      dy={isDC ? -14 : -4}
+                      dy={-4}
                       style={{
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
-                        fontSize: isDC ? '33px' : '22px',
+                        fontSize: '22px',
                         fill: color,
                         letterSpacing: '0.10em',
                         pointerEvents: 'none',
