@@ -1916,3 +1916,321 @@
   transition: color 0.15s;
 }
 .id-client__modal-dismiss:hover { color: rgba(255, 255, 255, 0.68); }
+
+/* ── Audience Analysis ───────────────────────────────────────────────────── */
+
+.id-client__analysis-back {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+  display: block;
+  transition: color 0.15s;
+}
+.id-client__analysis-back:hover { color: rgba(255, 255, 255, 0.85); }
+
+.id-client__analysis-table {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 20px;
+}
+
+.id-client__analysis-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.id-client__analysis-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.id-client__analysis-row-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.id-client__analysis-name {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #F9F9F9;
+  flex: 1;
+}
+.id-client__analysis-kpi {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+.id-client__analysis-perf {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.id-client__analysis-bar-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.id-client__analysis-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.id-client__analysis-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.id-client__suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.id-client__suggestion-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.id-client__suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.id-client__suggestion-text strong {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.90);
+  display: block;
+}
+.id-client__suggestion-text span {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.50);
+  line-height: 1.4;
+}
+
+/* ── Incremental Breakdown list ──────────────────────────────────────────── */
+
+.id-client__breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 340px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.id-client__breakdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.15s, border-color 0.15s;
+}
+.id-client__breakdown-item:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(142, 231, 241, 0.20); }
+
+.id-client__breakdown-info {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+.id-client__breakdown-name {
+  display: block;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #F9F9F9;
+  margin-bottom: 3px;
+}
+.id-client__breakdown-meta {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.70rem;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.id-client__breakdown-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.id-client__breakdown-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.50);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.id-client__breakdown-icon-btn:hover { background: rgba(142, 231, 241, 0.12); color: #8EE7F1; border-color: rgba(142, 231, 241, 0.30); }
+.id-client__breakdown-icon-btn--plus:hover { background: rgba(174, 243, 62, 0.12); color: #AEF33E; border-color: rgba(174, 243, 62, 0.30); }
+
+/* ── Incremental Breakdown detail ────────────────────────────────────────── */
+
+.id-client__breakdown-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: rgba(174, 243, 62, 0.06);
+  border: 1px solid rgba(174, 243, 62, 0.18);
+  border-radius: 8px;
+}
+.id-client__breakdown-total-label {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.70rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(174, 243, 62, 0.70);
+}
+.id-client__breakdown-total-value {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  color: #AEF33E;
+}
+
+.id-client__breakdown-plans-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.70);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.id-client__breakdown-plans-toggle:hover,
+.id-client__breakdown-plans-toggle.is-open { background: rgba(142, 231, 241, 0.06); border-color: rgba(142, 231, 241, 0.20); color: #8EE7F1; }
+.id-client__breakdown-plans-chevron { font-size: 0.65rem; }
+
+.id-client__breakdown-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.id-client__breakdown-plan-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.12s;
+}
+.id-client__breakdown-plan-row:last-child { border-bottom: none; }
+.id-client__breakdown-plan-row:hover { background: rgba(255, 255, 255, 0.03); }
+.id-client__breakdown-plan-row.is-selected { background: rgba(174, 243, 62, 0.06); }
+.id-client__breakdown-plan-name {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.80);
+}
+.id-client__breakdown-plan-meta {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+.id-client__breakdown-plan-inc {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.73rem;
+  color: #AEF33E;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────────── */
+
+.id-client__action-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.id-client__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  text-align: left;
+}
+.id-client__action-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.id-client__action-btn--request {
+  background: #0009DC;
+  color: #F9F9F9;
+  box-shadow: 0 0 18px rgba(0, 9, 220, 0.35);
+}
+.id-client__action-btn--chat {
+  background: #AEF33E;
+  color: #080808;
+  box-shadow: 0 0 18px rgba(174, 243, 62, 0.30);
+}
