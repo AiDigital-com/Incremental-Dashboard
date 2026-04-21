@@ -94,6 +94,9 @@ export function ClientView({ onBack }: Props) {
   const [showAudienceAnalysis, setShowAudienceAnalysis] = useState(false)
   const [selectedCampaign,     setSelectedCampaign]    = useState<Campaign | null>(null)
   const [showMediaPlans,       setShowMediaPlans]      = useState(false)
+  const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b'>('menu')
+  const [allocations,          setAllocations]         = useState<Record<string, number>>({})
+  const [userPlanNote,         setUserPlanNote]        = useState('')
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -105,6 +108,9 @@ export function ClientView({ onBack }: Props) {
       setShowAudienceAnalysis(false)
       setSelectedCampaign(null)
       setShowMediaPlans(false)
+      setScenarioView('menu')
+      setAllocations({})
+      setUserPlanNote('')
     }
   }, [modal])
 
@@ -148,6 +154,27 @@ export function ClientView({ onBack }: Props) {
   const maxPerf = audiencePerformance[0]?.avgPerf ?? 1
   const minPerf = 1.0
 
+  // ── AI-suggested allocation (top performers get budget first) ─────────────
+  const aiAllocation = useMemo(() => {
+    const sorted = [...clientCampaigns].sort((a, b) => b.performanceMultiplier - a.performanceMultiplier)
+    let remaining = availableIncremental
+    const result: Record<string, number> = Object.fromEntries(clientCampaigns.map(c => [c.id, 0]))
+    for (const c of sorted) {
+      if (remaining <= 0) break
+      const give = Math.min(c.incrementalDollars, remaining)
+      result[c.id] = give
+      remaining -= give
+    }
+    return result
+  }, [clientCampaigns, availableIncremental])
+
+  const totalAllocated = clientCampaigns.reduce((s, c) => s + (allocations[c.id] ?? 0), 0)
+  const totalAiAllocated = Object.values(aiAllocation).reduce((s, v) => s + v, 0)
+
+  function setAlloc(id: string, val: number) {
+    setAllocations(prev => ({ ...prev, [id]: val }))
+  }
+
   // ── Email helpers ─────────────────────────────────────────────────────────
   function openGrowthEmail(c: Campaign) {
     window.open(gmailCompose(
@@ -168,6 +195,26 @@ export function ClientView({ onBack }: Props) {
       `Incremental Options — ${c.clientName}`,
       `Hi Max,\n\nI'd love to explore my incremental options for the ${c.name} campaign under ${c.clientName}.\n\nWe currently have ${formatBudget(c.incrementalDollars)} available and I'm looking for your best recommendation on where to put it to work.\n\nThanks!\n`,
     ), '_blank')
+  }
+
+  function openRelayPlan(note?: string) {
+    const allocLines = clientCampaigns
+      .filter(c => (allocations[c.id] ?? 0) > 0)
+      .sort((a, b) => (allocations[b.id] ?? 0) - (allocations[a.id] ?? 0))
+      .map(c => `  • ${c.name}: ${formatBudget(allocations[c.id])}`)
+      .join('\n')
+    const body = [
+      `Hi Team,`,
+      ``,
+      `I'd like to relay my incremental media plan for ${CLIENT_NAME}.`,
+      ``,
+      `Total Available Incremental: ${formatBudget(availableIncremental)}`,
+      ...(allocLines ? [`Total Allocated: ${formatBudget(totalAllocated)}`, ``, `My Allocation:`, allocLines] : []),
+      ...(note ? [``, `Additional Notes:`, note] : []),
+      ``,
+      `Please proceed with activating this plan at your earliest convenience!`,
+    ].join('\n')
+    window.open(gmailCompose(`Incremental Plan — ${CLIENT_NAME}`, body), '_blank')
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -499,39 +546,164 @@ export function ClientView({ onBack }: Props) {
             {modal === 'scenario' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--audit">
-                  <span className="id-client__modal-kicker">Budget Planning</span>
+                  {scenarioView !== 'menu' && (
+                    <button className="id-client__analysis-back" onClick={() => setScenarioView('menu')}>
+                      ← Back
+                    </button>
+                  )}
+                  <span className="id-client__modal-kicker">Budget Planning — {CLIENT_NAME}</span>
                   <h3 className="id-client__modal-title">Scenario Explorer</h3>
-                  <p className="id-client__modal-intro">
-                    Have incremental budget to deploy? Scenario Explorer lets you model different allocation strategies — across campaigns, channels, and timelines — to see which scenario is projected to generate the highest lift before you commit a dollar.
-                  </p>
+                  {scenarioView === 'menu' && (
+                    <p className="id-client__modal-intro">
+                      You have <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> in available incremental. How would you like to proceed?
+                    </p>
+                  )}
                 </div>
-                <div className="id-client__modal-points">
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
-                    <div>
-                      <strong>Drag-and-Drop Budget Allocation</strong>
-                      <p>Assign budget across your active campaigns and channels interactively — see projected incremental outcomes update in real time.</p>
+
+                {/* ── Menu ── */}
+                {scenarioView === 'menu' && (
+                  <div className="id-scenario__menu">
+                    <button className="id-scenario__option-card" onClick={() => setScenarioView('a')}>
+                      <span className="id-scenario__option-label">A</span>
+                      <div className="id-scenario__option-body">
+                        <strong>I know exactly how I want to apply my incremental.</strong>
+                        <span>Describe your allocation and relay it directly to your Growth and CS team.</span>
+                      </div>
+                      <span className="id-scenario__option-arrow">→</span>
+                    </button>
+                    <button className="id-scenario__option-card" onClick={() => setScenarioView('b')}>
+                      <span className="id-scenario__option-label id-scenario__option-label--b">B</span>
+                      <div className="id-scenario__option-body">
+                        <strong>I need guidance on where best to apply my incremental.</strong>
+                        <span>Use the interactive budget allocator and compare scenarios side by side.</span>
+                      </div>
+                      <span className="id-scenario__option-arrow">→</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Option A: I know exactly ── */}
+                {scenarioView === 'a' && (
+                  <div className="id-scenario__view-a">
+                    <div className="id-scenario__avail-bar">
+                      <span className="id-scenario__avail-label">Available Incremental</span>
+                      <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
+                    </div>
+                    <p className="id-scenario__a-hint">Describe how you'd like to allocate your incremental budget across campaigns and channels. Your Growth and CS team will receive your plan directly.</p>
+                    <textarea
+                      className="id-scenario__textarea"
+                      placeholder={`e.g. "Apply $50K to CTV, $30K to Video, and $20K to Meta — prioritize top-performing placements first."`}
+                      value={userPlanNote}
+                      onChange={e => setUserPlanNote(e.target.value)}
+                      rows={5}
+                    />
+                    <div className="id-client__action-btns" style={{ marginTop: 8 }}>
+                      <button
+                        className="id-client__action-btn id-client__action-btn--chat"
+                        onClick={() => openRelayPlan(userPlanNote)}
+                      >
+                        Relay my plan to my Growth and CS team!
+                      </button>
                     </div>
                   </div>
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
-                    <div>
-                      <strong>Side-by-Side Scenario Comparison</strong>
-                      <p>Run multiple budget scenarios simultaneously and compare their projected incremental lift, reach, and efficiency side by side.</p>
+                )}
+
+                {/* ── Option B: Need guidance ── */}
+                {scenarioView === 'b' && (
+                  <div className="id-scenario__view-b">
+                    <div className="id-scenario__avail-bar">
+                      <span className="id-scenario__avail-label">Available Incremental</span>
+                      <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
+                    </div>
+
+                    {/* Sliders */}
+                    <div className="id-scenario__sliders">
+                      {clientCampaigns.map(c => {
+                        const val = allocations[c.id] ?? 0
+                        return (
+                          <div key={c.id} className="id-scenario__slider-row">
+                            <div className="id-scenario__slider-top">
+                              <span className="id-scenario__slider-name">{c.name}</span>
+                              <span className="id-scenario__slider-val">{formatBudget(val)}</span>
+                            </div>
+                            <input
+                              type="range"
+                              className="id-scenario__range"
+                              min={0}
+                              max={c.incrementalDollars}
+                              step={Math.max(500, Math.floor(c.incrementalDollars / 100))}
+                              value={val}
+                              onChange={e => setAlloc(c.id, Number(e.target.value))}
+                            />
+                            <div className="id-scenario__slider-cap">
+                              <span>$0</span>
+                              <span>Max {formatBudget(c.incrementalDollars)}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Totals summary */}
+                    <div className="id-scenario__totals">
+                      <div className="id-scenario__total-row">
+                        <span>Your Total Allocated</span>
+                        <span style={{ color: totalAllocated > availableIncremental ? '#FF7CF5' : '#AEF33E' }}>
+                          {formatBudget(totalAllocated)}
+                        </span>
+                      </div>
+                      <div className="id-scenario__total-row">
+                        <span>Remaining</span>
+                        <span>{formatBudget(Math.max(0, availableIncremental - totalAllocated))}</span>
+                      </div>
+                    </div>
+
+                    {/* Side-by-side comparison */}
+                    <div className="id-scenario__comparison">
+                      <h4 className="id-scenario__comparison-title">Side-by-Side Scenario Comparison</h4>
+                      <div className="id-scenario__comparison-table">
+                        <div className="id-scenario__cmp-header">
+                          <span>Campaign</span>
+                          <span>Your Allocation</span>
+                          <span>AI Suggested</span>
+                          <span>Difference</span>
+                        </div>
+                        {clientCampaigns.map(c => {
+                          const userVal = allocations[c.id] ?? 0
+                          const aiVal = aiAllocation[c.id] ?? 0
+                          const diff = userVal - aiVal
+                          return (
+                            <div key={c.id} className="id-scenario__cmp-row">
+                              <span className="id-scenario__cmp-name">{c.name}</span>
+                              <span className="id-scenario__cmp-user">{formatBudget(userVal)}</span>
+                              <span className="id-scenario__cmp-ai">{formatBudget(aiVal)}</span>
+                              <span className={`id-scenario__cmp-diff${diff > 0 ? ' id-scenario__cmp-diff--pos' : diff < 0 ? ' id-scenario__cmp-diff--neg' : ''}`}>
+                                {diff === 0 ? '—' : `${diff > 0 ? '+' : ''}${formatBudget(Math.abs(diff))}`}
+                              </span>
+                            </div>
+                          )
+                        })}
+                        <div className="id-scenario__cmp-footer">
+                          <span>Total</span>
+                          <span style={{ color: '#AEF33E' }}>{formatBudget(totalAllocated)}</span>
+                          <span style={{ color: '#8EE7F1' }}>{formatBudget(totalAiAllocated)}</span>
+                          <span />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="id-client__action-btns" style={{ marginTop: 4 }}>
+                      <button
+                        className="id-client__action-btn id-client__action-btn--chat"
+                        onClick={() => openRelayPlan()}
+                      >
+                        Relay my plan to my Growth and CS team!
+                      </button>
                     </div>
                   </div>
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#AEF33E' }}>◈</span>
-                    <div>
-                      <strong>Commit With Confidence</strong>
-                      <p>Choose the scenario that aligns with your goals, then hand it directly to your Growth Director to activate — no guesswork required.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="id-client__modal-footer">
-                  <button className="id-client__modal-cta id-client__modal-cta--audit" onClick={() => setModal(null)}>
-                    Coming Soon
-                  </button>
+                )}
+
+                <div className="id-client__modal-footer" style={{ marginTop: 16 }}>
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
                 </div>
               </>
