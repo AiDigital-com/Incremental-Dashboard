@@ -2554,7 +2554,7 @@
   position: fixed;
   right: 16px;
   bottom: 0;
-  width: 160px;
+  width: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2601,7 +2601,7 @@
 .id-max__panel {
   position: fixed;
   bottom: 90px;
-  right: 184px;   /* 16px margin + 160px Max + 8px gap */
+  right: 224px;   /* 16px margin + 200px Max + 8px gap */
   z-index: 999;
   width: 272px;
   overflow: visible;
