@@ -2617,7 +2617,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 22px 16px 14px;
+  padding: 0 0 14px;
   background: linear-gradient(170deg, #1B3560 0%, #0E2040 60%, #081428 100%);
   position: relative;
   overflow: hidden;
@@ -2644,7 +2644,8 @@
 .id-max__avatar-wrap {
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.55));
+  width: 100%;
+  height: 188px;
 }
 
 .id-max__panel-identity {
@@ -2653,6 +2654,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 16px;
   gap: 3px;
   margin-top: 6px;
 }
