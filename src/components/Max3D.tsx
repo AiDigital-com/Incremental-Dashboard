@@ -49,7 +49,7 @@ function MaxScene() {
 
     // Gentle float + slow sway
     if (rootRef.current) {
-      rootRef.current.position.y = -1.70 + Math.sin(t * 0.85) * 0.044
+      rootRef.current.position.y = -1.60 + Math.sin(t * 0.85) * 0.044
       rootRef.current.rotation.y = Math.sin(t * 0.42) * 0.07
     }
     // Subtle head tilt
