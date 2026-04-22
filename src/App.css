@@ -2578,8 +2578,8 @@
 /* "Chat with Max" pill — separate fixed element above Max's feet */
 .id-max__character-label {
   position: fixed;
-  bottom: 44px;
-  right: 24px;
+  bottom: 28px;
+  right: 36px;
   width: 200px;
   text-align: center;
   white-space: nowrap;
