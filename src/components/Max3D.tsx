@@ -187,7 +187,7 @@ function MaxScene() {
 export function Max3D() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 2.88], fov: 42 }}
+      camera={{ position: [0, 0, 3.20], fov: 40 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent', display: 'block', width: '100%', height: '100%' }}
     >

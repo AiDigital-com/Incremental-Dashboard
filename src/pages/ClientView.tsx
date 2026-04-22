@@ -319,71 +319,65 @@ export function ClientView({ onBack }: Props) {
 
       {/* ── Max Chat Widget ───────────────────────────────────────────────── */}
 
-      {/* Chat panel */}
+      {/* Speech-bubble panel — appears to the left of Max */}
       {showMaxChat && (
         <div className="id-max__panel">
-          {/* Hero header */}
-          <div className="id-max__panel-hero">
-            <div className="id-max__avatar-wrap">
-              <Max3D />
+          <div className="id-max__panel-inner">
+            {/* Compact header */}
+            <div className="id-max__panel-top">
+              <div>
+                <span className="id-max__panel-name">MAX</span>
+                <span className="id-max__panel-tagline">Your Incremental AI Guide</span>
+              </div>
+              <button className="id-max__panel-close" onClick={() => setShowMaxChat(false)} aria-label="Close Max">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
-            <div className="id-max__panel-identity">
-              <span className="id-max__panel-name">MAX</span>
-              <span className="id-max__panel-tagline">Your Incremental AI Guide</span>
-            </div>
-          </div>
 
-          {/* Messages */}
-          <div className="id-max__chat-body">
-            <div className="id-max__bubble id-max__bubble--max">
-              <p>Hey {CLIENT_NAME.split(' ')[0]}! I'm Max — I'm here to help you get the most out of your incremental budget.</p>
-              <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available right now. Ask me about your campaigns, audiences, or the best strategy to deploy it!</p>
+            {/* Messages */}
+            <div className="id-max__chat-body">
+              <div className="id-max__bubble id-max__bubble--max">
+                <p>Hey {CLIENT_NAME.split(' ')[0]}! I'm Max — I'm here to help you get the most out of your incremental budget.</p>
+                <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available right now. Ask me about your campaigns, audiences, or the best strategy to deploy it!</p>
+              </div>
             </div>
-          </div>
 
-          {/* Input */}
-          <div className="id-max__panel-footer">
-            <input
-              className="id-max__input"
-              type="text"
-              placeholder="Ask Max anything…"
-              value={maxInput}
-              onChange={e => setMaxInput(e.target.value)}
-            />
-            <button className="id-max__send-btn" disabled={!maxInput.trim()} aria-label="Send">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
-              </svg>
-            </button>
+            {/* Input */}
+            <div className="id-max__panel-footer">
+              <input
+                className="id-max__input"
+                type="text"
+                placeholder="Ask Max anything…"
+                value={maxInput}
+                onChange={e => setMaxInput(e.target.value)}
+              />
+              <button className="id-max__send-btn" disabled={!maxInput.trim()} aria-label="Send">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Floating action button */}
-      <button
-        className={`id-max__fab${showMaxChat ? ' id-max__fab--open' : ''}`}
+      {/* Standalone Max character — click to open/close chat */}
+      <div
+        className={`id-max__character${showMaxChat ? ' id-max__character--active' : ''}`}
         onClick={() => setShowMaxChat(v => !v)}
-        aria-label={showMaxChat ? 'Close Max' : 'Chat with Max'}
+        role="button"
+        tabIndex={0}
+        aria-label={showMaxChat ? 'Close Max chat' : 'Chat with Max'}
+        onKeyDown={e => e.key === 'Enter' && setShowMaxChat(v => !v)}
       >
-        {showMaxChat ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        ) : (
-          <>
-            {/* Paw print */}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="8.5" cy="7"  r="2.5"/>
-              <circle cx="15.5" cy="7" r="2.5"/>
-              <circle cx="5.5" cy="12" r="2.5"/>
-              <circle cx="18.5" cy="12" r="2.5"/>
-              <path d="M12 10c-3.5 0-6 3-6 6.5 0 1.4 1.1 2.5 2.5 2.5h7c1.4 0 2.5-1.1 2.5-2.5C18 13 15.5 10 12 10z"/>
-            </svg>
-            <span>Chat with Max</span>
-          </>
+        <Max3D />
+        {!showMaxChat && (
+          <span className="id-max__character-label">Chat with Max</span>
         )}
-      </button>
+      </div>
 
       {/* ── Modals ────────────────────────────────────────────────────────── */}
       {modal && (
