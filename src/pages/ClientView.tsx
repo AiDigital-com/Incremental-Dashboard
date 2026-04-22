@@ -373,7 +373,9 @@ export function ClientView({ onBack }: Props) {
         aria-label={showMaxChat ? 'Close Max chat' : 'Chat with Max'}
         onKeyDown={e => e.key === 'Enter' && setShowMaxChat(v => !v)}
       >
-        <Max3D />
+        <div className="id-max__character-canvas">
+          <Max3D />
+        </div>
         {!showMaxChat && (
           <span className="id-max__character-label">Chat with Max</span>
         )}

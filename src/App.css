@@ -2553,13 +2553,22 @@
 .id-max__character {
   position: fixed;
   right: 16px;
-  bottom: 0;
-  width: 150px;
-  height: 210px;
+  bottom: 10px;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   z-index: 1000;
   cursor: pointer;
   transition: filter 0.25s;
   outline: none;
+}
+
+/* Canvas wrapper — explicit height so WebGL fills it correctly */
+.id-max__character-canvas {
+  width: 100%;
+  height: 250px;
+  flex-shrink: 0;
 }
 
 .id-max__character:hover {
@@ -2572,21 +2581,18 @@
 
 /* "Chat with Max" pill shown below Max when panel is closed */
 .id-max__character-label {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 0.62rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: rgba(174, 243, 62, 0.85);
-  background: rgba(0, 0, 0, 0.60);
-  padding: 3px 9px;
+  color: rgba(174, 243, 62, 0.90);
+  background: rgba(0, 0, 0, 0.65);
+  padding: 6px 18px;
   border-radius: 999px;
   pointer-events: none;
-  border: 1px solid rgba(174, 243, 62, 0.20);
+  border: 1px solid rgba(174, 243, 62, 0.25);
   backdrop-filter: blur(4px);
+  margin-top: 2px;
 }
 
 /* ── Speech-bubble panel (left of Max, slightly elevated) ── */
@@ -2595,7 +2601,7 @@
 .id-max__panel {
   position: fixed;
   bottom: 90px;
-  right: 174px;   /* 16px margin + 150px Max + 8px gap */
+  right: 184px;   /* 16px margin + 160px Max + 8px gap */
   z-index: 999;
   width: 272px;
   overflow: visible;
