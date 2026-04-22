@@ -35,28 +35,41 @@ function Bx({ p, sz, c, rot }: { p: V3; sz: V3; c: string; rot?: V3 }) {
 
 // ── Animated character ────────────────────────────────────────────────────────
 function MaxScene() {
-  const rootRef = useRef<Group>(null)
-  const headRef = useRef<Group>(null)
-  const eyeLRef = useRef<Mesh>(null)
-  const eyeRRef = useRef<Mesh>(null)
-  const earLRef = useRef<Mesh>(null)
-  const earRRef = useRef<Mesh>(null)
+  const rootRef   = useRef<Group>(null)
+  const headRef   = useRef<Group>(null)
+  const eyeLRef   = useRef<Mesh>(null)
+  const eyeRRef   = useRef<Mesh>(null)
+  const earLRef   = useRef<Mesh>(null)
+  const earRRef   = useRef<Mesh>(null)
+  const armRRef   = useRef<Group>(null)
 
   const blink = useRef({ timer: 0, next: 2 + Math.random() * 2, active: false, phase: 0 })
+
+  // Wave fires on sequence: wait 5s → wave, wait 7s → wave, wait 5s → wave, wait 10s → wave, repeat
+  const wave = useRef({
+    timer: 0,
+    seqIdx: 0,
+    intervals: [5, 7, 5, 10] as const,
+    next: 5,
+    active: false,
+    phase: 0,
+  })
 
   useFrame(({ clock }, delta) => {
     const t = clock.elapsedTime
 
-    // Gentle float + slow sway
+    // Gentle float + slow sway (amplitude reduced to 25%)
     if (rootRef.current) {
-      rootRef.current.position.y = -1.60 + Math.sin(t * 0.85) * 0.044
+      rootRef.current.position.y = -1.60 + Math.sin(t * 0.85) * 0.011
       rootRef.current.rotation.y = Math.sin(t * 0.42) * 0.07
     }
+
     // Subtle head tilt
     if (headRef.current) {
       headRef.current.rotation.z = Math.sin(t * 0.65) * 0.05
       headRef.current.rotation.x = Math.sin(t * 0.52) * 0.025
     }
+
     // Ear flutter
     if (earLRef.current) earLRef.current.rotation.z =  0.14 + Math.sin(t * 1.25 + 1.0) * 0.08
     if (earRRef.current) earRRef.current.rotation.z = -0.14 + Math.sin(t * 1.25) * 0.08
@@ -76,9 +89,38 @@ function MaxScene() {
         if (eyeRRef.current) eyeRRef.current.scale.y = 1
       }
     }
+
+    // Wave — right arm only
+    const w = wave.current
+    w.timer += delta
+    if (!w.active && w.timer >= w.next) {
+      w.active = true; w.phase = 0; w.timer = 0
+    }
+    if (w.active && armRRef.current) {
+      w.phase += delta / 2.0   // 2s total wave duration
+      const p = w.phase
+      let rotZ: number
+      if (p < 0.2) {
+        // raise arm: 0.42 → -1.0
+        rotZ = 0.42 + (-1.42) * (p / 0.2)
+      } else if (p < 0.8) {
+        // waggle 3 cycles around -1.0
+        rotZ = -1.0 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.35
+      } else {
+        // lower arm: -1.0 → 0.42
+        rotZ = -1.0 + 1.42 * ((p - 0.8) / 0.2)
+      }
+      armRRef.current.rotation.z = rotZ
+      if (p >= 1.0) {
+        w.active = false
+        w.seqIdx = (w.seqIdx + 1) % 4
+        w.next   = w.intervals[w.seqIdx]
+        w.timer  = 0
+        armRRef.current.rotation.z = 0.42
+      }
+    }
   })
 
-  // Root group offset so character center aligns with world origin (camera target)
   return (
     <group ref={rootRef}>
 
@@ -113,20 +155,26 @@ function MaxScene() {
       <Bx p={[0, 0.870, 0.069]} sz={[0.026, 0.300, 0.008]} c={TIE} />
       <Sp p={[0, 1.014, 0.069]} r={0.020} c={TIE} />
 
-      {/* ── ARMS — slim capsules, angled naturally from shoulders ─────────── */}
-      {/* Left:  rotation.z = -0.42 → top leans right (shoulder), bottom goes left (paw) */}
+      {/* ── ARMS ─────────────────────────────────────────────────────────── */}
+      {/* Left arm + paw (static) */}
       <mesh position={[-0.228, 0.935, 0]} rotation={[0, 0, -0.42]}>
         <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
         <meshStandardMaterial color={SUIT} roughness={0.70} />
       </mesh>
-      {/* Right: mirror */}
-      <mesh position={[ 0.228, 0.935, 0]} rotation={[0, 0,  0.42]}>
-        <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
-        <meshStandardMaterial color={SUIT} roughness={0.70} />
-      </mesh>
-      {/* Paws */}
       <Sp p={[-0.300, 0.770, 0]} r={0.063} c={FUR} />
-      <Sp p={[ 0.300, 0.770, 0]} r={0.063} c={FUR} />
+
+      {/* Right arm + paw grouped so paw follows arm during wave */}
+      <group ref={armRRef} position={[0.228, 0.935, 0]} rotation={[0, 0, 0.42]}>
+        <mesh>
+          <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
+          <meshStandardMaterial color={SUIT} roughness={0.70} />
+        </mesh>
+        {/* Paw offset relative to arm center (matches original world position [0.300, 0.770]) */}
+        <mesh position={[0.072, -0.165, 0]}>
+          <sphereGeometry args={[0.063, 16, 12]} />
+          <meshStandardMaterial color={FUR} roughness={0.72} />
+        </mesh>
+      </group>
 
       {/* ── NECK FUR ─────────────────────────────────────────────────────── */}
       <Sp p={[0, 1.160, 0]} r={0.090} c={FUR} />
@@ -134,7 +182,7 @@ function MaxScene() {
       {/* ── HEAD GROUP (carries blink/tilt animations) ────────────────────── */}
       <group ref={headRef} position={[0, 1.43, 0]}>
 
-        {/* Floppy ears — elongated via scale, darker fur, slightly behind head */}
+        {/* Floppy ears */}
         <mesh ref={earLRef} position={[-0.232, 0.018, -0.040]} rotation={[0.10, 0, 0.14]} scale={[0.84, 1.42, 0.60]}>
           <sphereGeometry args={[0.112, 14, 12]} />
           <meshStandardMaterial color={FUR_DARK} roughness={0.85} />
@@ -192,11 +240,8 @@ export function Max3D() {
       style={{ background: 'transparent', display: 'block', width: '100%', height: '300px' }}
     >
       <ambientLight intensity={0.55} />
-      {/* Main warm front-top key light */}
       <directionalLight color="#FFE8C0" intensity={1.45} position={[1.5, 2.5, 2.0]} />
-      {/* Cool cyan rim from behind-left */}
       <directionalLight color="#8EE7F1" intensity={0.32} position={[-2.0, 0.5, -1.5]} />
-      {/* Subtle lime fill from below — on-brand */}
       <directionalLight color="#AEF33E" intensity={0.14} position={[0, -1.5, 1.0]} />
 
       <MaxScene />
