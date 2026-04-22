@@ -189,7 +189,7 @@ export function Max3D() {
     <Canvas
       camera={{ position: [0, 0, 4.50], fov: 40 }}
       gl={{ alpha: true, antialias: true }}
-      style={{ background: 'transparent', display: 'block', width: '100%', height: '260px' }}
+      style={{ background: 'transparent', display: 'block', width: '100%', height: '300px' }}
     >
       <ambientLight intensity={0.55} />
       {/* Main warm front-top key light */}
