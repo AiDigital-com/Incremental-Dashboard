@@ -86,6 +86,87 @@ const TAG_COLORS: Record<AudienceTag, string> = {
 interface Props { onBack: () => void }
 type ModalType = 'audience' | 'breakdown' | 'scenario' | null
 
+// ── Max Avatar SVG ────────────────────────────────────────────────────────────
+
+function MaxAvatarSvg({ size = 120 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={Math.round(size * 1.48)}
+      viewBox="0 0 100 148"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      {/* Ears — drawn first so head overlaps them */}
+      <ellipse cx="22" cy="30" rx="12" ry="17" fill="#B07022" transform="rotate(-18 22 30)"/>
+      <ellipse cx="78" cy="30" rx="12" ry="17" fill="#B07022" transform="rotate(18 78 30)"/>
+
+      {/* Suit body */}
+      <path d="M15 80 Q12 108 14 132 L86 132 Q88 108 85 80 Q66 68 50 68 Q34 68 15 80Z" fill="#1B3560"/>
+
+      {/* Shirt front */}
+      <path d="M50 68 L39 83 L37 132 L63 132 L61 83 Z" fill="#EFEFEF"/>
+      {/* Jacket lapels */}
+      <path d="M50 68 L37 68 L39 83 Z" fill="#1B3560"/>
+      <path d="M50 68 L63 68 L61 83 Z" fill="#1B3560"/>
+      {/* Button stitch line */}
+      <line x1="50" y1="86" x2="50" y2="131" stroke="#CCCCCC" strokeWidth="0.8" strokeDasharray="2 3"/>
+      <circle cx="50" cy="94"  r="1.5" fill="#1B3560"/>
+      <circle cx="50" cy="104" r="1.5" fill="#1B3560"/>
+
+      {/* Tie */}
+      <path d="M47 71 L53 71 L56 93 L50 97 L44 93 Z" fill="#CC1A1A"/>
+      <polygon points="50,97 44,93 56,93" fill="#991010"/>
+
+      {/* Left arm + paw */}
+      <line x1="20" y1="88" x2="8" y2="70" stroke="#1B3560" strokeWidth="12" strokeLinecap="round"/>
+      <circle cx="7" cy="64" r="8" fill="#D4903A"/>
+
+      {/* Right arm + paw */}
+      <line x1="80" y1="88" x2="92" y2="70" stroke="#1B3560" strokeWidth="12" strokeLinecap="round"/>
+      <circle cx="93" cy="64" r="8" fill="#D4903A"/>
+
+      {/* Neck / collar fur */}
+      <ellipse cx="50" cy="70" rx="12" ry="8" fill="#D4903A"/>
+
+      {/* Head */}
+      <circle cx="50" cy="38" r="29" fill="#D4903A"/>
+
+      {/* Top fluff bumps */}
+      <circle cx="33" cy="14" r="10" fill="#D4903A"/>
+      <circle cx="50" cy=" 9" r="11" fill="#D4903A"/>
+      <circle cx="67" cy="14" r="10" fill="#D4903A"/>
+
+      {/* Cheek fluff */}
+      <circle cx="23" cy="47" r="8" fill="#D4903A"/>
+      <circle cx="77" cy="47" r="8" fill="#D4903A"/>
+
+      {/* Eyes */}
+      <circle cx="41" cy="38" r="5.5" fill="#1A0D06"/>
+      <circle cx="59" cy="38" r="5.5" fill="#1A0D06"/>
+      <circle cx="43" cy="36" r="2"   fill="white"/>
+      <circle cx="61" cy="36" r="2"   fill="white"/>
+
+      {/* Nose */}
+      <ellipse cx="50" cy="50" rx="5.5" ry="4" fill="#1A0D06"/>
+      <ellipse cx="48" cy="48.5" rx="2" ry="1.4" fill="#5A2E10" opacity="0.55"/>
+
+      {/* Mouth + tongue */}
+      <path d="M42 57 Q50 63 58 57" stroke="#1A0D06" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      <ellipse cx="50" cy="62" rx="4.5" ry="3.5" fill="#F87171"/>
+      <line x1="50" y1="62" x2="50" y2="65.5" stroke="#E05050" strokeWidth="1.5"/>
+
+      {/* Legs */}
+      <rect x="33" y="123" width="14" height="22" rx="7" fill="#1B3560"/>
+      <rect x="53" y="123" width="14" height="22" rx="7" fill="#1B3560"/>
+      {/* Feet/paws */}
+      <ellipse cx="40" cy="144" rx="10" ry="5.5" fill="#D4903A"/>
+      <ellipse cx="60" cy="144" rx="10" ry="5.5" fill="#D4903A"/>
+    </svg>
+  )
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function ClientView({ onBack }: Props) {
@@ -97,6 +178,8 @@ export function ClientView({ onBack }: Props) {
   const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b'>('menu')
   const [allocations,          setAllocations]         = useState<Record<string, number>>({})
   const [userPlanNote,         setUserPlanNote]        = useState('')
+  const [showMaxChat,          setShowMaxChat]         = useState(false)
+  const [maxInput,             setMaxInput]            = useState('')
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -313,6 +396,74 @@ export function ClientView({ onBack }: Props) {
         </button>
 
       </div>
+
+      {/* ── Max Chat Widget ───────────────────────────────────────────────── */}
+
+      {/* Chat panel */}
+      {showMaxChat && (
+        <div className="id-max__panel">
+          {/* Hero header */}
+          <div className="id-max__panel-hero">
+            <div className="id-max__avatar-wrap">
+              <MaxAvatarSvg size={106}/>
+            </div>
+            <div className="id-max__panel-identity">
+              <span className="id-max__panel-name">MAX</span>
+              <span className="id-max__panel-tagline">Your Incremental AI Guide</span>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="id-max__chat-body">
+            <div className="id-max__bubble id-max__bubble--max">
+              <p>Hey {CLIENT_NAME.split(' ')[0]}! I'm Max — I'm here to help you get the most out of your incremental budget.</p>
+              <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available right now. Ask me about your campaigns, audiences, or the best strategy to deploy it!</p>
+            </div>
+          </div>
+
+          {/* Input */}
+          <div className="id-max__panel-footer">
+            <input
+              className="id-max__input"
+              type="text"
+              placeholder="Ask Max anything…"
+              value={maxInput}
+              onChange={e => setMaxInput(e.target.value)}
+            />
+            <button className="id-max__send-btn" disabled={!maxInput.trim()} aria-label="Send">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating action button */}
+      <button
+        className={`id-max__fab${showMaxChat ? ' id-max__fab--open' : ''}`}
+        onClick={() => setShowMaxChat(v => !v)}
+        aria-label={showMaxChat ? 'Close Max' : 'Chat with Max'}
+      >
+        {showMaxChat ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        ) : (
+          <>
+            {/* Paw print */}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="8.5" cy="7"  r="2.5"/>
+              <circle cx="15.5" cy="7" r="2.5"/>
+              <circle cx="5.5" cy="12" r="2.5"/>
+              <circle cx="18.5" cy="12" r="2.5"/>
+              <path d="M12 10c-3.5 0-6 3-6 6.5 0 1.4 1.1 2.5 2.5 2.5h7c1.4 0 2.5-1.1 2.5-2.5C18 13 15.5 10 12 10z"/>
+            </svg>
+            <span>Chat with Max</span>
+          </>
+        )}
+      </button>
 
       {/* ── Modals ────────────────────────────────────────────────────────── */}
       {modal && (
