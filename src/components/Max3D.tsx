@@ -101,14 +101,14 @@ function MaxScene() {
       const p = w.phase
       let rotZ: number
       if (p < 0.2) {
-        // raise arm: 0.42 → -1.0
-        rotZ = 0.42 + (-1.42) * (p / 0.2)
+        // raise arm: -0.42 → -2.4 (sweeps outward and up above head)
+        rotZ = -0.42 + (-1.98) * (p / 0.2)
       } else if (p < 0.8) {
-        // waggle 3 cycles around -1.0
-        rotZ = -1.0 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.35
+        // waggle 3 cycles around -2.4
+        rotZ = -2.4 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.30
       } else {
-        // lower arm: -1.0 → 0.42
-        rotZ = -1.0 + 1.42 * ((p - 0.8) / 0.2)
+        // lower arm: -2.4 → -0.42
+        rotZ = -2.4 + 1.98 * ((p - 0.8) / 0.2)
       }
       armRRef.current.rotation.z = rotZ
       if (p >= 1.0) {
@@ -116,7 +116,7 @@ function MaxScene() {
         w.seqIdx = (w.seqIdx + 1) % 4
         w.next   = w.intervals[w.seqIdx]
         w.timer  = 0
-        armRRef.current.rotation.z = 0.42
+        armRRef.current.rotation.z = -0.42
       }
     }
   })
@@ -156,21 +156,22 @@ function MaxScene() {
       <Sp p={[0, 1.014, 0.069]} r={0.020} c={TIE} />
 
       {/* ── ARMS ─────────────────────────────────────────────────────────── */}
-      {/* Left arm + paw (static) */}
-      <mesh position={[-0.228, 0.935, 0]} rotation={[0, 0, -0.42]}>
+      {/* Left arm + paw (static, character's left = viewer's right = x=+0.228) */}
+      <mesh position={[0.228, 0.935, 0]} rotation={[0, 0, 0.42]}>
         <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
         <meshStandardMaterial color={SUIT} roughness={0.70} />
       </mesh>
-      <Sp p={[-0.300, 0.770, 0]} r={0.063} c={FUR} />
+      <Sp p={[0.300, 0.770, 0]} r={0.063} c={FUR} />
 
       {/* Right arm + paw grouped so paw follows arm during wave */}
-      <group ref={armRRef} position={[0.228, 0.935, 0]} rotation={[0, 0, 0.42]}>
+      {/* Character's right = viewer's left = x=-0.228, rest rotation.z=-0.42 */}
+      <group ref={armRRef} position={[-0.228, 0.935, 0]} rotation={[0, 0, -0.42]}>
         <mesh>
           <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
           <meshStandardMaterial color={SUIT} roughness={0.70} />
         </mesh>
-        {/* Paw offset relative to arm center (matches original world position [0.300, 0.770]) */}
-        <mesh position={[0.072, -0.165, 0]}>
+        {/* Paw in group-local space: directly below capsule centre */}
+        <mesh position={[0, -0.18, 0]}>
           <sphereGeometry args={[0.063, 16, 12]} />
           <meshStandardMaterial color={FUR} roughness={0.72} />
         </mesh>
