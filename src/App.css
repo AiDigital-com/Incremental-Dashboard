@@ -2552,8 +2552,8 @@
 /* Standalone Max character standing in bottom-right corner */
 .id-max__character {
   position: fixed;
-  right: 16px;
-  bottom: 0;
+  right: 24px;
+  bottom: 8px;
   width: 200px;
   display: flex;
   flex-direction: column;
@@ -2601,7 +2601,7 @@
 .id-max__panel {
   position: fixed;
   bottom: 90px;
-  right: 224px;   /* 16px margin + 200px Max + 8px gap */
+  right: 232px;   /* 24px margin + 200px Max + 8px gap */
   z-index: 999;
   width: 272px;
   overflow: visible;
