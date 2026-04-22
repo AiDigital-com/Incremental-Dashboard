@@ -104,8 +104,8 @@ function MaxScene() {
         // raise arm from shoulder: -0.42 → -2.6 (paw sweeps to ~head level)
         rotZ = -0.42 + (-2.18) * (p / 0.2)
       } else if (p < 0.8) {
-        // waggle 3 cycles around -2.6, amplitude capped so paw stops just before head
-        rotZ = -2.6 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.18
+        // waggle 3 cycles around -2.6, amplitude capped so paw stops clear of head
+        rotZ = -2.6 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.12
       } else {
         // lower arm: -2.6 → -0.42
         rotZ = -2.6 + 2.18 * ((p - 0.8) / 0.2)
