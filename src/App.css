@@ -2553,7 +2553,7 @@
 .id-max__character {
   position: fixed;
   right: 24px;
-  bottom: 0;
+  bottom: 82px;
   width: 200px;
   z-index: 1000;
   cursor: pointer;
