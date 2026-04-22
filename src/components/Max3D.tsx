@@ -101,14 +101,14 @@ function MaxScene() {
       const p = w.phase
       let rotZ: number
       if (p < 0.2) {
-        // raise arm from shoulder: -0.42 → -2.6 (paw sweeps to ~head level)
-        rotZ = -0.42 + (-2.18) * (p / 0.2)
+        // raise arm from shoulder: -0.42 → -2.2
+        rotZ = -0.42 + (-1.78) * (p / 0.2)
       } else if (p < 0.8) {
-        // waggle 3 cycles around -2.6, amplitude capped so paw stops clear of head
-        rotZ = -2.6 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.12
+        // waggle 3 cycles around -2.2, paw stays well clear of head at all extremes
+        rotZ = -2.2 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.12
       } else {
-        // lower arm: -2.6 → -0.42
-        rotZ = -2.6 + 2.18 * ((p - 0.8) / 0.2)
+        // lower arm: -2.2 → -0.42
+        rotZ = -2.2 + 1.78 * ((p - 0.8) / 0.2)
       }
       armRRef.current.rotation.z = rotZ
       if (p >= 1.0) {
