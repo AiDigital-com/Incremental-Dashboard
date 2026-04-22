@@ -101,14 +101,14 @@ function MaxScene() {
       const p = w.phase
       let rotZ: number
       if (p < 0.2) {
-        // raise arm: -0.42 → -2.4 (sweeps outward and up above head)
-        rotZ = -0.42 + (-1.98) * (p / 0.2)
+        // raise arm from shoulder: -0.42 → -2.6 (paw sweeps to ~head level)
+        rotZ = -0.42 + (-2.18) * (p / 0.2)
       } else if (p < 0.8) {
-        // waggle 3 cycles around -2.4
-        rotZ = -2.4 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.30
+        // waggle 3 cycles around -2.6
+        rotZ = -2.6 + Math.sin(((p - 0.2) / 0.6) * Math.PI * 3) * 0.30
       } else {
-        // lower arm: -2.4 → -0.42
-        rotZ = -2.4 + 1.98 * ((p - 0.8) / 0.2)
+        // lower arm: -2.6 → -0.42
+        rotZ = -2.6 + 2.18 * ((p - 0.8) / 0.2)
       }
       armRRef.current.rotation.z = rotZ
       if (p >= 1.0) {
@@ -163,15 +163,16 @@ function MaxScene() {
       </mesh>
       <Sp p={[0.300, 0.770, 0]} r={0.063} c={FUR} />
 
-      {/* Right arm + paw grouped so paw follows arm during wave */}
-      {/* Character's right = viewer's left = x=-0.228, rest rotation.z=-0.42 */}
-      <group ref={armRRef} position={[-0.228, 0.935, 0]} rotation={[0, 0, -0.42]}>
-        <mesh>
+      {/* Right arm + paw — pivot at shoulder joint so wave rotates from shoulder */}
+      {/* Shoulder joint world pos: [-0.159, 1.089, 0] (top of arm at rest rotation -0.42) */}
+      <group ref={armRRef} position={[-0.159, 1.089, 0]} rotation={[0, 0, -0.42]}>
+        {/* Capsule offset down so its top sits at the shoulder pivot */}
+        <mesh position={[0, -0.168, 0]}>
           <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
           <meshStandardMaterial color={SUIT} roughness={0.70} />
         </mesh>
-        {/* Paw in group-local space: directly below capsule centre */}
-        <mesh position={[0, -0.18, 0]}>
+        {/* Paw at bottom of capsule in group-local space */}
+        <mesh position={[0, -0.36, 0]}>
           <sphereGeometry args={[0.063, 16, 12]} />
           <meshStandardMaterial color={FUR} roughness={0.72} />
         </mesh>
