@@ -376,10 +376,17 @@ export function ClientView({ onBack }: Props) {
         <div className="id-max__character-canvas">
           <Max3D />
         </div>
-        {!showMaxChat && (
-          <span className="id-max__character-label">Chat with Max</span>
-        )}
       </div>
+
+      {/* Chat button — separate fixed element so Max sits flush at bottom */}
+      {!showMaxChat && (
+        <button
+          className="id-max__character-label"
+          onClick={() => setShowMaxChat(true)}
+        >
+          Chat with Max
+        </button>
+      )}
 
       {/* ── Modals ────────────────────────────────────────────────────────── */}
       {modal && (

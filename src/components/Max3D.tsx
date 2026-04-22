@@ -80,7 +80,7 @@ function MaxScene() {
 
   // Root group offset so character center aligns with world origin (camera target)
   return (
-    <group ref={rootRef} position={[0, -1.50, 0]}>
+    <group ref={rootRef} position={[0, -1.80, 0]}>
 
       {/* ── FEET ─────────────────────────────────────────────────────────── */}
       <Sp p={[-0.12, 0.07, 0.04]} r={0.080} c={FUR} s={[1.30, 0.70, 1.10]} />
@@ -187,9 +187,9 @@ function MaxScene() {
 export function Max3D() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 4.20], fov: 40 }}
+      camera={{ position: [0, 0, 4.50], fov: 40 }}
       gl={{ alpha: true, antialias: true }}
-      style={{ background: 'transparent', display: 'block', width: '100%', height: '220px' }}
+      style={{ background: 'transparent', display: 'block', width: '100%', height: '260px' }}
     >
       <ambientLight intensity={0.55} />
       {/* Main warm front-top key light */}
