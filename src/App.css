@@ -100,7 +100,8 @@
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
   white-space: nowrap;
-  min-width: 140px;
+  width: 140px;
+  max-width: 140px;
 }
 
 .id-header-filter-select:focus {
