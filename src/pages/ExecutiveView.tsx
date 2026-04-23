@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
 import { feature as topoFeature } from 'topojson-client'
-import { GlobeBackground } from '../components/GlobeBackground'
 import { CAMPAIGNS } from '../data/campaigns'
 import { REGION_GDS } from '../components/AppSidebar/AppSidebar'
 
@@ -318,7 +317,6 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function ExecutiveView({ onBack }: Props) {
-  const [zoomContinent,    setZoomContinent]    = useState<number | null>(null)
   const [hoveredRegion,  setHoveredRegion]  = useState<string | null>(null)
   const [openRegion,     setOpenRegion]     = useState<string | null>(null)
   const [selectedSeller,   setSelectedSeller]   = useState<string | null>(null)
@@ -326,11 +324,6 @@ export function ExecutiveView({ onBack }: Props) {
   const [campaignPage,     setCampaignPage]     = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nationFeature,  setNationFeature]  = useState<any>(null)
-
-  useEffect(() => {
-    const t = setTimeout(() => setZoomContinent(0), 80)
-    return () => clearTimeout(t)
-  }, [])
 
   // Fetch topojson once and extract the nation (outer boundary) feature
   useEffect(() => {
@@ -355,8 +348,6 @@ export function ExecutiveView({ onBack }: Props) {
 
   return (
     <div className="id-exec">
-
-      <GlobeBackground zoomContinent={zoomContinent} />
 
       {/* Header */}
       <div className="id-exec__header">
