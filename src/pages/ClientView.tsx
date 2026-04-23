@@ -139,6 +139,7 @@ export function ClientView({ onBack }: Props) {
   const [maxMsgs,        setMaxMsgs]        = useState<MaxMsg[]>([])
   const [maxBudgetDraft, setMaxBudgetDraft] = useState('')
   const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
+  const [selectedTactics, setSelectedTactics] = useState<Set<string>>(new Set())
   const maxBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -170,6 +171,7 @@ export function ClientView({ onBack }: Props) {
       setMaxMsgs([])
       setMaxBudgetDraft('')
       setMaxBudgetAmount(0)
+      setSelectedTactics(new Set())
     }
   }, [showMaxChat])
 
@@ -257,22 +259,35 @@ export function ClientView({ onBack }: Props) {
     setMaxMsgs(prev => [
       ...prev,
       { from: 'user', text: `I have ${formatBudget(n)} in new budget.` },
-      { from: 'max', text: `Based on your top-performing campaigns, here's how I'd put ${formatBudget(n)} to work:` },
+      { from: 'max', text: `Here's how I'd put ${formatBudget(n)} to work across your campaign categories:` },
     ])
     setMaxBudgetDraft('')
     setMaxStep('new_budget_result')
   }
 
   function getNewBudgetReco(amount: number) {
-    const byType = new Map<string, number>()
-    for (const c of clientCampaigns)
-      byType.set(c.name, Math.max(byType.get(c.name) ?? 0, c.performanceMultiplier))
-    const sorted = [...byType.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
-    const total = sorted.reduce((s, [, v]) => s + v, 0)
-    return sorted.map(([name, score]) => ({
-      name,
-      amt: Math.round((score / total) * amount / 500) * 500,
-    }))
+    const prog   = Math.round(amount * 0.60)
+    const search = Math.round(amount * 0.30)
+    const social = amount - prog - search
+    return [
+      { name: 'Programmatic', pct: '60%', amt: prog   },
+      { name: 'Search',       pct: '30%', amt: search },
+      { name: 'Social',       pct: '10%', amt: social },
+    ]
+  }
+
+  function openApplyEmail() {
+    const lines = tacticBreakdown
+      .filter(([name]) => selectedTactics.has(name))
+      .map(([name, amt]) => `  • ${name}: ${formatBudget(amt)}`)
+      .join('\n')
+    const total = tacticBreakdown
+      .filter(([name]) => selectedTactics.has(name))
+      .reduce((s, [, amt]) => s + amt, 0)
+    window.open(gmailCompose(
+      `Apply Available Incremental — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following tactics ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
+    ), '_blank')
   }
 
   function openOtherEmail() {
@@ -444,9 +459,11 @@ export function ClientView({ onBack }: Props) {
                 <button
                   className="id-max__nav-btn"
                   onClick={() => {
-                    if      (maxStep === 'new_budget_ask') setMaxStep('what_options')
-                    else if (maxStep === 'what_options')   { setMaxStep('root'); setMaxMsgs([]) }
-                    else                                   { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0) }
+                    if      (maxStep === 'new_budget_ask' || maxStep === 'avail_incr' || maxStep === 'new_budget_result') {
+                      setMaxStep('what_options'); setSelectedTactics(new Set())
+                    }
+                    else if (maxStep === 'what_options') { setMaxStep('root'); setMaxMsgs([]) }
+                    else { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0); setSelectedTactics(new Set()) }
                   }}
                 >
                   ← Back
@@ -466,7 +483,7 @@ export function ClientView({ onBack }: Props) {
               {/* Greeting — always visible */}
               <div className="id-max__bubble id-max__bubble--max">
                 <p>Hey {CLIENT_NAME.split(' ')[0]}! I'm Max — I'm here to help you get the most out of your incremental budget.</p>
-                <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available. What can I help you with?</p>
+                <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> currently available. What can I help you with?</p>
               </div>
 
               {/* Conversation history */}
@@ -480,15 +497,32 @@ export function ClientView({ onBack }: Props) {
               {maxStep === 'avail_incr' && (
                 <div className="id-max__rich">
                   {tacticBreakdown.map(([name, amt]) => (
-                    <div key={name} className="id-max__tactic-row">
+                    <label key={name} className="id-max__tactic-row id-max__tactic-row--check">
+                      <input
+                        type="checkbox"
+                        className="id-max__check"
+                        checked={selectedTactics.has(name)}
+                        onChange={e => {
+                          setSelectedTactics(prev => {
+                            const next = new Set(prev)
+                            e.target.checked ? next.add(name) : next.delete(name)
+                            return next
+                          })
+                        }}
+                      />
                       <span className="id-max__tactic-name">{name}</span>
                       <span className="id-max__tactic-amt">{formatBudget(amt)}</span>
-                    </div>
+                    </label>
                   ))}
                   <div className="id-max__tactic-row id-max__tactic-total">
                     <span className="id-max__tactic-name">Total Available</span>
                     <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</span>
                   </div>
+                  {selectedTactics.size > 0 && (
+                    <button className="id-max__apply-btn" onClick={openApplyEmail}>
+                      Contact my campaign management team to have this applied ASAP
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -528,13 +562,13 @@ export function ClientView({ onBack }: Props) {
               {/* A2 result — recommended allocation */}
               {maxStep === 'new_budget_result' && (
                 <div className="id-max__rich">
-                  {getNewBudgetReco(maxBudgetAmount).map(({ name, amt }) => (
+                  {getNewBudgetReco(maxBudgetAmount).map(({ name, pct, amt }) => (
                     <div key={name} className="id-max__tactic-row">
-                      <span className="id-max__tactic-name">{name}</span>
+                      <span className="id-max__tactic-name">{name} <span style={{ opacity: 0.45, fontSize: '0.78em' }}>{pct}</span></span>
                       <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
                     </div>
                   ))}
-                  <p className="id-max__rich-note">Based on your top performers. Ask your CS team to activate!</p>
+                  <p className="id-max__rich-note">Recommended allocation. Ask your CS team to activate!</p>
                 </div>
               )}
 
@@ -621,15 +655,15 @@ export function ClientView({ onBack }: Props) {
             {maxStep === 'what_options' && (
               <div className="id-max__quick-replies">
                 <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'Currently Available Incremental',
+                  'Currently available incremental',
                   'avail_incr',
                   `Here's your available incremental broken down by tactic — ${formatBudget(availableIncremental)} total:`
-                )}>Currently Available Incremental</button>
+                )}>Currently available incremental</button>
                 <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'I Have New Budget',
+                  'I have new budget',
                   'new_budget_ask',
                   'How much new budget are you working with? Pick a common size or enter your own:'
-                )}>I Have New Budget</button>
+                )}>I have new budget</button>
               </div>
             )}
 

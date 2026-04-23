@@ -2974,3 +2974,50 @@
   transition: background 0.15s;
 }
 .id-max__email-cta:hover { background: rgba(174, 243, 62, 0.14); }
+
+/* ── Checkbox rows (avail_incr) ── */
+.id-max__tactic-row--check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+.id-max__check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(174, 243, 62, 0.35);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.id-max__check:checked {
+  background: #AEF33E;
+  border-color: #AEF33E;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolyline points='2,5 4.2,7.5 8,2.5' stroke='%23111' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ── Apply incremental CTA button ── */
+.id-max__apply-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 13px;
+  background: rgba(174, 243, 62, 0.10);
+  border: 1px solid rgba(174, 243, 62, 0.30);
+  border-radius: 8px;
+  color: #AEF33E;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  line-height: 1.35;
+}
+.id-max__apply-btn:hover { background: rgba(174, 243, 62, 0.18); }
