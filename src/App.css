@@ -30,11 +30,10 @@
 /* ── Header ──────────────────────────────────────────────────────────────── */
 
 .id-dashboard__header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
   position: relative;
   z-index: 2;
 }
@@ -1355,7 +1354,7 @@
   flex-direction: column;
   gap: 4px;
   backdrop-filter: blur(8px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .id-exec__metrics-total-label {
@@ -1366,6 +1365,7 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.65);
   margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .id-exec__metrics-total-value {
@@ -1377,6 +1377,7 @@
   line-height: 1;
   margin-bottom: 20px;
   text-shadow: 0 0 24px rgba(174, 243, 62, 0.55);
+  flex-shrink: 0;
 }
 
 .id-exec__metrics-title {
@@ -1393,13 +1394,16 @@
 }
 
 .id-exec__metric-group {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .id-exec__metric-row {
+  flex: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 9px;
   padding: 6px 8px;
   border-radius: 6px;

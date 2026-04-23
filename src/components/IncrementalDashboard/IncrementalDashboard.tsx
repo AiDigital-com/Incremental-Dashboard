@@ -247,7 +247,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
           </button>
         )}
         <div className="id-dashboard__title-wrap">
-          <h2 className="id-dashboard__title-text">{planName}</h2>
+          <h2 className="id-dashboard__title-text">Campaign Overview</h2>
         </div>
         <div className="id-dashboard__header-actions">
 
