@@ -1294,6 +1294,9 @@
   .id-exec__legend-label {
     font-size: 1.05rem;
   }
+  .id-exec__metrics {
+    width: clamp(180px, 14vw, 240px);
+  }
 }
 
 .id-exec__legend-item {
@@ -1345,7 +1348,7 @@
 /* ── Regional metrics panel ──────────────────────────────────────────────── */
 
 .id-exec__metrics {
-  width: 280px;
+  width: clamp(200px, 16vw, 280px);
   flex-shrink: 0;
   background: rgba(5, 5, 20, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
