@@ -167,6 +167,11 @@ export function ClientView({ onBack }: Props) {
   const [creativeBudgetDraft, setCreativeBudgetDraft] = useState('')
   const [creativeBudgetAmt,   setCreativeBudgetAmt]   = useState(0)
   const maxBodyRef = useRef<HTMLDivElement>(null)
+  const sliderRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const amtSpanRefs = useRef<Record<string, HTMLSpanElement | null>>({})
+  const [creativeAllocEdits, setCreativeAllocEdits] = useState<Record<string, string>>({})
+  const [selectedAudiences,  setSelectedAudiences]  = useState<Set<string>>(new Set())
+  const [audienceAmounts,    setAudienceAmounts]     = useState<Record<string, string>>({})
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -204,6 +209,9 @@ export function ClientView({ onBack }: Props) {
       setSelectedCreatives(new Set())
       setCreativeBudgetDraft('')
       setCreativeBudgetAmt(0)
+      setCreativeAllocEdits({})
+      setSelectedAudiences(new Set())
+      setAudienceAmounts({})
     }
   }, [showMaxChat])
 
@@ -337,6 +345,10 @@ export function ClientView({ onBack }: Props) {
   function handleCreativeBudgetSubmit(raw: string | number) {
     const n = typeof raw === 'number' ? raw : parseRawAmt(String(raw))
     if (!n || n <= 0) return
+    const alloc = getCreativeAlloc(n, selectedCreatives)
+    const initialEdits: Record<string, string> = {}
+    alloc.forEach(({ name, amt }) => { initialEdits[name] = formatBudget(amt) })
+    setCreativeAllocEdits(initialEdits)
     setCreativeBudgetAmt(n)
     setMaxMsgs(prev => [
       ...prev,
@@ -349,10 +361,20 @@ export function ClientView({ onBack }: Props) {
 
   function openCreativeEmail() {
     const alloc = getCreativeAlloc(creativeBudgetAmt, selectedCreatives)
-    const lines = alloc.map(({ name, amt }) => `  • ${name}: ${formatBudget(amt)}`).join('\n')
+    const lines = alloc.map(({ name, amt }) => `  • ${name}: ${creativeAllocEdits[name] ?? formatBudget(amt)}`).join('\n')
     window.open(gmailCompose(
       `New Creative Budget — ${CLIENT_NAME}`,
       `Hi Team,\n\nI have new creative assets for ${CLIENT_NAME} and ${formatBudget(creativeBudgetAmt)} in budget to deploy.\n\nCreative types: ${[...selectedCreatives].join(', ')}\n\nRecommended allocation:\n${lines}\n\nPlease let me know my options!`
+    ), '_blank')
+  }
+
+  function openAudienceEmail() {
+    const lines = [...selectedAudiences]
+      .map(label => `  • ${label}${audienceAmounts[label] ? ': ' + audienceAmounts[label] : ''}`)
+      .join('\n')
+    window.open(gmailCompose(
+      `Audience Expansion — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI'd like to expand my audience for ${CLIENT_NAME} with the following Resonate segments:\n\n${lines}\n\nPlease let me know my options!`
     ), '_blank')
   }
 
@@ -560,6 +582,8 @@ export function ClientView({ onBack }: Props) {
                       setSelectedTactics(new Set()); setTacticAmounts({})
                       setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
                       setSelectedCreatives(new Set()); setCreativeBudgetDraft(''); setCreativeBudgetAmt(0)
+                      setCreativeAllocEdits({})
+                      setSelectedAudiences(new Set()); setAudienceAmounts({})
                     }
                   }}
                 >
@@ -595,7 +619,7 @@ export function ClientView({ onBack }: Props) {
                 <div className="id-max__rich">
                   {tacticBreakdown.map(([name, amt]) => {
                     const checked = selectedTactics.has(name)
-                    const sliderVal = tacticAmounts[name] ?? amt
+                    const initialVal = tacticAmounts[name] ?? amt
                     return (
                       <div key={name} className="id-max__tactic-row id-max__tactic-row--check">
                         <input
@@ -611,16 +635,27 @@ export function ClientView({ onBack }: Props) {
                         />
                         <label htmlFor={`avail-${name}`} className="id-max__tactic-name">{name}</label>
                         <input
+                          ref={el => { sliderRefs.current[name] = el }}
                           type="range"
                           className="id-max__tactic-range"
                           min={0}
                           max={amt}
                           step={Math.max(500, Math.floor(amt / 20))}
-                          value={sliderVal}
-                          onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
+                          defaultValue={initialVal}
+                          onInput={e => {
+                            const val = Number((e.target as HTMLInputElement).value)
+                            const span = amtSpanRefs.current[name]
+                            if (span) span.textContent = formatBudget(val)
+                          }}
+                          onMouseUp={e => setTacticAmounts(p => ({ ...p, [name]: Number((e.target as HTMLInputElement).value) }))}
+                          onTouchEnd={e => setTacticAmounts(p => ({ ...p, [name]: Number((e.currentTarget as HTMLInputElement).value) }))}
                         />
-                        <span className="id-max__tactic-amt" style={{ color: checked ? '#AEF33E' : undefined }}>
-                          {formatBudget(sliderVal)}
+                        <span
+                          ref={el => { amtSpanRefs.current[name] = el }}
+                          className="id-max__tactic-amt"
+                          style={{ color: checked ? '#AEF33E' : undefined }}
+                        >
+                          {formatBudget(initialVal)}
                         </span>
                       </div>
                     )
@@ -793,12 +828,17 @@ export function ClientView({ onBack }: Props) {
               {maxStep === 'new_creative_result' && (
                 <div className="id-max__rich">
                   {getCreativeAlloc(creativeBudgetAmt, selectedCreatives).map(({ name, amt }) => (
-                    <div key={name} className="id-max__tactic-row">
+                    <div key={name} className="id-max__tactic-row id-max__tactic-row--check">
                       <span className="id-max__tactic-name">{name}</span>
-                      <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
+                      <input
+                        type="text"
+                        className="id-max__tactic-input"
+                        value={creativeAllocEdits[name] ?? formatBudget(amt)}
+                        onChange={e => setCreativeAllocEdits(p => ({ ...p, [name]: e.target.value }))}
+                      />
                     </div>
                   ))}
-                  <p className="id-max__rich-note">Recommended based on creative type performance. Your team can adjust.</p>
+                  <p className="id-max__rich-note">Recommended based on creative type performance. You or your team can adjust.</p>
                   <button className="id-max__email-cta" style={{ marginTop: 8 }} onClick={openCreativeEmail}>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -815,20 +855,52 @@ export function ClientView({ onBack }: Props) {
                   <p className="id-max__rich-note" style={{ marginTop: 0, marginBottom: 6 }}>
                     Powered by Resonate · Relevance for {CLIENT_NAME}
                   </p>
-                  {MOCKUP_AUDIENCES.map(a => (
-                    <div key={a.label} className="id-max__audience-row">
-                      <div className="id-max__audience-info">
-                        <span className="id-max__audience-label">{a.label}</span>
-                        <span className="id-max__audience-meta">{a.ages} · {a.reach} reach</span>
+                  {MOCKUP_AUDIENCES.map(a => {
+                    const sel = selectedAudiences.has(a.label)
+                    return (
+                      <div key={a.label} className="id-max__audience-row">
+                        <input
+                          type="checkbox"
+                          id={`aud-${a.label}`}
+                          className="id-max__check"
+                          checked={sel}
+                          onChange={e => {
+                            const next = new Set(selectedAudiences)
+                            if (e.target.checked) { next.add(a.label) }
+                            else {
+                              next.delete(a.label)
+                              setAudienceAmounts(p => { const n = { ...p }; delete n[a.label]; return n })
+                            }
+                            setSelectedAudiences(next)
+                          }}
+                        />
+                        <div className="id-max__audience-info">
+                          <label htmlFor={`aud-${a.label}`} className="id-max__audience-label">{a.label}</label>
+                          <span className="id-max__audience-meta">{a.ages} · {a.reach} reach</span>
+                        </div>
+                        <span
+                          className="id-max__audience-score"
+                          style={{ color: a.relevance >= 80 ? '#AEF33E' : a.relevance >= 70 ? '#8EE7F1' : '#FDE68A' }}
+                        >
+                          {a.relevance}%
+                        </span>
+                        {sel && (
+                          <input
+                            type="text"
+                            className="id-max__tactic-input"
+                            placeholder="$amt"
+                            value={audienceAmounts[a.label] ?? ''}
+                            onChange={e => setAudienceAmounts(p => ({ ...p, [a.label]: e.target.value }))}
+                          />
+                        )}
                       </div>
-                      <span
-                        className="id-max__audience-score"
-                        style={{ color: a.relevance >= 80 ? '#AEF33E' : a.relevance >= 70 ? '#8EE7F1' : '#FDE68A' }}
-                      >
-                        {a.relevance}%
-                      </span>
-                    </div>
-                  ))}
+                    )
+                  })}
+                  {selectedAudiences.size > 0 && (
+                    <button className="id-max__apply-btn" onClick={openAudienceEmail}>
+                      Contact your campaign management team to apply!
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -862,11 +934,15 @@ export function ClientView({ onBack }: Props) {
                     'What types of creatives do you have? Select all that apply:'
                   )
                 }}>I have new creatives</button>
-                <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'I want to expand my audience.',
-                  'expand_audience',
-                  'I pulled Resonate audience data for you. Here are the top expansion segments for your brand profile:'
-                )}>Expand my audience</button>
+                <button className="id-max__quick-btn" onClick={() => {
+                  setSelectedAudiences(new Set())
+                  setAudienceAmounts({})
+                  maxAction(
+                    'I want to expand my audience.',
+                    'expand_audience',
+                    'I pulled Resonate audience data for you. Here are the top expansion segments for your brand profile:'
+                  )
+                }}>Expand my audience</button>
                 <button className="id-max__quick-btn id-max__quick-btn--other" onClick={() => maxAction(
                   'Other',
                   'other',
