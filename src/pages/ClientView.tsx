@@ -17,6 +17,8 @@ type MaxStep =
   | 'new_budget_ask'
   | 'new_budget_tactics'
   | 'new_creative'
+  | 'new_creative_budget'
+  | 'new_creative_result'
   | 'expand_audience'
   | 'other'
 
@@ -25,6 +27,9 @@ interface MaxMsg { from: 'max' | 'user'; text: string }
 const ALL_TACTIC_TYPES = ['CTV', 'CTV/OTT', 'Display', 'Meta', 'Search', 'Video', 'YouTube', 'Audio', 'DOOH']
 
 const NEW_BUDGET_TACTICS = ['CTV', 'OLV', 'Display', 'Native', 'Social', 'Search']
+
+const CREATIVE_TYPES = ['Display', 'Native', 'Video', 'Social']
+const CREATIVE_WEIGHTS: Record<string, number> = { Display: 25, Native: 15, Video: 40, Social: 20 }
 
 const TACTIC_DESCRIPTIONS: Record<string, string> = {
   CTV:        'Streaming TV ads on connected devices — high completion rates and premium inventory.',
@@ -158,6 +163,9 @@ export function ClientView({ onBack }: Props) {
   const [tacticAmounts,       setTacticAmounts]       = useState<Record<string, number>>({})
   const [newBudgetSelected,   setNewBudgetSelected]   = useState<Set<string>>(new Set())
   const [newBudgetTacticAmts, setNewBudgetTacticAmts] = useState<Record<string, string>>({})
+  const [selectedCreatives,   setSelectedCreatives]   = useState<Set<string>>(new Set())
+  const [creativeBudgetDraft, setCreativeBudgetDraft] = useState('')
+  const [creativeBudgetAmt,   setCreativeBudgetAmt]   = useState(0)
   const maxBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -193,6 +201,9 @@ export function ClientView({ onBack }: Props) {
       setTacticAmounts({})
       setNewBudgetSelected(new Set())
       setNewBudgetTacticAmts({})
+      setSelectedCreatives(new Set())
+      setCreativeBudgetDraft('')
+      setCreativeBudgetAmt(0)
     }
   }, [showMaxChat])
 
@@ -307,7 +318,41 @@ export function ClientView({ onBack }: Props) {
     const total = [...newBudgetSelected].reduce((s, t) => s + parseRawAmt(newBudgetTacticAmts[t] ?? ''), 0)
     window.open(gmailCompose(
       `New Tactic Budget — ${CLIENT_NAME}`,
-      `Hi Team,\n\nI'd like to allocate ${formatBudget(maxBudgetAmount)} in new budget for ${CLIENT_NAME} across the following tactics:\n\n${lines}\n\nTotal Allocated: ${formatBudget(total)}\n\nPlease proceed with activating this plan!`
+      `Hi Team,\n\nI'd like to allocate ${formatBudget(maxBudgetAmount)} in new budget for ${CLIENT_NAME} across the following tactics:\n\n${lines}\n\nTotal Allocated: ${formatBudget(total)}\n\nPlease let me know my options!`
+    ), '_blank')
+  }
+
+  function getCreativeAlloc(amount: number, creatives: Set<string>) {
+    const selected = CREATIVE_TYPES.filter(t => creatives.has(t))
+    const totalW = selected.reduce((s, t) => s + (CREATIVE_WEIGHTS[t] ?? 25), 0)
+    const rows = selected.map((t, i) => {
+      const share = (CREATIVE_WEIGHTS[t] ?? 25) / totalW
+      return { name: t, amt: i < selected.length - 1 ? Math.round(amount * share) : 0 }
+    })
+    const allocated = rows.reduce((s, r) => s + r.amt, 0)
+    if (rows.length) rows[rows.length - 1].amt = amount - allocated
+    return rows
+  }
+
+  function handleCreativeBudgetSubmit(raw: string | number) {
+    const n = typeof raw === 'number' ? raw : parseRawAmt(String(raw))
+    if (!n || n <= 0) return
+    setCreativeBudgetAmt(n)
+    setMaxMsgs(prev => [
+      ...prev,
+      { from: 'user', text: `I have ${formatBudget(n)} to put behind these creatives.` },
+      { from: 'max', text: `Here's how I'd recommend allocating ${formatBudget(n)} across your creative types:` },
+    ])
+    setCreativeBudgetDraft('')
+    setMaxStep('new_creative_result')
+  }
+
+  function openCreativeEmail() {
+    const alloc = getCreativeAlloc(creativeBudgetAmt, selectedCreatives)
+    const lines = alloc.map(({ name, amt }) => `  • ${name}: ${formatBudget(amt)}`).join('\n')
+    window.open(gmailCompose(
+      `New Creative Budget — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI have new creative assets for ${CLIENT_NAME} and ${formatBudget(creativeBudgetAmt)} in budget to deploy.\n\nCreative types: ${[...selectedCreatives].join(', ')}\n\nRecommended allocation:\n${lines}\n\nPlease let me know my options!`
     ), '_blank')
   }
 
@@ -499,6 +544,13 @@ export function ClientView({ onBack }: Props) {
                       setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
                       setMaxBudgetAmount(0); setMaxBudgetDraft('')
                       setMaxMsgs(prev => prev.slice(0, -2))
+                    } else if (maxStep === 'new_creative_result') {
+                      setMaxStep('new_creative_budget')
+                      setCreativeBudgetAmt(0); setCreativeBudgetDraft('')
+                      setMaxMsgs(prev => prev.slice(0, -2))
+                    } else if (maxStep === 'new_creative_budget') {
+                      setMaxStep('new_creative')
+                      setMaxMsgs(prev => prev.slice(0, -2))
                     } else if (maxStep === 'new_budget_ask' || maxStep === 'avail_incr') {
                       setMaxStep('what_options'); setSelectedTactics(new Set()); setTacticAmounts({})
                     } else if (maxStep === 'what_options') {
@@ -507,6 +559,7 @@ export function ClientView({ onBack }: Props) {
                       setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0)
                       setSelectedTactics(new Set()); setTacticAmounts({})
                       setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
+                      setSelectedCreatives(new Set()); setCreativeBudgetDraft(''); setCreativeBudgetAmt(0)
                     }
                   }}
                 >
@@ -671,19 +724,88 @@ export function ClientView({ onBack }: Props) {
                 )
               })()}
 
-              {/* B — New creative types not currently running */}
+              {/* B — New creatives: type selection */}
               {maxStep === 'new_creative' && (
                 <div className="id-max__rich">
-                  {newTactics.length > 0 ? newTactics.map(t => (
-                    <div key={t} className="id-max__tactic-row id-max__tactic-row--creative">
-                      <div>
-                        <span className="id-max__tactic-name">{t}</span>
-                        <span className="id-max__tactic-desc">{TACTIC_DESCRIPTIONS[t]}</span>
-                      </div>
+                  {CREATIVE_TYPES.map(t => (
+                    <div key={t} className="id-max__tactic-row id-max__tactic-row--check">
+                      <input
+                        type="checkbox"
+                        id={`crt-${t}`}
+                        className="id-max__check"
+                        checked={selectedCreatives.has(t)}
+                        onChange={e => {
+                          const next = new Set(selectedCreatives)
+                          e.target.checked ? next.add(t) : next.delete(t)
+                          setSelectedCreatives(next)
+                        }}
+                      />
+                      <label htmlFor={`crt-${t}`} className="id-max__tactic-name">{t}</label>
                     </div>
-                  )) : (
-                    <p className="id-max__rich-note">You're already running all major tactic types — nice work!</p>
+                  ))}
+                  {selectedCreatives.size > 0 && (
+                    <button className="id-max__apply-btn" onClick={() => {
+                      setMaxMsgs(prev => [
+                        ...prev,
+                        { from: 'user', text: `I have ${[...selectedCreatives].join(', ')} creatives.` },
+                        { from: 'max',  text: `Got it. How much budget do you have to put behind ${selectedCreatives.size === 1 ? 'this' : 'these'}?` },
+                      ])
+                      setMaxStep('new_creative_budget')
+                    }}>Next →</button>
                   )}
+                </div>
+              )}
+
+              {/* B2 — New creatives: budget entry */}
+              {maxStep === 'new_creative_budget' && (
+                <div className="id-max__rich">
+                  <div className="id-max__budget-chips">
+                    {[5_000, 10_000, 25_000, 50_000].map(a => (
+                      <button key={a} className="id-max__budget-chip" onClick={() => handleCreativeBudgetSubmit(a)}>
+                        {formatBudget(a)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="id-max__budget-input-row">
+                    <input
+                      className="id-max__input"
+                      type="text"
+                      placeholder="Custom amount…"
+                      value={creativeBudgetDraft}
+                      onChange={e => setCreativeBudgetDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCreativeBudgetSubmit(creativeBudgetDraft) }}
+                    />
+                    <button
+                      className="id-max__send-btn"
+                      disabled={!creativeBudgetDraft.trim()}
+                      onClick={() => handleCreativeBudgetSubmit(creativeBudgetDraft)}
+                      aria-label="Submit budget"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* B3 — New creatives: allocation result + email */}
+              {maxStep === 'new_creative_result' && (
+                <div className="id-max__rich">
+                  {getCreativeAlloc(creativeBudgetAmt, selectedCreatives).map(({ name, amt }) => (
+                    <div key={name} className="id-max__tactic-row">
+                      <span className="id-max__tactic-name">{name}</span>
+                      <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
+                    </div>
+                  ))}
+                  <p className="id-max__rich-note">Recommended based on creative type performance. Your team can adjust.</p>
+                  <button className="id-max__email-cta" style={{ marginTop: 8 }} onClick={openCreativeEmail}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Email Campaign Management Team
+                  </button>
                 </div>
               )}
 
@@ -732,11 +854,14 @@ export function ClientView({ onBack }: Props) {
                   'What are my options?', 'what_options',
                   "Great question! I can help you see what's available now or plan for new budget. Which fits?"
                 )}>What are my options?</button>
-                <button className="id-max__quick-btn" onClick={() => maxAction(
-                  "I have new creative types I'm not running.",
-                  'new_creative',
-                  "Here are the tactic types you're not currently running — each is a growth opportunity:"
-                )}>I have new creative types</button>
+                <button className="id-max__quick-btn" onClick={() => {
+                  setSelectedCreatives(new Set())
+                  maxAction(
+                    'I have new creatives.',
+                    'new_creative',
+                    'What types of creatives do you have? Select all that apply:'
+                  )
+                }}>I have new creatives</button>
                 <button className="id-max__quick-btn" onClick={() => maxAction(
                   'I want to expand my audience.',
                   'expand_audience',
