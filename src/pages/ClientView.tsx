@@ -15,7 +15,7 @@ type MaxStep =
   | 'what_options'
   | 'avail_incr'
   | 'new_budget_ask'
-  | 'new_budget_result'
+  | 'new_budget_tactics'
   | 'new_creative'
   | 'expand_audience'
   | 'other'
@@ -23,6 +23,8 @@ type MaxStep =
 interface MaxMsg { from: 'max' | 'user'; text: string }
 
 const ALL_TACTIC_TYPES = ['CTV', 'CTV/OTT', 'Display', 'Meta', 'Search', 'Video', 'YouTube', 'Audio', 'DOOH']
+
+const NEW_BUDGET_TACTICS = ['CTV', 'OLV', 'Display', 'Native', 'Social', 'Search']
 
 const TACTIC_DESCRIPTIONS: Record<string, string> = {
   CTV:        'Streaming TV ads on connected devices — high completion rates and premium inventory.',
@@ -53,6 +55,16 @@ function formatBudget(n: number): string {
     return `$${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`
   }
   return `$${n}`
+}
+
+function parseRawAmt(s: string): number {
+  if (!s) return 0
+  const cleaned = s.replace(/[$,\s]/g, '')
+  const num = parseFloat(cleaned)
+  if (isNaN(num)) return 0
+  if (/k$/i.test(cleaned)) return num * 1_000
+  if (/m$/i.test(cleaned)) return num * 1_000_000
+  return num
 }
 
 function fmtKpi(val: number, unit: string): string {
@@ -142,8 +154,10 @@ export function ClientView({ onBack }: Props) {
   const [maxMsgs,        setMaxMsgs]        = useState<MaxMsg[]>([])
   const [maxBudgetDraft, setMaxBudgetDraft] = useState('')
   const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
-  const [selectedTactics, setSelectedTactics] = useState<Set<string>>(new Set())
-  const [tacticAmounts,   setTacticAmounts]   = useState<Record<string, number>>({})
+  const [selectedTactics,     setSelectedTactics]     = useState<Set<string>>(new Set())
+  const [tacticAmounts,       setTacticAmounts]       = useState<Record<string, number>>({})
+  const [newBudgetSelected,   setNewBudgetSelected]   = useState<Set<string>>(new Set())
+  const [newBudgetTacticAmts, setNewBudgetTacticAmts] = useState<Record<string, string>>({})
   const maxBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -177,6 +191,8 @@ export function ClientView({ onBack }: Props) {
       setMaxBudgetAmount(0)
       setSelectedTactics(new Set())
       setTacticAmounts({})
+      setNewBudgetSelected(new Set())
+      setNewBudgetTacticAmts({})
     }
   }, [showMaxChat])
 
@@ -263,22 +279,36 @@ export function ClientView({ onBack }: Props) {
     setMaxBudgetAmount(n)
     setMaxMsgs(prev => [
       ...prev,
-      { from: 'user', text: `I have ${formatBudget(n)} in new budget.` },
-      { from: 'max', text: `Here's how I'd put ${formatBudget(n)} to work across your campaign categories:` },
+      { from: 'user', text: `I have ${formatBudget(n)} for new tactics.` },
+      { from: 'max', text: `${formatBudget(n)} to work with — nice. Now select the tactics you want to invest in and enter an amount for each:` },
     ])
     setMaxBudgetDraft('')
-    setMaxStep('new_budget_result')
+    setNewBudgetSelected(new Set())
+    setNewBudgetTacticAmts({})
+    setMaxStep('new_budget_tactics')
   }
 
-  function getNewBudgetReco(amount: number) {
-    const prog   = Math.round(amount * 0.60)
-    const search = Math.round(amount * 0.30)
-    const social = amount - prog - search
-    return [
-      { name: 'Programmatic', pct: '60%', amt: prog   },
-      { name: 'Search',       pct: '30%', amt: search },
-      { name: 'Social',       pct: '10%', amt: social },
-    ]
+  function handleAvailIncr() {
+    const initial = Object.fromEntries(tacticBreakdown.map(([n, a]) => [n, a]))
+    setTacticAmounts(initial)
+    setSelectedTactics(new Set())
+    maxAction(
+      'Currently available incremental',
+      'avail_incr',
+      `Here's your available incremental by tactic — ${formatBudget(availableIncremental)} total. Check the ones you'd like to apply:`
+    )
+  }
+
+  function openNewBudgetEmail() {
+    const lines = NEW_BUDGET_TACTICS
+      .filter(t => newBudgetSelected.has(t))
+      .map(t => `  • ${t}: ${formatBudget(parseRawAmt(newBudgetTacticAmts[t] ?? ''))}`)
+      .join('\n')
+    const total = [...newBudgetSelected].reduce((s, t) => s + parseRawAmt(newBudgetTacticAmts[t] ?? ''), 0)
+    window.open(gmailCompose(
+      `New Tactic Budget — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI'd like to allocate ${formatBudget(maxBudgetAmount)} in new budget for ${CLIENT_NAME} across the following tactics:\n\n${lines}\n\nTotal Allocated: ${formatBudget(total)}\n\nPlease proceed with activating this plan!`
+    ), '_blank')
   }
 
   function openApplyEmail() {
@@ -464,11 +494,20 @@ export function ClientView({ onBack }: Props) {
                 <button
                   className="id-max__nav-btn"
                   onClick={() => {
-                    if      (maxStep === 'new_budget_ask' || maxStep === 'avail_incr' || maxStep === 'new_budget_result') {
+                    if (maxStep === 'new_budget_tactics') {
+                      setMaxStep('new_budget_ask')
+                      setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
+                      setMaxBudgetAmount(0); setMaxBudgetDraft('')
+                      setMaxMsgs(prev => prev.slice(0, -2))
+                    } else if (maxStep === 'new_budget_ask' || maxStep === 'avail_incr') {
                       setMaxStep('what_options'); setSelectedTactics(new Set()); setTacticAmounts({})
+                    } else if (maxStep === 'what_options') {
+                      setMaxStep('root'); setMaxMsgs([])
+                    } else {
+                      setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0)
+                      setSelectedTactics(new Set()); setTacticAmounts({})
+                      setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
                     }
-                    else if (maxStep === 'what_options') { setMaxStep('root'); setMaxMsgs([]) }
-                    else { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0); setSelectedTactics(new Set()); setTacticAmounts({}) }
                   }}
                 >
                   ← Back
@@ -505,40 +544,32 @@ export function ClientView({ onBack }: Props) {
                     const checked = selectedTactics.has(name)
                     const sliderVal = tacticAmounts[name] ?? amt
                     return (
-                      <label key={name} className="id-max__tactic-row id-max__tactic-row--check">
+                      <div key={name} className="id-max__tactic-row id-max__tactic-row--check">
                         <input
                           type="checkbox"
+                          id={`avail-${name}`}
                           className="id-max__check"
                           checked={checked}
                           onChange={e => {
-                            setSelectedTactics(prev => {
-                              const next = new Set(prev)
-                              if (e.target.checked) {
-                                next.add(name)
-                                setTacticAmounts(p => ({ ...p, [name]: amt }))
-                              } else {
-                                next.delete(name)
-                                setTacticAmounts(p => { const n = { ...p }; delete n[name]; return n })
-                              }
-                              return next
-                            })
+                            const next = new Set(selectedTactics)
+                            e.target.checked ? next.add(name) : next.delete(name)
+                            setSelectedTactics(next)
                           }}
                         />
-                        <span className="id-max__tactic-name">{name}</span>
-                        {checked && (
-                          <input
-                            type="range"
-                            className="id-max__tactic-range"
-                            min={0}
-                            max={amt}
-                            step={Math.max(500, Math.floor(amt / 20))}
-                            value={sliderVal}
-                            onClick={e => e.preventDefault()}
-                            onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
-                          />
-                        )}
-                        <span className="id-max__tactic-amt">{checked ? formatBudget(sliderVal) : formatBudget(amt)}</span>
-                      </label>
+                        <label htmlFor={`avail-${name}`} className="id-max__tactic-name">{name}</label>
+                        <input
+                          type="range"
+                          className="id-max__tactic-range"
+                          min={0}
+                          max={amt}
+                          step={Math.max(500, Math.floor(amt / 20))}
+                          value={sliderVal}
+                          onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
+                        />
+                        <span className="id-max__tactic-amt" style={{ color: checked ? '#AEF33E' : undefined }}>
+                          {formatBudget(sliderVal)}
+                        </span>
+                      </div>
                     )
                   })}
                   <div className="id-max__tactic-row id-max__tactic-total">
@@ -586,18 +617,59 @@ export function ClientView({ onBack }: Props) {
                 </div>
               )}
 
-              {/* A2 result — recommended allocation */}
-              {maxStep === 'new_budget_result' && (
-                <div className="id-max__rich">
-                  {getNewBudgetReco(maxBudgetAmount).map(({ name, amt }) => (
-                    <div key={name} className="id-max__tactic-row">
-                      <span className="id-max__tactic-name">{name}</span>
-                      <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
+              {/* A2 result — tactic selector */}
+              {maxStep === 'new_budget_tactics' && (() => {
+                const totalNew = [...newBudgetSelected].reduce(
+                  (s, t) => s + parseRawAmt(newBudgetTacticAmts[t] ?? ''), 0
+                )
+                return (
+                  <div className="id-max__rich">
+                    <div className="id-max__budget-tracker">
+                      <span>Allocated</span>
+                      <span style={{ color: totalNew > maxBudgetAmount ? '#FF7CF5' : totalNew > 0 ? '#AEF33E' : 'rgba(249,249,249,0.40)' }}>
+                        {formatBudget(totalNew)}<span style={{ opacity: 0.40 }}> of {formatBudget(maxBudgetAmount)}</span>
+                      </span>
                     </div>
-                  ))}
-                  <p className="id-max__rich-note">Recommended allocation. Ask your CS team to activate!</p>
-                </div>
-              )}
+                    {NEW_BUDGET_TACTICS.map(tactic => {
+                      const sel = newBudgetSelected.has(tactic)
+                      return (
+                        <div key={tactic} className="id-max__tactic-row id-max__tactic-row--check">
+                          <input
+                            type="checkbox"
+                            id={`nbt-${tactic}`}
+                            className="id-max__check"
+                            checked={sel}
+                            onChange={e => {
+                              const next = new Set(newBudgetSelected)
+                              if (e.target.checked) { next.add(tactic) }
+                              else {
+                                next.delete(tactic)
+                                setNewBudgetTacticAmts(p => { const n = { ...p }; delete n[tactic]; return n })
+                              }
+                              setNewBudgetSelected(next)
+                            }}
+                          />
+                          <label htmlFor={`nbt-${tactic}`} className="id-max__tactic-name">{tactic}</label>
+                          {sel && (
+                            <input
+                              type="text"
+                              className="id-max__tactic-input"
+                              placeholder="e.g. $5K"
+                              value={newBudgetTacticAmts[tactic] ?? ''}
+                              onChange={e => setNewBudgetTacticAmts(p => ({ ...p, [tactic]: e.target.value }))}
+                            />
+                          )}
+                        </div>
+                      )
+                    })}
+                    {newBudgetSelected.size > 0 && (
+                      <button className="id-max__apply-btn" onClick={openNewBudgetEmail}>
+                        Contact my team to activate this allocation
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* B — New creative types not currently running */}
               {maxStep === 'new_creative' && (
@@ -681,16 +753,14 @@ export function ClientView({ onBack }: Props) {
             {/* Quick replies — what_options sub-menu */}
             {maxStep === 'what_options' && (
               <div className="id-max__quick-replies">
+                <button className="id-max__quick-btn" onClick={handleAvailIncr}>
+                  Currently available incremental
+                </button>
                 <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'Currently available incremental',
-                  'avail_incr',
-                  `Here's your available incremental broken down by tactic — ${formatBudget(availableIncremental)} total:`
-                )}>Currently available incremental</button>
-                <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'I have new budget',
+                  'I have budget for new tactics',
                   'new_budget_ask',
-                  'How much new budget are you working with? Pick a common size or enter your own:'
-                )}>I have new budget</button>
+                  'How much budget are you working with? Pick a common size or enter your own:'
+                )}>I have budget for new tactics</button>
               </div>
             )}
 

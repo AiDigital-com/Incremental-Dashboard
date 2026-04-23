@@ -2977,16 +2977,49 @@
 }
 .id-max__email-cta:hover { background: rgba(174, 243, 62, 0.14); }
 
-/* ── Checkbox rows (avail_incr) ── */
+/* ── Checkbox rows ── */
 .id-max__tactic-row--check {
   display: flex;
   align-items: center;
   gap: 7px;
-  cursor: pointer;
 }
-.id-max__tactic-row--check .id-max__tactic-name {
+.id-max__tactic-row--check .id-max__tactic-name,
+.id-max__tactic-row--check label.id-max__tactic-name {
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+}
+
+/* ── New budget tracker ── */
+.id-max__budget-tracker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(249, 249, 249, 0.45);
+}
+
+/* ── Tactic text input (new budget tactics) ── */
+.id-max__tactic-input {
+  width: 72px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+  color: #F9F9F9;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 6px;
+  outline: none;
+  text-align: right;
+  transition: border-color 0.12s;
+}
+.id-max__tactic-input:focus {
+  border-color: rgba(174, 243, 62, 0.45);
 }
 .id-max__check {
   appearance: none;
