@@ -2798,6 +2798,7 @@
 /* ── Back button in header ── */
 .id-max__nav-btn {
   margin-left: auto;
+  margin-right: 8px;
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 6px;
@@ -3000,6 +3001,55 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolyline points='2,5 4.2,7.5 8,2.5' stroke='%23111' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
+}
+
+/* ── Tactic check group (checkbox row + slider) ── */
+.id-max__tactic-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.id-max__tactic-slider-row {
+  padding: 0 2px 4px 20px;
+}
+
+.id-max__tactic-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  cursor: pointer;
+}
+.id-max__tactic-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #AEF33E;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(174, 243, 62, 0.45);
+}
+.id-max__tactic-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #AEF33E;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 6px rgba(174, 243, 62, 0.45);
+}
+
+.id-max__tactic-slider-cap {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.58rem;
+  color: rgba(249, 249, 249, 0.28);
+  margin-top: 2px;
 }
 
 /* ── Apply incremental CTA button ── */

@@ -140,6 +140,7 @@ export function ClientView({ onBack }: Props) {
   const [maxBudgetDraft, setMaxBudgetDraft] = useState('')
   const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
   const [selectedTactics, setSelectedTactics] = useState<Set<string>>(new Set())
+  const [tacticAmounts,   setTacticAmounts]   = useState<Record<string, number>>({})
   const maxBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -172,6 +173,7 @@ export function ClientView({ onBack }: Props) {
       setMaxBudgetDraft('')
       setMaxBudgetAmount(0)
       setSelectedTactics(new Set())
+      setTacticAmounts({})
     }
   }, [showMaxChat])
 
@@ -279,11 +281,11 @@ export function ClientView({ onBack }: Props) {
   function openApplyEmail() {
     const lines = tacticBreakdown
       .filter(([name]) => selectedTactics.has(name))
-      .map(([name, amt]) => `  • ${name}: ${formatBudget(amt)}`)
+      .map(([name, amt]) => `  • ${name}: ${formatBudget(tacticAmounts[name] ?? amt)}`)
       .join('\n')
     const total = tacticBreakdown
       .filter(([name]) => selectedTactics.has(name))
-      .reduce((s, [, amt]) => s + amt, 0)
+      .reduce((s, [name, amt]) => s + (tacticAmounts[name] ?? amt), 0)
     window.open(gmailCompose(
       `Apply Available Incremental — ${CLIENT_NAME}`,
       `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following tactics ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
@@ -460,10 +462,10 @@ export function ClientView({ onBack }: Props) {
                   className="id-max__nav-btn"
                   onClick={() => {
                     if      (maxStep === 'new_budget_ask' || maxStep === 'avail_incr' || maxStep === 'new_budget_result') {
-                      setMaxStep('what_options'); setSelectedTactics(new Set())
+                      setMaxStep('what_options'); setSelectedTactics(new Set()); setTacticAmounts({})
                     }
                     else if (maxStep === 'what_options') { setMaxStep('root'); setMaxMsgs([]) }
-                    else { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0); setSelectedTactics(new Set()) }
+                    else { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0); setSelectedTactics(new Set()); setTacticAmounts({}) }
                   }}
                 >
                   ← Back
@@ -496,24 +498,53 @@ export function ClientView({ onBack }: Props) {
               {/* A1 — Available incremental by tactic */}
               {maxStep === 'avail_incr' && (
                 <div className="id-max__rich">
-                  {tacticBreakdown.map(([name, amt]) => (
-                    <label key={name} className="id-max__tactic-row id-max__tactic-row--check">
-                      <input
-                        type="checkbox"
-                        className="id-max__check"
-                        checked={selectedTactics.has(name)}
-                        onChange={e => {
-                          setSelectedTactics(prev => {
-                            const next = new Set(prev)
-                            e.target.checked ? next.add(name) : next.delete(name)
-                            return next
-                          })
-                        }}
-                      />
-                      <span className="id-max__tactic-name">{name}</span>
-                      <span className="id-max__tactic-amt">{formatBudget(amt)}</span>
-                    </label>
-                  ))}
+                  {tacticBreakdown.map(([name, amt]) => {
+                    const checked = selectedTactics.has(name)
+                    const sliderVal = tacticAmounts[name] ?? amt
+                    return (
+                      <div key={name} className="id-max__tactic-check-group">
+                        <label className="id-max__tactic-row id-max__tactic-row--check">
+                          <input
+                            type="checkbox"
+                            className="id-max__check"
+                            checked={checked}
+                            onChange={e => {
+                              setSelectedTactics(prev => {
+                                const next = new Set(prev)
+                                if (e.target.checked) {
+                                  next.add(name)
+                                  setTacticAmounts(p => ({ ...p, [name]: amt }))
+                                } else {
+                                  next.delete(name)
+                                  setTacticAmounts(p => { const n = { ...p }; delete n[name]; return n })
+                                }
+                                return next
+                              })
+                            }}
+                          />
+                          <span className="id-max__tactic-name">{name}</span>
+                          <span className="id-max__tactic-amt">{checked ? formatBudget(sliderVal) : formatBudget(amt)}</span>
+                        </label>
+                        {checked && (
+                          <div className="id-max__tactic-slider-row">
+                            <input
+                              type="range"
+                              className="id-max__tactic-range"
+                              min={0}
+                              max={amt}
+                              step={Math.max(500, Math.floor(amt / 20))}
+                              value={sliderVal}
+                              onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
+                            />
+                            <div className="id-max__tactic-slider-cap">
+                              <span>$0</span>
+                              <span>{formatBudget(amt)}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                   <div className="id-max__tactic-row id-max__tactic-total">
                     <span className="id-max__tactic-name">Total Available</span>
                     <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</span>
@@ -562,9 +593,9 @@ export function ClientView({ onBack }: Props) {
               {/* A2 result — recommended allocation */}
               {maxStep === 'new_budget_result' && (
                 <div className="id-max__rich">
-                  {getNewBudgetReco(maxBudgetAmount).map(({ name, pct, amt }) => (
+                  {getNewBudgetReco(maxBudgetAmount).map(({ name, amt }) => (
                     <div key={name} className="id-max__tactic-row">
-                      <span className="id-max__tactic-name">{name} <span style={{ opacity: 0.45, fontSize: '0.78em' }}>{pct}</span></span>
+                      <span className="id-max__tactic-name">{name}</span>
                       <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
                     </div>
                   ))}
