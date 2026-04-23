@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { GlobeBackground } from '../components/GlobeBackground'
 import { Max3D } from '../components/Max3D'
 import { CAMPAIGNS } from '../data/campaigns'
@@ -7,6 +7,42 @@ import type { Campaign } from '../components/IncrementalDashboard'
 // ── Client context ────────────────────────────────────────────────────────────
 // This view represents one specific advertiser.
 const CLIENT_NAME = 'Bradley MediaWorks'
+
+// ── Max Chat types & static data ─────────────────────────────────────────────
+
+type MaxStep =
+  | 'root'
+  | 'what_options'
+  | 'avail_incr'
+  | 'new_budget_ask'
+  | 'new_budget_result'
+  | 'new_creative'
+  | 'expand_audience'
+  | 'other'
+
+interface MaxMsg { from: 'max' | 'user'; text: string }
+
+const ALL_TACTIC_TYPES = ['CTV', 'CTV/OTT', 'Display', 'Meta', 'Search', 'Video', 'YouTube', 'Audio', 'DOOH']
+
+const TACTIC_DESCRIPTIONS: Record<string, string> = {
+  CTV:        'Streaming TV ads on connected devices — high completion rates and premium inventory.',
+  'CTV/OTT':  'Over-the-top streaming across all OTT platforms — massive scale with demo targeting.',
+  Display:    'Programmatic banners & rich media across the open web — wide reach at efficient CPMs.',
+  Meta:       'Facebook & Instagram — feed, stories, and reels with unmatched social targeting.',
+  Search:     'Paid search at the moment of intent — the highest purchase-ready audience in digital.',
+  Video:      'Pre/mid-roll video on premium publishers — drives strong awareness and recall.',
+  YouTube:    "Google's video network with TrueView, bumpers, and intent-layered targeting.",
+  Audio:      "Streaming audio on Spotify, Pandora & podcasts — reaches where visuals can't.",
+  DOOH:       'Digital out-of-home at high-traffic locations — geo-targeted premium placements.',
+}
+
+const MOCKUP_AUDIENCES = [
+  { label: 'Digital Deal Seekers',     ages: '28–44', reach: '2.4M', relevance: 87 },
+  { label: 'Millennial Tech Adopters', ages: '25–38', reach: '1.8M', relevance: 81 },
+  { label: 'High-Income Cord-Cutters', ages: '35–54', reach: '890K', relevance: 79 },
+  { label: 'Suburban Homeowners',      ages: '32–52', reach: '3.1M', relevance: 74 },
+  { label: 'Gen-Z Brand Explorers',    ages: '18–26', reach: '1.2M', relevance: 68 },
+]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -98,8 +134,12 @@ export function ClientView({ onBack }: Props) {
   const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b'>('menu')
   const [allocations,          setAllocations]         = useState<Record<string, number>>({})
   const [userPlanNote,         setUserPlanNote]        = useState('')
-  const [showMaxChat,          setShowMaxChat]         = useState(false)
-  const [maxInput,             setMaxInput]            = useState('')
+  const [showMaxChat,    setShowMaxChat]    = useState(false)
+  const [maxStep,        setMaxStep]        = useState<MaxStep>('root')
+  const [maxMsgs,        setMaxMsgs]        = useState<MaxMsg[]>([])
+  const [maxBudgetDraft, setMaxBudgetDraft] = useState('')
+  const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
+  const maxBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -123,6 +163,19 @@ export function ClientView({ onBack }: Props) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [modal])
+
+  useEffect(() => {
+    if (!showMaxChat) {
+      setMaxStep('root')
+      setMaxMsgs([])
+      setMaxBudgetDraft('')
+      setMaxBudgetAmount(0)
+    }
+  }, [showMaxChat])
+
+  useEffect(() => {
+    if (maxBodyRef.current) maxBodyRef.current.scrollTop = maxBodyRef.current.scrollHeight
+  }, [maxMsgs, maxStep])
 
   // ── Client-specific campaign data ─────────────────────────────────────────
   const clientCampaigns = useMemo(
@@ -176,6 +229,64 @@ export function ClientView({ onBack }: Props) {
 
   function setAlloc(id: string, val: number) {
     setAllocations(prev => ({ ...prev, [id]: val }))
+  }
+
+  // ── Max Chat helpers ──────────────────────────────────────────────────────
+
+  const tacticBreakdown = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const c of clientCampaigns) map.set(c.name, (map.get(c.name) ?? 0) + c.incrementalDollars)
+    return [...map.entries()].sort((a, b) => b[1] - a[1])
+  }, [clientCampaigns])
+
+  const newTactics = useMemo(() => {
+    const current = new Set(clientCampaigns.map(c => c.name))
+    return ALL_TACTIC_TYPES.filter(t => !current.has(t))
+  }, [clientCampaigns])
+
+  function maxAction(userText: string, next: MaxStep, reply: string) {
+    setMaxMsgs(prev => [...prev, { from: 'user', text: userText }, { from: 'max', text: reply }])
+    setMaxStep(next)
+  }
+
+  function handleBudgetSubmit(raw: string | number) {
+    let n = typeof raw === 'number' ? raw
+      : parseFloat(raw.replace(/[^0-9.]/g, '')) * (raw.toLowerCase().includes('k') ? 1000 : 1)
+    if (!n || n <= 0) return
+    setMaxBudgetAmount(n)
+    setMaxMsgs(prev => [
+      ...prev,
+      { from: 'user', text: `I have ${formatBudget(n)} in new budget.` },
+      { from: 'max', text: `Based on your top-performing campaigns, here's how I'd put ${formatBudget(n)} to work:` },
+    ])
+    setMaxBudgetDraft('')
+    setMaxStep('new_budget_result')
+  }
+
+  function getNewBudgetReco(amount: number) {
+    const byType = new Map<string, number>()
+    for (const c of clientCampaigns)
+      byType.set(c.name, Math.max(byType.get(c.name) ?? 0, c.performanceMultiplier))
+    const sorted = [...byType.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+    const total = sorted.reduce((s, [, v]) => s + v, 0)
+    return sorted.map(([name, score]) => ({
+      name,
+      amt: Math.round((score / total) * amount / 500) * 500,
+    }))
+  }
+
+  function openOtherEmail() {
+    const subject = `Growth & CS Question — ${CLIENT_NAME}`
+    const body = [
+      `Hi Team,`,
+      ``,
+      `I have a question about my campaigns for ${CLIENT_NAME} that goes a bit beyond incremental.`,
+      ``,
+      `[Please replace this with your specific question]`,
+      ``,
+      `Thanks for pulling in the Big Dogs on this one!`,
+    ].join('\n')
+    window.open(gmailCompose(subject, body), '_blank')
   }
 
   // ── Email helpers ─────────────────────────────────────────────────────────
@@ -319,16 +430,28 @@ export function ClientView({ onBack }: Props) {
 
       {/* ── Max Chat Widget ───────────────────────────────────────────────── */}
 
-      {/* Speech-bubble panel — appears to the left of Max */}
       {showMaxChat && (
         <div className="id-max__panel">
           <div className="id-max__panel-inner">
-            {/* Compact header */}
+
+            {/* Header */}
             <div className="id-max__panel-top">
               <div>
                 <span className="id-max__panel-name">MAX</span>
                 <span className="id-max__panel-tagline">Your Incremental AI Guide</span>
               </div>
+              {maxStep !== 'root' && (
+                <button
+                  className="id-max__nav-btn"
+                  onClick={() => {
+                    if      (maxStep === 'new_budget_ask') setMaxStep('what_options')
+                    else if (maxStep === 'what_options')   { setMaxStep('root'); setMaxMsgs([]) }
+                    else                                   { setMaxStep('root'); setMaxMsgs([]); setMaxBudgetDraft(''); setMaxBudgetAmount(0) }
+                  }}
+                >
+                  ← Back
+                </button>
+              )}
               <button className="id-max__panel-close" onClick={() => setShowMaxChat(false)} aria-label="Close Max">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18"/>
@@ -337,29 +460,179 @@ export function ClientView({ onBack }: Props) {
               </button>
             </div>
 
-            {/* Messages */}
-            <div className="id-max__chat-body">
+            {/* Chat body */}
+            <div className="id-max__chat-body" ref={maxBodyRef}>
+
+              {/* Greeting — always visible */}
               <div className="id-max__bubble id-max__bubble--max">
                 <p>Hey {CLIENT_NAME.split(' ')[0]}! I'm Max — I'm here to help you get the most out of your incremental budget.</p>
-                <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available right now. Ask me about your campaigns, audiences, or the best strategy to deploy it!</p>
+                <p>You've got <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> available. What can I help you with?</p>
               </div>
-            </div>
 
-            {/* Input */}
-            <div className="id-max__panel-footer">
-              <input
-                className="id-max__input"
-                type="text"
-                placeholder="Ask Max anything…"
-                value={maxInput}
-                onChange={e => setMaxInput(e.target.value)}
-              />
-              <button className="id-max__send-btn" disabled={!maxInput.trim()} aria-label="Send">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
-                </svg>
-              </button>
-            </div>
+              {/* Conversation history */}
+              {maxMsgs.map((msg, i) => (
+                <div key={i} className={`id-max__bubble${msg.from === 'max' ? ' id-max__bubble--max' : ' id-max__bubble--user'}`}>
+                  <p>{msg.text}</p>
+                </div>
+              ))}
+
+              {/* A1 — Available incremental by tactic */}
+              {maxStep === 'avail_incr' && (
+                <div className="id-max__rich">
+                  {tacticBreakdown.map(([name, amt]) => (
+                    <div key={name} className="id-max__tactic-row">
+                      <span className="id-max__tactic-name">{name}</span>
+                      <span className="id-max__tactic-amt">{formatBudget(amt)}</span>
+                    </div>
+                  ))}
+                  <div className="id-max__tactic-row id-max__tactic-total">
+                    <span className="id-max__tactic-name">Total Available</span>
+                    <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* A2 — New budget ask: chips + custom input */}
+              {maxStep === 'new_budget_ask' && (
+                <div className="id-max__rich">
+                  <div className="id-max__budget-chips">
+                    {[10_000, 25_000, 50_000, 100_000].map(amt => (
+                      <button key={amt} className="id-max__budget-chip" onClick={() => handleBudgetSubmit(amt)}>
+                        {formatBudget(amt)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="id-max__budget-input-row">
+                    <input
+                      className="id-max__input"
+                      type="text"
+                      placeholder="Custom amount…"
+                      value={maxBudgetDraft}
+                      onChange={e => setMaxBudgetDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleBudgetSubmit(maxBudgetDraft) }}
+                    />
+                    <button
+                      className="id-max__send-btn"
+                      disabled={!maxBudgetDraft.trim()}
+                      onClick={() => handleBudgetSubmit(maxBudgetDraft)}
+                      aria-label="Submit budget"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* A2 result — recommended allocation */}
+              {maxStep === 'new_budget_result' && (
+                <div className="id-max__rich">
+                  {getNewBudgetReco(maxBudgetAmount).map(({ name, amt }) => (
+                    <div key={name} className="id-max__tactic-row">
+                      <span className="id-max__tactic-name">{name}</span>
+                      <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
+                    </div>
+                  ))}
+                  <p className="id-max__rich-note">Based on your top performers. Ask your CS team to activate!</p>
+                </div>
+              )}
+
+              {/* B — New creative types not currently running */}
+              {maxStep === 'new_creative' && (
+                <div className="id-max__rich">
+                  {newTactics.length > 0 ? newTactics.map(t => (
+                    <div key={t} className="id-max__tactic-row id-max__tactic-row--creative">
+                      <div>
+                        <span className="id-max__tactic-name">{t}</span>
+                        <span className="id-max__tactic-desc">{TACTIC_DESCRIPTIONS[t]}</span>
+                      </div>
+                    </div>
+                  )) : (
+                    <p className="id-max__rich-note">You're already running all major tactic types — nice work!</p>
+                  )}
+                </div>
+              )}
+
+              {/* C — Expand audience (Resonate mockup) */}
+              {maxStep === 'expand_audience' && (
+                <div className="id-max__rich">
+                  <p className="id-max__rich-note" style={{ marginTop: 0, marginBottom: 6 }}>
+                    Powered by Resonate · Relevance for {CLIENT_NAME}
+                  </p>
+                  {MOCKUP_AUDIENCES.map(a => (
+                    <div key={a.label} className="id-max__audience-row">
+                      <div className="id-max__audience-info">
+                        <span className="id-max__audience-label">{a.label}</span>
+                        <span className="id-max__audience-meta">{a.ages} · {a.reach} reach</span>
+                      </div>
+                      <span
+                        className="id-max__audience-score"
+                        style={{ color: a.relevance >= 80 ? '#AEF33E' : a.relevance >= 70 ? '#8EE7F1' : '#FDE68A' }}
+                      >
+                        {a.relevance}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* D — Other: email CTA */}
+              {maxStep === 'other' && (
+                <div className="id-max__rich">
+                  <button className="id-max__email-cta" onClick={openOtherEmail}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Email Growth &amp; CS Team
+                  </button>
+                </div>
+              )}
+
+            </div>{/* end chat-body */}
+
+            {/* Quick replies — root: 4 main prompts */}
+            {maxStep === 'root' && (
+              <div className="id-max__quick-replies">
+                <button className="id-max__quick-btn" onClick={() => maxAction(
+                  'What are my options?', 'what_options',
+                  "Great question! I can help you see what's available now or plan for new budget. Which fits?"
+                )}>What are my options?</button>
+                <button className="id-max__quick-btn" onClick={() => maxAction(
+                  "I have new creative types I'm not running.",
+                  'new_creative',
+                  "Here are the tactic types you're not currently running — each is a growth opportunity:"
+                )}>I have new creative types</button>
+                <button className="id-max__quick-btn" onClick={() => maxAction(
+                  'I want to expand my audience.',
+                  'expand_audience',
+                  'I pulled Resonate audience data for you. Here are the top expansion segments for your brand profile:'
+                )}>Expand my audience</button>
+                <button className="id-max__quick-btn id-max__quick-btn--other" onClick={() => maxAction(
+                  'Other',
+                  'other',
+                  "I'll do my best, but I'm really only 'Golden' at incremental. Let me pull in the Big Dogs for your question!"
+                )}>Other</button>
+              </div>
+            )}
+
+            {/* Quick replies — what_options sub-menu */}
+            {maxStep === 'what_options' && (
+              <div className="id-max__quick-replies">
+                <button className="id-max__quick-btn" onClick={() => maxAction(
+                  'Currently Available Incremental',
+                  'avail_incr',
+                  `Here's your available incremental broken down by tactic — ${formatBudget(availableIncremental)} total:`
+                )}>Currently Available Incremental</button>
+                <button className="id-max__quick-btn" onClick={() => maxAction(
+                  'I Have New Budget',
+                  'new_budget_ask',
+                  'How much new budget are you working with? Pick a common size or enter your own:'
+                )}>I Have New Budget</button>
+              </div>
+            )}
+
           </div>
         </div>
       )}
