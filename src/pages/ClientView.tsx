@@ -48,7 +48,10 @@ const MOCKUP_AUDIENCES = [
 
 function formatBudget(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`
+  if (n >= 1_000) {
+    const k = n / 1_000
+    return `$${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`
+  }
   return `$${n}`
 }
 
@@ -502,47 +505,40 @@ export function ClientView({ onBack }: Props) {
                     const checked = selectedTactics.has(name)
                     const sliderVal = tacticAmounts[name] ?? amt
                     return (
-                      <div key={name} className="id-max__tactic-check-group">
-                        <label className="id-max__tactic-row id-max__tactic-row--check">
-                          <input
-                            type="checkbox"
-                            className="id-max__check"
-                            checked={checked}
-                            onChange={e => {
-                              setSelectedTactics(prev => {
-                                const next = new Set(prev)
-                                if (e.target.checked) {
-                                  next.add(name)
-                                  setTacticAmounts(p => ({ ...p, [name]: amt }))
-                                } else {
-                                  next.delete(name)
-                                  setTacticAmounts(p => { const n = { ...p }; delete n[name]; return n })
-                                }
-                                return next
-                              })
-                            }}
-                          />
-                          <span className="id-max__tactic-name">{name}</span>
-                          <span className="id-max__tactic-amt">{checked ? formatBudget(sliderVal) : formatBudget(amt)}</span>
-                        </label>
+                      <label key={name} className="id-max__tactic-row id-max__tactic-row--check">
+                        <input
+                          type="checkbox"
+                          className="id-max__check"
+                          checked={checked}
+                          onChange={e => {
+                            setSelectedTactics(prev => {
+                              const next = new Set(prev)
+                              if (e.target.checked) {
+                                next.add(name)
+                                setTacticAmounts(p => ({ ...p, [name]: amt }))
+                              } else {
+                                next.delete(name)
+                                setTacticAmounts(p => { const n = { ...p }; delete n[name]; return n })
+                              }
+                              return next
+                            })
+                          }}
+                        />
+                        <span className="id-max__tactic-name">{name}</span>
                         {checked && (
-                          <div className="id-max__tactic-slider-row">
-                            <input
-                              type="range"
-                              className="id-max__tactic-range"
-                              min={0}
-                              max={amt}
-                              step={Math.max(500, Math.floor(amt / 20))}
-                              value={sliderVal}
-                              onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
-                            />
-                            <div className="id-max__tactic-slider-cap">
-                              <span>$0</span>
-                              <span>{formatBudget(amt)}</span>
-                            </div>
-                          </div>
+                          <input
+                            type="range"
+                            className="id-max__tactic-range"
+                            min={0}
+                            max={amt}
+                            step={Math.max(500, Math.floor(amt / 20))}
+                            value={sliderVal}
+                            onClick={e => e.preventDefault()}
+                            onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
+                          />
                         )}
-                      </div>
+                        <span className="id-max__tactic-amt">{checked ? formatBudget(sliderVal) : formatBudget(amt)}</span>
+                      </label>
                     )
                   })}
                   <div className="id-max__tactic-row id-max__tactic-total">
