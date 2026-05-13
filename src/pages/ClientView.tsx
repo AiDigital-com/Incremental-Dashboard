@@ -229,6 +229,16 @@ export function ClientView({ onBack }: Props) {
     []
   )
 
+  // ── All advertisers aggregated by client name (for Apply Incremental list) ─
+  const advertiserBreakdown = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const c of CAMPAIGNS) {
+      if (c.performanceMultiplier >= 1.0)
+        map.set(c.clientName, (map.get(c.clientName) ?? 0) + c.incrementalDollars)
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1])
+  }, [])
+
   const activeCampaignCount  = clientCampaigns.length
   const activeBudget         = clientCampaigns.reduce((s, c) => s + c.budget, 0)
   const availableIncremental = clientCampaigns.reduce((s, c) => s + c.incrementalDollars, 0)
@@ -397,14 +407,12 @@ export function ClientView({ onBack }: Props) {
   }
 
   function openBreakdownEmail() {
-    const selected = clientCampaigns
-      .filter(c => selectedBreakdownIds.has(c.id))
-      .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
-    const lines = selected.map(c => `  • ${c.name}: ${formatBudget(c.incrementalDollars)}`).join('\n')
-    const total = selected.reduce((s, c) => s + c.incrementalDollars, 0)
+    const selected = advertiserBreakdown.filter(([name]) => selectedBreakdownIds.has(name))
+    const lines = selected.map(([name, amt]) => `  • ${name}: ${formatBudget(amt)}`).join('\n')
+    const total = selected.reduce((s, [, amt]) => s + amt, 0)
     window.open(gmailCompose(
-      `Apply Available Incremental — ${CLIENT_NAME}`,
-      `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following campaigns ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
+      `Apply Available Incremental — Agency Summary`,
+      `Hi Team,\n\nI'd like to apply available incremental to the following advertisers ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
     ), '_blank')
   }
 
@@ -1018,34 +1026,30 @@ export function ClientView({ onBack }: Props) {
                 </div>
 
                 <div className="id-client__breakdown-list">
-                  {clientCampaigns
-                    .slice()
-                    .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
-                    .map(c => {
-                      const checked = selectedBreakdownIds.has(c.id)
-                      return (
-                        <div key={c.id} className="id-client__breakdown-item">
-                          <input
-                            type="checkbox"
-                            id={`bd-${c.id}`}
-                            className="id-max__check"
-                            checked={checked}
-                            onChange={e => {
-                              const next = new Set(selectedBreakdownIds)
-                              e.target.checked ? next.add(c.id) : next.delete(c.id)
-                              setSelectedBreakdownIds(next)
-                            }}
-                          />
-                          <label htmlFor={`bd-${c.id}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
-                            <span className="id-client__breakdown-name">{c.name}</span>
-                            <span className="id-client__breakdown-meta">
-                              Budget {formatBudget(c.budget)} &nbsp;·&nbsp;
-                              <span style={{ color: '#AEF33E' }}>{formatBudget(c.incrementalDollars)} available</span>
-                            </span>
-                          </label>
-                        </div>
-                      )
-                    })}
+                  {advertiserBreakdown.map(([advertiser, totalIncr]) => {
+                    const checked = selectedBreakdownIds.has(advertiser)
+                    return (
+                      <div key={advertiser} className="id-client__breakdown-item">
+                        <input
+                          type="checkbox"
+                          id={`bd-${advertiser}`}
+                          className="id-max__check"
+                          checked={checked}
+                          onChange={e => {
+                            const next = new Set(selectedBreakdownIds)
+                            e.target.checked ? next.add(advertiser) : next.delete(advertiser)
+                            setSelectedBreakdownIds(next)
+                          }}
+                        />
+                        <label htmlFor={`bd-${advertiser}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
+                          <span className="id-client__breakdown-name">{advertiser}</span>
+                          <span className="id-client__breakdown-meta">
+                            <span style={{ color: '#AEF33E' }}>{formatBudget(totalIncr)} available</span>
+                          </span>
+                        </label>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 {selectedBreakdownIds.size > 0 && (
