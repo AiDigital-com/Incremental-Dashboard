@@ -161,6 +161,7 @@ export function ClientView({ onBack }: Props) {
   const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
   const [selectedTactics,     setSelectedTactics]     = useState<Set<string>>(new Set())
   const [tacticAmounts,       setTacticAmounts]       = useState<Record<string, number>>({})
+  const [selectedBreakdownIds, setSelectedBreakdownIds] = useState<Set<string>>(new Set())
   const [newBudgetSelected,   setNewBudgetSelected]   = useState<Set<string>>(new Set())
   const [newBudgetTacticAmts, setNewBudgetTacticAmts] = useState<Record<string, string>>({})
   const [selectedCreatives,   setSelectedCreatives]   = useState<Set<string>>(new Set())
@@ -188,6 +189,7 @@ export function ClientView({ onBack }: Props) {
       setUserPlanNote('')
       setSelectedTactics(new Set())
       setTacticAmounts({})
+      setSelectedBreakdownIds(new Set())
     }
   }, [modal])
 
@@ -388,6 +390,18 @@ export function ClientView({ onBack }: Props) {
     const total = tacticBreakdown
       .filter(([name]) => selectedTactics.has(name))
       .reduce((s, [name, amt]) => s + (tacticAmounts[name] ?? amt), 0)
+    window.open(gmailCompose(
+      `Apply Available Incremental — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following campaigns ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
+    ), '_blank')
+  }
+
+  function openBreakdownEmail() {
+    const selected = clientCampaigns
+      .filter(c => selectedBreakdownIds.has(c.id))
+      .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
+    const lines = selected.map(c => `  • ${c.name}: ${formatBudget(c.incrementalDollars)}`).join('\n')
+    const total = selected.reduce((s, c) => s + c.incrementalDollars, 0)
     window.open(gmailCompose(
       `Apply Available Incremental — ${CLIENT_NAME}`,
       `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following campaigns ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
@@ -1004,35 +1018,39 @@ export function ClientView({ onBack }: Props) {
                 </div>
 
                 <div className="id-client__breakdown-list">
-                  {tacticBreakdown.map(([name, totalAmt]) => {
-                    const checked = selectedTactics.has(name)
-                    return (
-                      <div key={name} className="id-client__breakdown-item">
-                        <input
-                          type="checkbox"
-                          id={`bd-${name}`}
-                          className="id-max__check"
-                          checked={checked}
-                          onChange={e => {
-                            const next = new Set(selectedTactics)
-                            e.target.checked ? next.add(name) : next.delete(name)
-                            setSelectedTactics(next)
-                          }}
-                        />
-                        <label htmlFor={`bd-${name}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
-                          <span className="id-client__breakdown-name">{name}</span>
-                          <span className="id-client__breakdown-meta">
-                            <span style={{ color: '#AEF33E' }}>{formatBudget(totalAmt)} available</span>
-                          </span>
-                        </label>
-                      </div>
-                    )
-                  })}
+                  {clientCampaigns
+                    .slice()
+                    .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
+                    .map(c => {
+                      const checked = selectedBreakdownIds.has(c.id)
+                      return (
+                        <div key={c.id} className="id-client__breakdown-item">
+                          <input
+                            type="checkbox"
+                            id={`bd-${c.id}`}
+                            className="id-max__check"
+                            checked={checked}
+                            onChange={e => {
+                              const next = new Set(selectedBreakdownIds)
+                              e.target.checked ? next.add(c.id) : next.delete(c.id)
+                              setSelectedBreakdownIds(next)
+                            }}
+                          />
+                          <label htmlFor={`bd-${c.id}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
+                            <span className="id-client__breakdown-name">{c.name}</span>
+                            <span className="id-client__breakdown-meta">
+                              Budget {formatBudget(c.budget)} &nbsp;·&nbsp;
+                              <span style={{ color: '#AEF33E' }}>{formatBudget(c.incrementalDollars)} available</span>
+                            </span>
+                          </label>
+                        </div>
+                      )
+                    })}
                 </div>
 
-                {selectedTactics.size > 0 && (
+                {selectedBreakdownIds.size > 0 && (
                   <div style={{ padding: '0 24px 4px' }}>
-                    <button className="id-max__apply-btn" onClick={openApplyEmail}>
+                    <button className="id-max__apply-btn" onClick={openBreakdownEmail}>
                       Contact my campaign management team to have this applied ASAP
                     </button>
                   </div>
