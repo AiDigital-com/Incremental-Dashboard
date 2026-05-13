@@ -161,7 +161,7 @@ export function ClientView({ onBack }: Props) {
   const [maxBudgetAmount,setMaxBudgetAmount]= useState(0)
   const [selectedTactics,     setSelectedTactics]     = useState<Set<string>>(new Set())
   const [tacticAmounts,       setTacticAmounts]       = useState<Record<string, number>>({})
-  const [selectedBreakdownIds, setSelectedBreakdownIds] = useState<Set<string>>(new Set())
+  const [breakdownDetail, setBreakdownDetail] = useState<string | null>(null)
   const [newBudgetSelected,   setNewBudgetSelected]   = useState<Set<string>>(new Set())
   const [newBudgetTacticAmts, setNewBudgetTacticAmts] = useState<Record<string, string>>({})
   const [selectedCreatives,   setSelectedCreatives]   = useState<Set<string>>(new Set())
@@ -189,7 +189,7 @@ export function ClientView({ onBack }: Props) {
       setUserPlanNote('')
       setSelectedTactics(new Set())
       setTacticAmounts({})
-      setSelectedBreakdownIds(new Set())
+      setBreakdownDetail(null)
     }
   }, [modal])
 
@@ -406,13 +406,16 @@ export function ClientView({ onBack }: Props) {
     ), '_blank')
   }
 
-  function openBreakdownEmail() {
-    const selected = advertiserBreakdown.filter(([name]) => selectedBreakdownIds.has(name))
-    const lines = selected.map(([name, amt]) => `  • ${name}: ${formatBudget(amt)}`).join('\n')
-    const total = selected.reduce((s, [, amt]) => s + amt, 0)
+  function openAdvertiserEmail(advertiser: string) {
+    const campaigns = CAMPAIGNS.filter(c => c.clientName === advertiser && c.performanceMultiplier >= 1.0)
+    const channelMap = new Map<string, number>()
+    for (const c of campaigns) channelMap.set(c.name, (channelMap.get(c.name) ?? 0) + c.incrementalDollars)
+    const channels = [...channelMap.entries()].sort((a, b) => b[1] - a[1])
+    const total = channels.reduce((s, [, a]) => s + a, 0)
+    const lines = channels.map(([name, amt]) => `    • ${name}: ${formatBudget(amt)} max available`).join('\n')
     window.open(gmailCompose(
-      `Apply Available Incremental — Agency Summary`,
-      `Hi Team,\n\nI'd like to apply available incremental to the following advertisers ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
+      `Available Incremental — ${advertiser}`,
+      `Hi Team,\n\n${advertiser} has ${formatBudget(total)} in available incremental ready to activate.\n\nBreakdown by channel:\n\n${lines}\n\nTotal Available: ${formatBudget(total)}\n\nLet's discuss the best path forward!\n`
     ), '_blank')
   }
 
@@ -1011,54 +1014,91 @@ export function ClientView({ onBack }: Props) {
               </svg>
             </button>
 
-            {/* ── Apply Incremental — campaign list ─────────────────────── */}
+            {/* ── Apply Incremental ─────────────────────────────────────── */}
             {modal === 'breakdown' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--attribution">
-                  <span className="id-client__modal-kicker">Take Action — {CLIENT_NAME}</span>
-                  <h3 className="id-client__modal-title">Apply Incremental</h3>
-                  <p className="id-client__modal-intro">Select the campaigns you'd like to activate incremental on. We'll send your request straight to your Growth and CS team.</p>
-                </div>
-
-                <div className="id-scenario__avail-bar">
-                  <span className="id-scenario__avail-label">Total Available Incremental</span>
-                  <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
-                </div>
-
-                <div className="id-client__breakdown-list">
-                  {advertiserBreakdown.map(([advertiser, totalIncr]) => {
-                    const checked = selectedBreakdownIds.has(advertiser)
-                    return (
-                      <div key={advertiser} className="id-client__breakdown-item">
-                        <input
-                          type="checkbox"
-                          id={`bd-${advertiser}`}
-                          className="id-max__check"
-                          checked={checked}
-                          onChange={e => {
-                            const next = new Set(selectedBreakdownIds)
-                            e.target.checked ? next.add(advertiser) : next.delete(advertiser)
-                            setSelectedBreakdownIds(next)
-                          }}
-                        />
-                        <label htmlFor={`bd-${advertiser}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
-                          <span className="id-client__breakdown-name">{advertiser}</span>
-                          <span className="id-client__breakdown-meta">
-                            <span style={{ color: '#AEF33E' }}>{formatBudget(totalIncr)} available</span>
-                          </span>
-                        </label>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {selectedBreakdownIds.size > 0 && (
-                  <div style={{ padding: '0 24px 4px' }}>
-                    <button className="id-max__apply-btn" onClick={openBreakdownEmail}>
-                      Contact my campaign management team to have this applied ASAP
+                  {breakdownDetail && (
+                    <button className="id-client__analysis-back" onClick={() => setBreakdownDetail(null)}>
+                      ← Back
                     </button>
-                  </div>
+                  )}
+                  <span className="id-client__modal-kicker">Take Action — {CLIENT_NAME}</span>
+                  <h3 className="id-client__modal-title">{breakdownDetail ?? 'Apply Incremental'}</h3>
+                  {!breakdownDetail && (
+                    <p className="id-client__modal-intro">Select an advertiser to review available incremental by channel, then email your Growth and CS team with one click.</p>
+                  )}
+                </div>
+
+                {/* Advertiser list */}
+                {!breakdownDetail && (
+                  <>
+                    <div className="id-scenario__avail-bar">
+                      <span className="id-scenario__avail-label">Total Available Incremental</span>
+                      <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
+                    </div>
+                    <div className="id-client__breakdown-list">
+                      {advertiserBreakdown.map(([advertiser, totalIncr]) => (
+                        <button
+                          key={advertiser}
+                          className="id-client__breakdown-item id-client__breakdown-item--nav"
+                          style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          onClick={() => setBreakdownDetail(advertiser)}
+                        >
+                          <div className="id-client__breakdown-info">
+                            <span className="id-client__breakdown-name">{advertiser}</span>
+                            <span className="id-client__breakdown-meta">
+                              <span style={{ color: '#AEF33E' }}>{formatBudget(totalIncr)} available</span>
+                            </span>
+                          </div>
+                          <span style={{ color: 'rgba(249,249,249,0.35)', fontSize: '0.9rem', flexShrink: 0 }}>→</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
+
+                {/* Advertiser detail — channel breakdown + email CTA */}
+                {breakdownDetail && (() => {
+                  const detailCampaigns = CAMPAIGNS.filter(c => c.clientName === breakdownDetail && c.performanceMultiplier >= 1.0)
+                  const channelMap = new Map<string, number>()
+                  for (const c of detailCampaigns) channelMap.set(c.name, (channelMap.get(c.name) ?? 0) + c.incrementalDollars)
+                  const channels = [...channelMap.entries()].sort((a, b) => b[1] - a[1])
+                  const total = channels.reduce((s, [, a]) => s + a, 0)
+                  return (
+                    <>
+                      <div className="id-scenario__avail-bar">
+                        <span className="id-scenario__avail-label">Available Incremental</span>
+                        <span className="id-scenario__avail-value" style={{ color: '#AEF33E' }}>{formatBudget(total)}</span>
+                      </div>
+                      <div className="id-client__breakdown-list">
+                        {channels.map(([channel, amt]) => (
+                          <div key={channel} className="id-client__breakdown-item">
+                            <div className="id-client__breakdown-info" style={{ flex: 1 }}>
+                              <span className="id-client__breakdown-name">{channel}</span>
+                              <span className="id-client__breakdown-meta">
+                                <span style={{ color: '#AEF33E' }}>{formatBudget(amt)} max available</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ padding: '8px 24px 16px' }}>
+                        <button
+                          className="id-max__apply-btn"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                          onClick={() => openAdvertiserEmail(breakdownDetail)}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                          </svg>
+                          Email Growth Director &amp; CS AM — Send Incremental Breakdown
+                        </button>
+                      </div>
+                    </>
+                  )
+                })()}
 
                 <div className="id-client__modal-footer">
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
