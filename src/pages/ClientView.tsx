@@ -141,7 +141,7 @@ const TAG_COLORS: Record<AudienceTag, string> = {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Props { onBack: () => void }
-type ModalType = 'audience' | 'breakdown' | 'scenario' | null
+type ModalType = 'breakdown' | 'scenario' | null
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -151,7 +151,7 @@ export function ClientView({ onBack }: Props) {
   const [showAudienceAnalysis, setShowAudienceAnalysis] = useState(false)
   const [selectedCampaign,     setSelectedCampaign]    = useState<Campaign | null>(null)
   const [showMediaPlans,       setShowMediaPlans]      = useState(false)
-  const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b'>('menu')
+  const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b' | 'c'>('menu')
   const [allocations,          setAllocations]         = useState<Record<string, number>>({})
   const [userPlanNote,         setUserPlanNote]        = useState('')
   const [showMaxChat,    setShowMaxChat]    = useState(false)
@@ -167,6 +167,11 @@ export function ClientView({ onBack }: Props) {
   const [creativeBudgetDraft, setCreativeBudgetDraft] = useState('')
   const [creativeBudgetAmt,   setCreativeBudgetAmt]   = useState(0)
   const maxBodyRef = useRef<HTMLDivElement>(null)
+  const sliderRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const amtSpanRefs = useRef<Record<string, HTMLSpanElement | null>>({})
+  const [creativeAllocEdits, setCreativeAllocEdits] = useState<Record<string, string>>({})
+  const [selectedAudiences,  setSelectedAudiences]  = useState<Set<string>>(new Set())
+  const [audienceAmounts,    setAudienceAmounts]     = useState<Record<string, string>>({})
 
   useEffect(() => {
     const t = setTimeout(() => setZoomContinent(0), 80)
@@ -181,6 +186,8 @@ export function ClientView({ onBack }: Props) {
       setScenarioView('menu')
       setAllocations({})
       setUserPlanNote('')
+      setSelectedTactics(new Set())
+      setTacticAmounts({})
     }
   }, [modal])
 
@@ -204,6 +211,9 @@ export function ClientView({ onBack }: Props) {
       setSelectedCreatives(new Set())
       setCreativeBudgetDraft('')
       setCreativeBudgetAmt(0)
+      setCreativeAllocEdits({})
+      setSelectedAudiences(new Set())
+      setAudienceAmounts({})
     }
   }, [showMaxChat])
 
@@ -337,6 +347,10 @@ export function ClientView({ onBack }: Props) {
   function handleCreativeBudgetSubmit(raw: string | number) {
     const n = typeof raw === 'number' ? raw : parseRawAmt(String(raw))
     if (!n || n <= 0) return
+    const alloc = getCreativeAlloc(n, selectedCreatives)
+    const initialEdits: Record<string, string> = {}
+    alloc.forEach(({ name, amt }) => { initialEdits[name] = formatBudget(amt) })
+    setCreativeAllocEdits(initialEdits)
     setCreativeBudgetAmt(n)
     setMaxMsgs(prev => [
       ...prev,
@@ -349,10 +363,20 @@ export function ClientView({ onBack }: Props) {
 
   function openCreativeEmail() {
     const alloc = getCreativeAlloc(creativeBudgetAmt, selectedCreatives)
-    const lines = alloc.map(({ name, amt }) => `  • ${name}: ${formatBudget(amt)}`).join('\n')
+    const lines = alloc.map(({ name, amt }) => `  • ${name}: ${creativeAllocEdits[name] ?? formatBudget(amt)}`).join('\n')
     window.open(gmailCompose(
       `New Creative Budget — ${CLIENT_NAME}`,
       `Hi Team,\n\nI have new creative assets for ${CLIENT_NAME} and ${formatBudget(creativeBudgetAmt)} in budget to deploy.\n\nCreative types: ${[...selectedCreatives].join(', ')}\n\nRecommended allocation:\n${lines}\n\nPlease let me know my options!`
+    ), '_blank')
+  }
+
+  function openAudienceEmail() {
+    const lines = [...selectedAudiences]
+      .map(label => `  • ${label}${audienceAmounts[label] ? ': ' + audienceAmounts[label] : ''}`)
+      .join('\n')
+    window.open(gmailCompose(
+      `Audience Expansion — ${CLIENT_NAME}`,
+      `Hi Team,\n\nI'd like to expand my audience for ${CLIENT_NAME} with the following Resonate segments:\n\n${lines}\n\nPlease let me know my options!`
     ), '_blank')
   }
 
@@ -366,7 +390,7 @@ export function ClientView({ onBack }: Props) {
       .reduce((s, [name, amt]) => s + (tacticAmounts[name] ?? amt), 0)
     window.open(gmailCompose(
       `Apply Available Incremental — ${CLIENT_NAME}`,
-      `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following tactics ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
+      `Hi Team,\n\nI'd like to apply available incremental for ${CLIENT_NAME} to the following campaigns ASAP:\n\n${lines}\n\nTotal to Apply: ${formatBudget(total)}\n\nPlease proceed as soon as possible!`
     ), '_blank')
   }
 
@@ -462,25 +486,7 @@ export function ClientView({ onBack }: Props) {
       {/* Cards */}
       <div className="id-client__cards">
 
-        {/* Audience Expander */}
-        <button className="id-client__card id-client__card--reach" onClick={() => setModal('audience')}>
-          <div className="id-client__card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <span className="id-client__card-kicker">Budget Reach</span>
-          <span className="id-client__card-title">Audience Expander</span>
-          <span className="id-client__card-desc">
-            See how your current budget can be stretched to reach entirely new audiences — beyond the segments your campaigns already touch.
-          </span>
-          <span className="id-client__card-cta">Explore Reach →</span>
-        </button>
-
-        {/* Incremental Breakdown */}
+        {/* Apply Incremental */}
         <button className="id-client__card id-client__card--attribution" onClick={() => setModal('breakdown')}>
           <div className="id-client__card-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -490,12 +496,12 @@ export function ClientView({ onBack }: Props) {
               <line x1="2"  y1="20" x2="22" y2="20"/>
             </svg>
           </div>
-          <span className="id-client__card-kicker">Performance</span>
-          <span className="id-client__card-title">Incremental Breakdown</span>
+          <span className="id-client__card-kicker">Take Action</span>
+          <span className="id-client__card-title">Apply Incremental</span>
           <span className="id-client__card-desc">
-            Understand exactly where your budget is generating real incremental lift — ranked by your best-performing campaigns and channels.
+            Know exactly what you want? Select campaigns, review available incremental, and relay your plan directly to your Growth and CS team.
           </span>
-          <span className="id-client__card-cta">View Breakdown →</span>
+          <span className="id-client__card-cta">Select Campaigns →</span>
         </button>
 
         {/* Scenario Explorer */}
@@ -513,12 +519,12 @@ export function ClientView({ onBack }: Props) {
               <line x1="17" y1="16" x2="23" y2="16"/>
             </svg>
           </div>
-          <span className="id-client__card-kicker">Budget Planning</span>
+          <span className="id-client__card-kicker">Explore & Plan</span>
           <span className="id-client__card-title">Scenario Explorer</span>
           <span className="id-client__card-desc">
-            Have incremental budget available? Play around with different allocation scenarios to see which mix drives the highest projected lift.
+            Not sure where to start? Explore audience expansion opportunities, understand your channel options, and build allocation scenarios for your incremental budget.
           </span>
-          <span className="id-client__card-cta">Run Scenarios →</span>
+          <span className="id-client__card-cta">Explore Options →</span>
         </button>
 
       </div>
@@ -560,6 +566,8 @@ export function ClientView({ onBack }: Props) {
                       setSelectedTactics(new Set()); setTacticAmounts({})
                       setNewBudgetSelected(new Set()); setNewBudgetTacticAmts({})
                       setSelectedCreatives(new Set()); setCreativeBudgetDraft(''); setCreativeBudgetAmt(0)
+                      setCreativeAllocEdits({})
+                      setSelectedAudiences(new Set()); setAudienceAmounts({})
                     }
                   }}
                 >
@@ -595,7 +603,7 @@ export function ClientView({ onBack }: Props) {
                 <div className="id-max__rich">
                   {tacticBreakdown.map(([name, amt]) => {
                     const checked = selectedTactics.has(name)
-                    const sliderVal = tacticAmounts[name] ?? amt
+                    const initialVal = tacticAmounts[name] ?? amt
                     return (
                       <div key={name} className="id-max__tactic-row id-max__tactic-row--check">
                         <input
@@ -611,16 +619,27 @@ export function ClientView({ onBack }: Props) {
                         />
                         <label htmlFor={`avail-${name}`} className="id-max__tactic-name">{name}</label>
                         <input
+                          ref={el => { sliderRefs.current[name] = el }}
                           type="range"
                           className="id-max__tactic-range"
                           min={0}
                           max={amt}
                           step={Math.max(500, Math.floor(amt / 20))}
-                          value={sliderVal}
-                          onChange={e => setTacticAmounts(p => ({ ...p, [name]: Number(e.target.value) }))}
+                          defaultValue={initialVal}
+                          onInput={e => {
+                            const val = Number((e.target as HTMLInputElement).value)
+                            const span = amtSpanRefs.current[name]
+                            if (span) span.textContent = formatBudget(val)
+                          }}
+                          onMouseUp={e => setTacticAmounts(p => ({ ...p, [name]: Number((e.target as HTMLInputElement).value) }))}
+                          onTouchEnd={e => setTacticAmounts(p => ({ ...p, [name]: Number((e.currentTarget as HTMLInputElement).value) }))}
                         />
-                        <span className="id-max__tactic-amt" style={{ color: checked ? '#AEF33E' : undefined }}>
-                          {formatBudget(sliderVal)}
+                        <span
+                          ref={el => { amtSpanRefs.current[name] = el }}
+                          className="id-max__tactic-amt"
+                          style={{ color: checked ? '#AEF33E' : undefined }}
+                        >
+                          {formatBudget(initialVal)}
                         </span>
                       </div>
                     )
@@ -793,12 +812,17 @@ export function ClientView({ onBack }: Props) {
               {maxStep === 'new_creative_result' && (
                 <div className="id-max__rich">
                   {getCreativeAlloc(creativeBudgetAmt, selectedCreatives).map(({ name, amt }) => (
-                    <div key={name} className="id-max__tactic-row">
+                    <div key={name} className="id-max__tactic-row id-max__tactic-row--check">
                       <span className="id-max__tactic-name">{name}</span>
-                      <span className="id-max__tactic-amt" style={{ color: '#AEF33E' }}>{formatBudget(amt)}</span>
+                      <input
+                        type="text"
+                        className="id-max__tactic-input"
+                        value={creativeAllocEdits[name] ?? formatBudget(amt)}
+                        onChange={e => setCreativeAllocEdits(p => ({ ...p, [name]: e.target.value }))}
+                      />
                     </div>
                   ))}
-                  <p className="id-max__rich-note">Recommended based on creative type performance. Your team can adjust.</p>
+                  <p className="id-max__rich-note">Recommended based on creative type performance. You or your team can adjust.</p>
                   <button className="id-max__email-cta" style={{ marginTop: 8 }} onClick={openCreativeEmail}>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -815,20 +839,52 @@ export function ClientView({ onBack }: Props) {
                   <p className="id-max__rich-note" style={{ marginTop: 0, marginBottom: 6 }}>
                     Powered by Resonate · Relevance for {CLIENT_NAME}
                   </p>
-                  {MOCKUP_AUDIENCES.map(a => (
-                    <div key={a.label} className="id-max__audience-row">
-                      <div className="id-max__audience-info">
-                        <span className="id-max__audience-label">{a.label}</span>
-                        <span className="id-max__audience-meta">{a.ages} · {a.reach} reach</span>
+                  {MOCKUP_AUDIENCES.map(a => {
+                    const sel = selectedAudiences.has(a.label)
+                    return (
+                      <div key={a.label} className="id-max__audience-row">
+                        <input
+                          type="checkbox"
+                          id={`aud-${a.label}`}
+                          className="id-max__check"
+                          checked={sel}
+                          onChange={e => {
+                            const next = new Set(selectedAudiences)
+                            if (e.target.checked) { next.add(a.label) }
+                            else {
+                              next.delete(a.label)
+                              setAudienceAmounts(p => { const n = { ...p }; delete n[a.label]; return n })
+                            }
+                            setSelectedAudiences(next)
+                          }}
+                        />
+                        <div className="id-max__audience-info">
+                          <label htmlFor={`aud-${a.label}`} className="id-max__audience-label">{a.label}</label>
+                          <span className="id-max__audience-meta">{a.ages} · {a.reach} reach</span>
+                        </div>
+                        <span
+                          className="id-max__audience-score"
+                          style={{ color: a.relevance >= 80 ? '#AEF33E' : a.relevance >= 70 ? '#8EE7F1' : '#FDE68A' }}
+                        >
+                          {a.relevance}%
+                        </span>
+                        {sel && (
+                          <input
+                            type="text"
+                            className="id-max__tactic-input"
+                            placeholder="$amt"
+                            value={audienceAmounts[a.label] ?? ''}
+                            onChange={e => setAudienceAmounts(p => ({ ...p, [a.label]: e.target.value }))}
+                          />
+                        )}
                       </div>
-                      <span
-                        className="id-max__audience-score"
-                        style={{ color: a.relevance >= 80 ? '#AEF33E' : a.relevance >= 70 ? '#8EE7F1' : '#FDE68A' }}
-                      >
-                        {a.relevance}%
-                      </span>
-                    </div>
-                  ))}
+                    )
+                  })}
+                  {selectedAudiences.size > 0 && (
+                    <button className="id-max__apply-btn" onClick={openAudienceEmail}>
+                      Contact your campaign management team to apply!
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -862,11 +918,15 @@ export function ClientView({ onBack }: Props) {
                     'What types of creatives do you have? Select all that apply:'
                   )
                 }}>I have new creatives</button>
-                <button className="id-max__quick-btn" onClick={() => maxAction(
-                  'I want to expand my audience.',
-                  'expand_audience',
-                  'I pulled Resonate audience data for you. Here are the top expansion segments for your brand profile:'
-                )}>Expand my audience</button>
+                <button className="id-max__quick-btn" onClick={() => {
+                  setSelectedAudiences(new Set())
+                  setAudienceAmounts({})
+                  maxAction(
+                    'I want to expand my audience.',
+                    'expand_audience',
+                    'I pulled Resonate audience data for you. Here are the top expansion segments for your brand profile:'
+                  )
+                }}>Expand my audience</button>
                 <button className="id-max__quick-btn id-max__quick-btn--other" onClick={() => maxAction(
                   'Other',
                   'other',
@@ -929,217 +989,56 @@ export function ClientView({ onBack }: Props) {
               </svg>
             </button>
 
-            {/* ── Audience Expander ──────────────────────────────────────── */}
-            {modal === 'audience' && !showAudienceAnalysis && (
+            {/* ── Apply Incremental — campaign list ─────────────────────── */}
+            {modal === 'breakdown' && (
               <>
-                <div className="id-client__modal-header id-client__modal-header--reach">
-                  <span className="id-client__modal-kicker">Budget Reach</span>
-                  <h3 className="id-client__modal-title">Audience Expander</h3>
-                  <p className="id-client__modal-intro">
-                    Your current budget is already working — but it may only be reaching audiences you already know. Audience Expander maps how that same budget, repositioned, can generate net-new reach beyond your existing footprint.
-                  </p>
-                </div>
-                <div className="id-client__modal-points">
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
-                    <div>
-                      <strong>Net-New Audience Mapping</strong>
-                      <p>Identify untapped segments your current campaigns aren't reaching — and quantify the growth opportunity each represents.</p>
-                    </div>
-                  </div>
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
-                    <div>
-                      <strong>Budget Reallocation Modeling</strong>
-                      <p>See how shifting even a portion of your active budget toward expansion channels can meaningfully widen your reach.</p>
-                    </div>
-                  </div>
-                  <div className="id-client__modal-point">
-                    <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
-                    <div>
-                      <strong>Incremental Audience Lift</strong>
-                      <p>Measure the audiences you're adding that would never have been reached through your existing campaign mix alone.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="id-client__modal-footer">
-                  <button className="id-client__modal-cta id-client__modal-cta--reach" onClick={() => setShowAudienceAnalysis(true)}>
-                    Analyze Current Audiences →
-                  </button>
-                  <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
-                </div>
-              </>
-            )}
-
-            {/* ── Audience Analysis (drill-down) ─────────────────────────── */}
-            {modal === 'audience' && showAudienceAnalysis && (
-              <>
-                <div className="id-client__modal-header id-client__modal-header--reach">
-                  <button className="id-client__analysis-back" onClick={() => setShowAudienceAnalysis(false)}>
-                    ← Back
-                  </button>
-                  <span className="id-client__modal-kicker">Audience Analysis — {CLIENT_NAME}</span>
-                  <h3 className="id-client__modal-title">Current Audience Performance</h3>
-                  <p className="id-client__modal-intro">Based on your active campaign mix, here is how each audience type is performing — along with recommended expansion audiences ranked by projected incremental lift.</p>
+                <div className="id-client__modal-header id-client__modal-header--attribution">
+                  <span className="id-client__modal-kicker">Take Action — {CLIENT_NAME}</span>
+                  <h3 className="id-client__modal-title">Apply Incremental</h3>
+                  <p className="id-client__modal-intro">Select the campaigns you'd like to activate incremental on. We'll send your request straight to your Growth and CS team.</p>
                 </div>
 
-                <div className="id-client__analysis-table">
-                  {audiencePerformance.map(a => {
-                    const barW = maxPerf > minPerf ? ((a.avgPerf - minPerf) / (maxPerf - minPerf)) * 100 : 50
-                    const barColor = a.avgPerf >= 1.3 ? '#AEF33E' : a.avgPerf >= 1.15 ? '#8EE7F1' : '#FDE68A'
+                <div className="id-scenario__avail-bar">
+                  <span className="id-scenario__avail-label">Total Available Incremental</span>
+                  <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
+                </div>
+
+                <div className="id-client__breakdown-list">
+                  {tacticBreakdown.map(([name, totalAmt]) => {
+                    const checked = selectedTactics.has(name)
                     return (
-                      <div key={a.name} className="id-client__analysis-row">
-                        <div className="id-client__analysis-row-top">
-                          <span className="id-client__analysis-name">{a.name}</span>
-                          <span className="id-client__analysis-kpi">{a.kpiLabel} {fmtKpi(a.avgKpi, a.kpiUnit)}</span>
-                          <span className="id-client__analysis-perf" style={{ color: barColor }}>{a.avgPerf.toFixed(2)}x goal</span>
-                        </div>
-                        <div className="id-client__analysis-bar-track">
-                          <div className="id-client__analysis-bar-fill" style={{ width: `${barW}%`, background: barColor }} />
-                        </div>
-                        <div className="id-client__analysis-suggestions">
-                          {a.suggestions.map((s, i) => (
-                            <div key={i} className="id-client__suggestion-item">
-                              <span className="id-client__suggestion-tag" style={{ background: TAG_COLORS[s.type] + '22', color: TAG_COLORS[s.type], borderColor: TAG_COLORS[s.type] + '44' }}>
-                                {s.type}
-                              </span>
-                              <div className="id-client__suggestion-text">
-                                <strong>{s.label}</strong>
-                                <span>{s.desc}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                      <div key={name} className="id-client__breakdown-item">
+                        <input
+                          type="checkbox"
+                          id={`bd-${name}`}
+                          className="id-max__check"
+                          checked={checked}
+                          onChange={e => {
+                            const next = new Set(selectedTactics)
+                            e.target.checked ? next.add(name) : next.delete(name)
+                            setSelectedTactics(next)
+                          }}
+                        />
+                        <label htmlFor={`bd-${name}`} className="id-client__breakdown-info" style={{ cursor: 'pointer', flex: 1 }}>
+                          <span className="id-client__breakdown-name">{name}</span>
+                          <span className="id-client__breakdown-meta">
+                            <span style={{ color: '#AEF33E' }}>{formatBudget(totalAmt)} available</span>
+                          </span>
+                        </label>
                       </div>
                     )
                   })}
                 </div>
 
-                <div className="id-client__modal-footer">
-                  <button className="id-client__modal-cta id-client__modal-cta--reach" onClick={() => setModal('scenario')}>
-                    Build a Scenario →
-                  </button>
-                  <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
-                </div>
-              </>
-            )}
-
-            {/* ── Incremental Breakdown — campaign list ─────────────────── */}
-            {modal === 'breakdown' && !selectedCampaign && (
-              <>
-                <div className="id-client__modal-header id-client__modal-header--attribution">
-                  <span className="id-client__modal-kicker">Performance — {CLIENT_NAME}</span>
-                  <h3 className="id-client__modal-title">Incremental Breakdown</h3>
-                  <p className="id-client__modal-intro">Active campaigns ranked by available incremental. Click any campaign to view details and next-step options.</p>
-                </div>
-
-                <div className="id-client__breakdown-list">
-                  {clientCampaigns
-                    .slice()
-                    .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
-                    .map(c => (
-                      <div key={c.id} className="id-client__breakdown-item">
-                        <div className="id-client__breakdown-info" onClick={() => { setSelectedCampaign(c); setShowMediaPlans(false) }}>
-                          <span className="id-client__breakdown-name">{c.name}</span>
-                          <span className="id-client__breakdown-meta">
-                            Budget {formatBudget(c.budget)} &nbsp;·&nbsp;
-                            <span style={{ color: '#AEF33E' }}>{formatBudget(c.incrementalDollars)} available</span>
-                          </span>
-                        </div>
-                        <div className="id-client__breakdown-icons">
-                          {/* Email icon — chat with growth/CS */}
-                          <button
-                            className="id-client__breakdown-icon-btn"
-                            title="Chat with Growth team"
-                            onClick={e => { e.stopPropagation(); openGrowthEmail(c) }}
-                            aria-label="Email growth team"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                              <polyline points="22,6 12,13 2,6"/>
-                            </svg>
-                          </button>
-                          {/* Plus icon — advertiser can take more budget */}
-                          <button
-                            className="id-client__breakdown-icon-btn id-client__breakdown-icon-btn--plus"
-                            title="Expand budget for this campaign"
-                            onClick={e => { e.stopPropagation(); setSelectedCampaign(c); setShowMediaPlans(false) }}
-                            aria-label="Expand budget"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                              <line x1="12" y1="5" x2="12" y2="19"/>
-                              <line x1="5" y1="12" x2="19" y2="12"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-
-                <div className="id-client__modal-footer">
-                  <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
-                </div>
-              </>
-            )}
-
-            {/* ── Incremental Breakdown — campaign detail ───────────────── */}
-            {modal === 'breakdown' && selectedCampaign && (
-              <>
-                <div className="id-client__modal-header id-client__modal-header--attribution">
-                  <button className="id-client__analysis-back" onClick={() => { setSelectedCampaign(null); setShowMediaPlans(false) }}>
-                    ← All Campaigns
-                  </button>
-                  <span className="id-client__modal-kicker">{CLIENT_NAME}</span>
-                  <h3 className="id-client__modal-title">{selectedCampaign.name}</h3>
-                </div>
-
-                {/* Total Incremental Available */}
-                <div className="id-client__breakdown-total">
-                  <span className="id-client__breakdown-total-label">Total Incremental Available</span>
-                  <span className="id-client__breakdown-total-value">{formatBudget(selectedCampaign.incrementalDollars)}</span>
-                </div>
-
-                {/* View Active Media Plans */}
-                <button
-                  className={`id-client__breakdown-plans-toggle${showMediaPlans ? ' is-open' : ''}`}
-                  onClick={() => setShowMediaPlans(v => !v)}
-                >
-                  <span>View Active Media Plans</span>
-                  <span className="id-client__breakdown-plans-chevron">{showMediaPlans ? '▴' : '▾'}</span>
-                </button>
-                {showMediaPlans && (
-                  <div className="id-client__breakdown-plans">
-                    {clientCampaigns
-                      .slice()
-                      .sort((a, b) => b.incrementalDollars - a.incrementalDollars)
-                      .map(c => (
-                        <div key={c.id} className={`id-client__breakdown-plan-row${c.id === selectedCampaign.id ? ' is-selected' : ''}`}>
-                          <span className="id-client__breakdown-plan-name">{c.name}</span>
-                          <span className="id-client__breakdown-plan-meta">{formatBudget(c.budget)} budget</span>
-                          <span className="id-client__breakdown-plan-inc">{formatBudget(c.incrementalDollars)}</span>
-                        </div>
-                      ))}
+                {selectedTactics.size > 0 && (
+                  <div style={{ padding: '0 24px 4px' }}>
+                    <button className="id-max__apply-btn" onClick={openApplyEmail}>
+                      Contact my campaign management team to have this applied ASAP
+                    </button>
                   </div>
                 )}
 
-                {/* Action buttons */}
-                <div className="id-client__action-btns">
-                  <button className="id-client__action-btn id-client__action-btn--request" onClick={() => openRequestNow(selectedCampaign)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    Want to see a plan? Request Now
-                  </button>
-                  <button className="id-client__action-btn id-client__action-btn--chat" onClick={() => openChatWithMax(selectedCampaign)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    Want to see your incremental options? Chat with Max!
-                  </button>
-                </div>
-
-                <div className="id-client__modal-footer" style={{ marginTop: 12 }}>
+                <div className="id-client__modal-footer">
                   <button className="id-client__modal-dismiss" onClick={() => setModal(null)}>Close</button>
                 </div>
               </>
@@ -1150,15 +1049,15 @@ export function ClientView({ onBack }: Props) {
               <>
                 <div className="id-client__modal-header id-client__modal-header--audit">
                   {scenarioView !== 'menu' && (
-                    <button className="id-client__analysis-back" onClick={() => setScenarioView('menu')}>
+                    <button className="id-client__analysis-back" onClick={() => { setScenarioView('menu'); setShowAudienceAnalysis(false) }}>
                       ← Back
                     </button>
                   )}
-                  <span className="id-client__modal-kicker">Budget Planning — {CLIENT_NAME}</span>
+                  <span className="id-client__modal-kicker">Explore & Plan — {CLIENT_NAME}</span>
                   <h3 className="id-client__modal-title">Scenario Explorer</h3>
                   {scenarioView === 'menu' && (
                     <p className="id-client__modal-intro">
-                      You have <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> in available incremental. How would you like to proceed?
+                      You have <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> in available incremental. What would you like to explore?
                     </p>
                   )}
                 </div>
@@ -1179,6 +1078,14 @@ export function ClientView({ onBack }: Props) {
                       <div className="id-scenario__option-body">
                         <strong>I need guidance on where best to apply my incremental.</strong>
                         <span>Use the interactive budget allocator and compare scenarios side by side.</span>
+                      </div>
+                      <span className="id-scenario__option-arrow">→</span>
+                    </button>
+                    <button className="id-scenario__option-card" onClick={() => setScenarioView('c')}>
+                      <span className="id-scenario__option-label" style={{ background: 'rgba(130,99,255,0.15)', color: '#8263FF', borderColor: 'rgba(130,99,255,0.30)' }}>C</span>
+                      <div className="id-scenario__option-body">
+                        <strong>I want to explore audience expansion opportunities.</strong>
+                        <span>Map net-new audience segments beyond your existing campaign reach.</span>
                       </div>
                       <span className="id-scenario__option-arrow">→</span>
                     </button>
@@ -1304,6 +1211,91 @@ export function ClientView({ onBack }: Props) {
                       </button>
                     </div>
                   </div>
+                )}
+
+                {/* ── Option C: Audience Expansion ── */}
+                {scenarioView === 'c' && !showAudienceAnalysis && (
+                  <>
+                    <div className="id-client__modal-points">
+                      <div className="id-client__modal-point">
+                        <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
+                        <div>
+                          <strong>Net-New Audience Mapping</strong>
+                          <p>Identify untapped segments your current campaigns aren't reaching — and quantify the growth opportunity each represents.</p>
+                        </div>
+                      </div>
+                      <div className="id-client__modal-point">
+                        <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
+                        <div>
+                          <strong>Budget Reallocation Modeling</strong>
+                          <p>See how shifting even a portion of your active budget toward expansion channels can meaningfully widen your reach.</p>
+                        </div>
+                      </div>
+                      <div className="id-client__modal-point">
+                        <span className="id-client__modal-point-mark" style={{ color: '#8263FF' }}>◈</span>
+                        <div>
+                          <strong>Incremental Audience Lift</strong>
+                          <p>Measure the audiences you're adding that would never have been reached through your existing campaign mix alone.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="id-client__modal-footer">
+                      <button className="id-client__modal-cta id-client__modal-cta--reach" onClick={() => setShowAudienceAnalysis(true)}>
+                        Analyze Current Audiences →
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {scenarioView === 'c' && showAudienceAnalysis && (
+                  <>
+                    <div className="id-client__modal-header id-client__modal-header--reach" style={{ paddingTop: 0 }}>
+                      <button className="id-client__analysis-back" onClick={() => setShowAudienceAnalysis(false)}>
+                        ← Back
+                      </button>
+                      <span className="id-client__modal-kicker">Audience Analysis — {CLIENT_NAME}</span>
+                      <h3 className="id-client__modal-title">Current Audience Performance</h3>
+                      <p className="id-client__modal-intro">Based on your active campaign mix, here is how each audience type is performing — along with recommended expansion audiences ranked by projected incremental lift.</p>
+                    </div>
+
+                    <div className="id-client__analysis-table">
+                      {audiencePerformance.map(a => {
+                        const barW = maxPerf > minPerf ? ((a.avgPerf - minPerf) / (maxPerf - minPerf)) * 100 : 50
+                        const barColor = a.avgPerf >= 1.3 ? '#AEF33E' : a.avgPerf >= 1.15 ? '#8EE7F1' : '#FDE68A'
+                        return (
+                          <div key={a.name} className="id-client__analysis-row">
+                            <div className="id-client__analysis-row-top">
+                              <span className="id-client__analysis-name">{a.name}</span>
+                              <span className="id-client__analysis-kpi">{a.kpiLabel} {fmtKpi(a.avgKpi, a.kpiUnit)}</span>
+                              <span className="id-client__analysis-perf" style={{ color: barColor }}>{a.avgPerf.toFixed(2)}x goal</span>
+                            </div>
+                            <div className="id-client__analysis-bar-track">
+                              <div className="id-client__analysis-bar-fill" style={{ width: `${barW}%`, background: barColor }} />
+                            </div>
+                            <div className="id-client__analysis-suggestions">
+                              {a.suggestions.map((s, i) => (
+                                <div key={i} className="id-client__suggestion-item">
+                                  <span className="id-client__suggestion-tag" style={{ background: TAG_COLORS[s.type] + '22', color: TAG_COLORS[s.type], borderColor: TAG_COLORS[s.type] + '44' }}>
+                                    {s.type}
+                                  </span>
+                                  <div className="id-client__suggestion-text">
+                                    <strong>{s.label}</strong>
+                                    <span>{s.desc}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    <div className="id-client__modal-footer">
+                      <button className="id-client__modal-cta id-client__modal-cta--reach" onClick={() => { setShowAudienceAnalysis(false); setScenarioView('b'); setAllocations({}) }}>
+                        Build a Scenario →
+                      </button>
+                    </div>
+                  </>
                 )}
 
                 <div className="id-client__modal-footer" style={{ marginTop: 16 }}>
