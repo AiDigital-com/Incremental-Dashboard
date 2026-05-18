@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AppShell } from '@AiDigital-com/design-system'
+import { AppShell } from '@AiDigital-com/design-system-client'
 import { createClient } from '@supabase/supabase-js'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { IncrementalDashboard } from './components/IncrementalDashboard'

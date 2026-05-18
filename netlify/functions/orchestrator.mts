@@ -6,7 +6,7 @@
  *
  * Pattern: stream text deltas + tool calls via SSE. Frontend uses parseSSEStream().
  */
-import { createLLMProvider, type ToolDefinition, type ToolCall, type ChatMessage } from '@AiDigital-com/design-system/server';
+import { createLLMProvider, type ToolDefinition, type ToolCall, type ChatMessage } from '@AiDigital-com/design-system-sdk/server';
 import { requireAuthOrEmbed } from './_shared/auth.js';
 import { log } from './_shared/logger.js';
 import { createClient } from '@supabase/supabase-js';

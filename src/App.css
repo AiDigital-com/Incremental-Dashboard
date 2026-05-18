@@ -7,8 +7,8 @@
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* ── Hide DS chrome we don't need ───────────────────────────────────────────── */
-.aidl-trial-banner { display: none !important; }
-.aidl-theme-toggle { display: none !important; }
+.helix-trial-banner { display: none !important; }
+.helix-theme-toggle { display: none !important; }
 
 /* ── Dashboard layout ────────────────────────────────────────────────────── */
 
