@@ -1537,17 +1537,6 @@
 
 .id-dashboard .id-dashboard__title-text { color: rgba(255, 255, 255, 0.92); font-size: 2rem; }
 
-.id-dashboard__title-sub {
-  display: block;
-  font-family: 'Barlow Semi Condensed', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(174, 243, 62, 0.65);
-  margin-top: 2px;
-}
-
 /* Client summary row — full row is clickable */
 .id-table__row--client { cursor: pointer; }
 .id-table__row--client:hover td { background: rgba(174, 243, 62, 0.05) !important; }
