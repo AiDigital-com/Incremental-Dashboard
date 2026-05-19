@@ -71,6 +71,25 @@ function daysLeft(endDate: string): number {
   return Math.max(0, Math.round((end.getTime() - now.getTime()) / 86_400_000))
 }
 
+function openClientEmail(clientName: string, campaigns: Campaign[], totalIncremental: number) {
+  const channelMap = new Map<string, number>()
+  for (const c of campaigns) channelMap.set(c.name, (channelMap.get(c.name) ?? 0) + c.incrementalDollars)
+  const channels = [...channelMap.entries()].sort((a, b) => b[1] - a[1])
+  const channelLines = channels.map(([name, amt]) => `    • ${name}: ${formatBudget(amt)} available`).join('\n')
+  const subject = `Incremental Summary — ${clientName}`
+  const body = [
+    `Hi Team,`,
+    ``,
+    `${clientName} has ${formatBudget(totalIncremental)} in total incremental available across ${campaigns.length} active campaign${campaigns.length !== 1 ? 's' : ''}.`,
+    ``,
+    `Channel Breakdown:`,
+    channelLines,
+    ``,
+    `Strong performance momentum is on our side — let's connect on next steps before the flight window closes.`,
+  ].join('\n')
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank')
+}
+
 function openGmailCompose(c: Campaign) {
   const subject = `Incremental Opportunity — ${c.clientName}`
   const body = [
@@ -439,13 +458,27 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
                   className="id-table__row id-table__row--client"
                   onClick={() => { setClientDetail(g.name); setCurrentPage(1) }}
                 >
-                  <td className="id-table__client">
-                    <span className="id-table__client-btn">
-                      {g.name}
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M9 18l6-6-6-6"/>
-                      </svg>
-                    </span>
+                  <td className="id-table__client" style={{ paddingRight: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="id-table__client-btn" style={{ flex: 1, minWidth: 0 }}>
+                        {g.name}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </span>
+                      <button
+                        className="id-send-email-btn"
+                        style={{ flexShrink: 0 }}
+                        title="Email Growth Director &amp; CS AM"
+                        onClick={e => { e.stopPropagation(); openClientEmail(g.name, g.campaigns, g.totalIncremental) }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        Email
+                      </button>
+                    </div>
                   </td>
                   <td style={{ textAlign: 'center', color: 'rgba(249,249,249,0.60)', fontSize: '0.8rem' }}>
                     {g.count}
