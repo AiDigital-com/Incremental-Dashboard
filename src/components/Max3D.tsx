@@ -146,11 +146,13 @@ function MaxScene() {
       </group>
 
       {/* ── NECK FUR ─────────────────────────────────────────────────────── */}
-      <Sp p={[0, 1.160, 0]} r={0.090} c={FUR} />
+      <Sp p={[0, 1.160, 0]} r={0.090} c={PAW} />
 
-      {/* ── HEAD — image sprite (148×84px → 1.762:1 ratio, so w=0.95 h=0.54) */}
-      <group ref={headRef} position={[0, 1.45, 0]}>
-        <mesh position={[0, 0.04, 0.10]}>
+      {/* ── HEAD — image sprite (148×84px → 1.762:1 ratio, so w=0.95 h=0.54)
+          Positioned so the chin alpha-fade overlaps the neck sphere rather
+          than leaving a gap — chin solid content starts ~15% from plane bottom */}
+      <group ref={headRef} position={[0, 1.35, 0]}>
+        <mesh position={[0, 0, 0.10]}>
           <planeGeometry args={[0.95, 0.54]} />
           <meshBasicMaterial map={headTexture} transparent alphaTest={0.05} />
         </mesh>
