@@ -1624,7 +1624,7 @@
 
 .id-client__cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   flex: 1;
   min-height: 0;
@@ -1748,6 +1748,17 @@
 .id-client__card--reach       .id-client__card-cta { color: #8263FF; }
 .id-client__card--attribution .id-client__card-cta { color: #8EE7F1; }
 .id-client__card--audit       .id-client__card-cta { color: #AEF33E; }
+
+.id-client__card-graphic {
+  width: 100%;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 12px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.id-client__card--attribution .id-client__card-graphic { color: #8EE7F1; }
+.id-client__card--audit       .id-client__card-graphic { color: #AEF33E; }
 
 /* ── Client View — modal ──────────────────────────────────────────────────── */
 
@@ -2928,13 +2939,13 @@
 .id-max__audience-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
   padding: 4px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 .id-max__audience-row:last-child { border-bottom: none; }
-.id-max__audience-info { display: flex; flex-direction: column; gap: 1px; }
+.id-max__audience-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .id-max__audience-label {
   font-size: 0.70rem;
   font-weight: 600;
@@ -2981,6 +2992,7 @@
 .id-max__tactic-row--check {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 7px;
 }
 .id-max__tactic-row--check .id-max__tactic-name,
@@ -2988,6 +3000,10 @@
   flex: 1;
   min-width: 0;
   cursor: pointer;
+}
+.id-max__tactic-row--check .id-max__tactic-amt {
+  flex: 0 0 44px;
+  text-align: right;
 }
 
 /* ── New budget tracker ── */
@@ -3045,8 +3061,7 @@
 .id-max__tactic-range {
   -webkit-appearance: none;
   appearance: none;
-  width: 80px;
-  flex-shrink: 0;
+  flex: 0 0 80px;
   height: 3px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.12);
@@ -3092,3 +3107,4 @@
   line-height: 1.35;
 }
 .id-max__apply-btn:hover { background: rgba(174, 243, 62, 0.18); }
+
