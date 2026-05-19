@@ -9,12 +9,12 @@ import { useState, useEffect, useCallback } from 'react'
 // row  2:                            N
 // row  3:                            C
 // row  4:                            R
-// row  5:    S    U    I    T   [E]                               ← SUITE    (E shared)
+// row  5:                            E
 // row  6:                            M
 // row  7:                            E
 // row  8:                            N
 // row  9:                            T
-// row 10:                            A
+// row 10:                       M   [A]  X                        ← MAX      (A shared)
 // row 11:                            L
 //
 // Shared letters appear once, highlighted in accent color.
@@ -24,7 +24,7 @@ interface LetterDef {
   col: number
   row: number
   delay: number
-  type: 'ailabs' | 'incremental' | 'suite' | 'shared-i' | 'shared-e'
+  type: 'ailabs' | 'incremental' | 'suite' | 'shared-i' | 'shared-a'
 }
 
 const LETTERS: LetterDef[] = [
@@ -41,20 +41,18 @@ const LETTERS: LetterDef[] = [
   { char: 'N', col: 5,  row: 2,  delay: 930,  type: 'incremental' },
   { char: 'C', col: 5,  row: 3,  delay: 1040, type: 'incremental' },
   { char: 'R', col: 5,  row: 4,  delay: 1150, type: 'incremental' },
-  { char: 'E', col: 5,  row: 5,  delay: 1260, type: 'shared-e' },          // ← shared with SUITE
+  { char: 'E', col: 5,  row: 5,  delay: 1260, type: 'incremental' },
   { char: 'M', col: 5,  row: 6,  delay: 1370, type: 'incremental' },
   { char: 'E', col: 5,  row: 7,  delay: 1480, type: 'incremental' },
   { char: 'N', col: 5,  row: 8,  delay: 1590, type: 'incremental' },
   { char: 'T', col: 5,  row: 9,  delay: 1700, type: 'incremental' },
-  { char: 'A', col: 5,  row: 10, delay: 1810, type: 'incremental' },
+  { char: 'A', col: 5,  row: 10, delay: 1810, type: 'shared-a' },          // ← shared with MAX
   { char: 'L', col: 5,  row: 11, delay: 1920, type: 'incremental' },
 
-  // ── SUITE — reveal left to right, skip shared E at col 5 ─────────────────
-  { char: 'S', col: 1,  row: 5,  delay: 2080, type: 'suite' },
-  { char: 'U', col: 2,  row: 5,  delay: 2200, type: 'suite' },
-  { char: 'I', col: 3,  row: 5,  delay: 2320, type: 'suite' },
-  { char: 'T', col: 4,  row: 5,  delay: 2440, type: 'suite' },
-  // E at (col 5, row 5) already placed above
+  // ── MAX — reveal left to right, skip shared A at col 5 ───────────────────
+  { char: 'M', col: 4,  row: 10, delay: 2080, type: 'suite' },
+  // A at (col 5, row 10) already placed above
+  { char: 'X', col: 6,  row: 10, delay: 2200, type: 'suite' },
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
