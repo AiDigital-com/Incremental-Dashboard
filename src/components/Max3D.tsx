@@ -102,11 +102,11 @@ function MaxScene() {
 
       {/* ── LEGS ─────────────────────────────────────────────────────────── */}
       <mesh position={[-0.100, 0.37, 0]}>
-        <capsuleGeometry args={[0.065, 0.30, 4, 12]} />
+        <capsuleGeometry args={[0.065, 0.37, 4, 12]} />
         <meshStandardMaterial color={SUIT} roughness={0.70} />
       </mesh>
       <mesh position={[ 0.100, 0.37, 0]}>
-        <capsuleGeometry args={[0.065, 0.30, 4, 12]} />
+        <capsuleGeometry args={[0.065, 0.37, 4, 12]} />
         <meshStandardMaterial color={SUIT} roughness={0.70} />
       </mesh>
 
