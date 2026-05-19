@@ -126,6 +126,7 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
   const [campaignTypeFilters, setCampaignTypeFilters] = useState<string[]>([])
   const [showTypeDropdown, setShowTypeDropdown] = useState(false)
   const [typeDropdownPos, setTypeDropdownPos] = useState({ top: 0, left: 0 })
+  const [clientDetail, setClientDetail] = useState<string | null>(null)
   const typeDropdownRef = useRef<HTMLTableCellElement>(null)
   const typeDropdownBtnRef = useRef<HTMLButtonElement>(null)
   const typeDropdownPanelRef = useRef<HTMLDivElement>(null)
@@ -188,6 +189,44 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     return rows
   }, [activeCampaigns, sortKey, sortDir, campaignTypeFilters])
 
+  // Client summary groups (aggregated per client, for the top-level view)
+  const clientGroups = useMemo(() => {
+    const map = new Map<string, Campaign[]>()
+    for (const c of activeCampaigns) {
+      if (!map.has(c.clientName)) map.set(c.clientName, [])
+      map.get(c.clientName)!.push(c)
+    }
+    let groups = [...map.entries()].map(([name, camps]) => ({
+      name,
+      count: camps.length,
+      totalBudget: camps.reduce((s, c) => s + c.budget, 0),
+      totalIncremental: camps.reduce((s, c) => s + c.incrementalDollars, 0),
+      avgPerf: camps.reduce((s, c) => s + c.performanceMultiplier, 0) / camps.length,
+      avgDaysLeft: Math.round(camps.reduce((s, c) => s + daysLeft(c.endDate), 0) / camps.length),
+      topCampaign: [...camps].sort((a, b) => b.incrementalDollars - a.incrementalDollars)[0],
+    }))
+    if (sortKey) {
+      groups = [...groups].sort((a, b) => {
+        let av: string | number, bv: string | number
+        if (sortKey === 'clientName')       { av = a.name.toLowerCase();    bv = b.name.toLowerCase() }
+        else if (sortKey === 'budget')      { av = a.totalBudget;           bv = b.totalBudget }
+        else if (sortKey === 'incremental') { av = a.totalIncremental;      bv = b.totalIncremental }
+        else if (sortKey === 'daysLeft')    { av = a.avgDaysLeft;           bv = b.avgDaysLeft }
+        else return 0
+        if (av < bv) return sortDir === 'asc' ? -1 : 1
+        if (av > bv) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return groups
+  }, [activeCampaigns, sortKey, sortDir])
+
+  // Campaigns shown in the client detail drill-down
+  const clientDetailCampaigns = useMemo(
+    () => clientDetail ? sortedCampaigns.filter(c => c.clientName === clientDetail) : [],
+    [clientDetail, sortedCampaigns]
+  )
+
   // Close campaign type dropdown on outside click
   useEffect(() => {
     if (!showTypeDropdown) return
@@ -205,6 +244,12 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     setCurrentPage(1)
   }, [campaigns, selectedClient, sortKey, sortDir, campaignTypeFilters])
 
+  // Reset client detail when top-level filters change
+  useEffect(() => {
+    setClientDetail(null)
+    setCurrentPage(1)
+  }, [selectedRegion, selectedGD, selectedClient])
+
   function handleSort(key: string) {
     if (sortKey === key) {
       setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -219,9 +264,9 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
     return <span className="id-th-sort-icon id-th-sort-icon--active">{sortDir === 'asc' ? '↑' : '↓'}</span>
   }
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(sortedCampaigns.length / PAGE_SIZE))
-  const pagedCampaigns = sortedCampaigns.slice(
+  // Pagination — applies to detail view only; summary shows all client groups
+  const totalPages = Math.max(1, Math.ceil(clientDetailCampaigns.length / PAGE_SIZE))
+  const pagedCampaigns = clientDetailCampaigns.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   )
@@ -241,13 +286,22 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
 
       {/* Header */}
       <div className="id-dashboard__header">
-        {onBack && (
+        {clientDetail ? (
+          <button className="id-back-btn" onClick={() => { setClientDetail(null); setCurrentPage(1) }}>
+            ← Back
+          </button>
+        ) : onBack && (
           <button className="id-back-btn" onClick={onBack}>
             ← Back
           </button>
         )}
         <div className="id-dashboard__title-wrap">
-          <h2 className="id-dashboard__title-text">Campaign Overview</h2>
+          <h2 className="id-dashboard__title-text">
+            {clientDetail ? clientDetail : 'Campaign Overview'}
+          </h2>
+          {clientDetail && (
+            <span className="id-dashboard__title-sub">Campaign Breakdown</span>
+          )}
         </div>
         <div className="id-dashboard__header-actions">
 
@@ -339,116 +393,77 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
         </div>
       </div>
 
-      {/* Campaign Table */}
-      <div className="id-dashboard__table-wrap">
-        <table className="id-table">
-          {/* Fixed column widths — table-layout:fixed requires explicit sizing */}
-          <colgroup>
-            <col style={{ width: '11%' }} />{/* Client Name */}
-            <col style={{ width: '16%' }} />{/* Campaign Name */}
-            <col style={{ width: '8%'  }} />{/* Start Date */}
-            <col style={{ width: '8%'  }} />{/* End Date */}
-            <col style={{ width: '7%'  }} />{/* Budget */}
-            <col style={{ width: '9%'  }} />{/* KPI */}
-            <col style={{ width: '11%' }} />{/* Performance vs. Goal */}
-            <col style={{ width: '10%' }} />{/* Incremental Availability */}
-            <col style={{ width: '6%'  }} />{/* Days Left */}
-            <col style={{ width: '10%' }} />{/* Initiate Outreach */}
-          </colgroup>
-          <thead>
-            <tr>
-              <th className="id-th--sortable" onClick={() => handleSort('clientName')}>
-                Client Name{sortIcon('clientName')}
-              </th>
-              <th className="id-th--filter" ref={typeDropdownRef}>
-                <button
-                  ref={typeDropdownBtnRef}
-                  className={`id-th-type-btn${campaignTypeFilters.length > 0 ? ' id-th-type-btn--active' : ''}`}
-                  onClick={() => {
-                    if (!showTypeDropdown && typeDropdownBtnRef.current) {
-                      const r = typeDropdownBtnRef.current.getBoundingClientRect()
-                      setTypeDropdownPos({ top: r.bottom + 4, left: r.left })
-                    }
-                    setShowTypeDropdown(v => !v)
-                  }}
-                  type="button"
-                >
-                  <span className="id-th-type-btn-label">
-                    {campaignTypeFilters.length === 0
-                      ? 'Campaign Name'
-                      : campaignTypeFilters.length === 1
-                      ? campaignTypeFilters[0]
-                      : `Campaign (${campaignTypeFilters.length})`}
-                  </span>
-                  <span className="id-th-sort-icon">{showTypeDropdown ? '▴' : '▾'}</span>
-                </button>
-              </th>
-              <th className="id-th--sortable" onClick={() => handleSort('startDate')}>
-                Start Date{sortIcon('startDate')}
-              </th>
-              <th className="id-th--sortable" onClick={() => handleSort('endDate')}>
-                End Date{sortIcon('endDate')}
-              </th>
-              <th className="id-th--sortable" onClick={() => handleSort('budget')}>
-                Budget{sortIcon('budget')}
-              </th>
-              <th>KPI</th>
-              <th>Performance vs. Goal</th>
-              <th className="id-th--sortable" onClick={() => handleSort('incremental')}>
-                Incremental Availability{sortIcon('incremental')}
-              </th>
-              <th className="id-th--sortable" onClick={() => handleSort('daysLeft')}>
-                Days Left{sortIcon('daysLeft')}
-              </th>
-              <th>Initiate Outreach</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedCampaigns.length === 0 && (
+      {/* ── Client Summary Table (top-level view) ─────────────────────────── */}
+      {!clientDetail && (
+        <div className="id-dashboard__table-wrap">
+          <table className="id-table">
+            <colgroup>
+              <col style={{ width: '24%' }} />{/* Client Name */}
+              <col style={{ width: '9%'  }} />{/* Campaigns */}
+              <col style={{ width: '12%' }} />{/* Total Budget */}
+              <col style={{ width: '13%' }} />{/* Avg Performance */}
+              <col style={{ width: '14%' }} />{/* Total Incremental */}
+              <col style={{ width: '10%' }} />{/* Avg Days Left */}
+              <col style={{ width: '14%' }} />{/* Outreach */}
+            </colgroup>
+            <thead>
               <tr>
-                <td colSpan={10} className="id-table__empty">
-                  No qualifying campaigns match the selected filters.
-                </td>
+                <th className="id-th--sortable" onClick={() => handleSort('clientName')}>
+                  Client Name{sortIcon('clientName')}
+                </th>
+                <th>Campaigns</th>
+                <th className="id-th--sortable" onClick={() => handleSort('budget')}>
+                  Total Budget{sortIcon('budget')}
+                </th>
+                <th>Avg Performance</th>
+                <th className="id-th--sortable" onClick={() => handleSort('incremental')}>
+                  Total Incremental{sortIcon('incremental')}
+                </th>
+                <th className="id-th--sortable" onClick={() => handleSort('daysLeft')}>
+                  Avg Days Left{sortIcon('daysLeft')}
+                </th>
+                <th>Outreach</th>
               </tr>
-            )}
-            {pagedCampaigns.map(c => {
-              const remaining = daysLeft(c.endDate)
-              return (
-                <tr key={c.id} className="id-table__row">
-
-                  <td className="id-table__client">{c.clientName}</td>
-
-                  <td className="id-table__name">{c.name}</td>
-
-                  <td className="id-table__date">{formatDate(c.startDate)}</td>
-
-                  <td className="id-table__date">{formatDate(c.endDate)}</td>
-
-                  <td className="id-table__budget">{formatBudget(c.budget)}</td>
-
-                  <td className="id-table__kpi">
-                    <span className="id-table__kpi-chip">{c.kpiLabel}</span>
-                    <span className="id-table__kpi-num">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
+            </thead>
+            <tbody>
+              {clientGroups.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="id-table__empty">
+                    No qualifying campaigns match the selected filters.
                   </td>
-
-                  <td>
-                    <span className="id-perf-badge id-perf-badge--above">
-                      {c.performanceMultiplier.toFixed(2)}x above goal
+                </tr>
+              )}
+              {clientGroups.map(g => (
+                <tr
+                  key={g.name}
+                  className="id-table__row id-table__row--client"
+                  onClick={() => { setClientDetail(g.name); setCurrentPage(1) }}
+                >
+                  <td className="id-table__client">
+                    <span className="id-table__client-btn">
+                      {g.name}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
                     </span>
                   </td>
-
-                  <td className="id-table__incremental">
-                    {formatBudget(c.incrementalDollars)}
+                  <td style={{ textAlign: 'center', color: 'rgba(249,249,249,0.60)', fontSize: '0.8rem' }}>
+                    {g.count}
                   </td>
-
-                  <td className="id-table__days">
-                    {remaining > 0 ? `${remaining}d` : 'Ended'}
+                  <td className="id-table__budget">{formatBudget(g.totalBudget)}</td>
+                  <td>
+                    <span className="id-perf-badge id-perf-badge--above">
+                      {g.avgPerf.toFixed(2)}x above goal
+                    </span>
                   </td>
-
-                  <td className="id-table__outreach">
+                  <td className="id-table__incremental" style={{ fontWeight: 600 }}>
+                    {formatBudget(g.totalIncremental)}
+                  </td>
+                  <td className="id-table__days">{g.avgDaysLeft}d avg</td>
+                  <td className="id-table__outreach" onClick={e => e.stopPropagation()}>
                     <button
                       className="id-send-email-btn"
-                      onClick={() => openGmailCompose(c)}
+                      onClick={() => openGmailCompose(g.topCampaign)}
                     >
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -457,22 +472,126 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
                       Send Email
                     </button>
                   </td>
-
                 </tr>
-              )
-            })}
-            {/* Ghost rows — pad to PAGE_SIZE so row height is identical on every page */}
-            {Array.from({ length: Math.max(0, PAGE_SIZE - pagedCampaigns.length) }, (_, i) => (
-              <tr key={`ghost-${i}`} className="id-table__row id-table__row--ghost">
-                <td /><td /><td /><td /><td /><td /><td /><td /><td /><td />
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Pagination — bottom right */}
-      {totalPages > 1 && (
+      {/* ── Campaign Detail Table (drill-down for a single client) ─────────── */}
+      {clientDetail && (
+        <div className="id-dashboard__table-wrap">
+          <table className="id-table">
+            <colgroup>
+              <col style={{ width: '18%' }} />{/* Campaign Name */}
+              <col style={{ width: '9%'  }} />{/* Start Date */}
+              <col style={{ width: '9%'  }} />{/* End Date */}
+              <col style={{ width: '8%'  }} />{/* Budget */}
+              <col style={{ width: '10%' }} />{/* KPI */}
+              <col style={{ width: '12%' }} />{/* Performance */}
+              <col style={{ width: '12%' }} />{/* Incremental */}
+              <col style={{ width: '8%'  }} />{/* Days Left */}
+              <col style={{ width: '12%' }} />{/* Outreach */}
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="id-th--filter" ref={typeDropdownRef}>
+                  <button
+                    ref={typeDropdownBtnRef}
+                    className={`id-th-type-btn${campaignTypeFilters.length > 0 ? ' id-th-type-btn--active' : ''}`}
+                    onClick={() => {
+                      if (!showTypeDropdown && typeDropdownBtnRef.current) {
+                        const r = typeDropdownBtnRef.current.getBoundingClientRect()
+                        setTypeDropdownPos({ top: r.bottom + 4, left: r.left })
+                      }
+                      setShowTypeDropdown(v => !v)
+                    }}
+                    type="button"
+                  >
+                    <span className="id-th-type-btn-label">
+                      {campaignTypeFilters.length === 0
+                        ? 'Campaign Name'
+                        : campaignTypeFilters.length === 1
+                        ? campaignTypeFilters[0]
+                        : `Campaign (${campaignTypeFilters.length})`}
+                    </span>
+                    <span className="id-th-sort-icon">{showTypeDropdown ? '▴' : '▾'}</span>
+                  </button>
+                </th>
+                <th className="id-th--sortable" onClick={() => handleSort('startDate')}>
+                  Start Date{sortIcon('startDate')}
+                </th>
+                <th className="id-th--sortable" onClick={() => handleSort('endDate')}>
+                  End Date{sortIcon('endDate')}
+                </th>
+                <th className="id-th--sortable" onClick={() => handleSort('budget')}>
+                  Budget{sortIcon('budget')}
+                </th>
+                <th>KPI</th>
+                <th>Performance vs. Goal</th>
+                <th className="id-th--sortable" onClick={() => handleSort('incremental')}>
+                  Incremental Availability{sortIcon('incremental')}
+                </th>
+                <th className="id-th--sortable" onClick={() => handleSort('daysLeft')}>
+                  Days Left{sortIcon('daysLeft')}
+                </th>
+                <th>Initiate Outreach</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clientDetailCampaigns.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="id-table__empty">
+                    No qualifying campaigns match the selected filters.
+                  </td>
+                </tr>
+              )}
+              {pagedCampaigns.map(c => {
+                const remaining = daysLeft(c.endDate)
+                return (
+                  <tr key={c.id} className="id-table__row">
+                    <td className="id-table__name">{c.name}</td>
+                    <td className="id-table__date">{formatDate(c.startDate)}</td>
+                    <td className="id-table__date">{formatDate(c.endDate)}</td>
+                    <td className="id-table__budget">{formatBudget(c.budget)}</td>
+                    <td className="id-table__kpi">
+                      <span className="id-table__kpi-chip">{c.kpiLabel}</span>
+                      <span className="id-table__kpi-num">{formatKpi(c.kpiValue, c.kpiUnit)}</span>
+                    </td>
+                    <td>
+                      <span className="id-perf-badge id-perf-badge--above">
+                        {c.performanceMultiplier.toFixed(2)}x above goal
+                      </span>
+                    </td>
+                    <td className="id-table__incremental">{formatBudget(c.incrementalDollars)}</td>
+                    <td className="id-table__days">
+                      {remaining > 0 ? `${remaining}d` : 'Ended'}
+                    </td>
+                    <td className="id-table__outreach">
+                      <button className="id-send-email-btn" onClick={() => openGmailCompose(c)}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        Send Email
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+              {Array.from({ length: Math.max(0, PAGE_SIZE - pagedCampaigns.length) }, (_, i) => (
+                <tr key={`ghost-${i}`} className="id-table__row id-table__row--ghost">
+                  <td /><td /><td /><td /><td /><td /><td /><td /><td />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination — only in detail view */}
+      {clientDetail && totalPages > 1 && (
         <div className="id-pagination">
           <span className="id-pagination__info">
             {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedCampaigns.length)} of {sortedCampaigns.length}
