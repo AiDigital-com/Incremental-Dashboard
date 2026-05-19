@@ -152,6 +152,7 @@ export function ClientView({ onBack }: Props) {
   const [selectedCampaign,     setSelectedCampaign]    = useState<Campaign | null>(null)
   const [showMediaPlans,       setShowMediaPlans]      = useState(false)
   const [scenarioView,         setScenarioView]        = useState<'menu' | 'a' | 'b' | 'c'>('menu')
+  const [scenarioAdvertiser,   setScenarioAdvertiser]  = useState<string | null>(null)
   const [allocations,          setAllocations]         = useState<Record<string, number>>({})
   const [userPlanNote,         setUserPlanNote]        = useState('')
   const [showMaxChat,    setShowMaxChat]    = useState(false)
@@ -185,6 +186,7 @@ export function ClientView({ onBack }: Props) {
       setSelectedCampaign(null)
       setShowMediaPlans(false)
       setScenarioView('menu')
+      setScenarioAdvertiser(null)
       setAllocations({})
       setUserPlanNote('')
       setSelectedTactics(new Set())
@@ -1153,22 +1155,59 @@ export function ClientView({ onBack }: Props) {
             {modal === 'scenario' && (
               <>
                 <div className="id-client__modal-header id-client__modal-header--audit">
-                  {scenarioView !== 'menu' && (
+                  {scenarioView !== 'menu' ? (
                     <button className="id-client__analysis-back" onClick={() => { setScenarioView('menu'); setShowAudienceAnalysis(false) }}>
                       ← Back
                     </button>
-                  )}
+                  ) : scenarioAdvertiser !== null ? (
+                    <button className="id-client__analysis-back" onClick={() => { setScenarioAdvertiser(null); setScenarioView('menu') }}>
+                      ← Back
+                    </button>
+                  ) : null}
                   <span className="id-client__modal-kicker">Explore & Plan — {CLIENT_NAME}</span>
                   <h3 className="id-client__modal-title">Scenario Explorer</h3>
-                  {scenarioView === 'menu' && (
+                  {!scenarioAdvertiser && (
+                    <p className="id-client__modal-intro">What advertiser do you want to explore?</p>
+                  )}
+                  {scenarioAdvertiser && scenarioView === 'menu' && (
                     <p className="id-client__modal-intro">
-                      You have <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> in available incremental. What would you like to explore?
+                      <strong style={{ color: 'rgba(255,255,255,0.80)' }}>{scenarioAdvertiser}</strong> — you have <strong style={{ color: '#AEF33E' }}>{formatBudget(availableIncremental)}</strong> in available incremental. What would you like to explore?
                     </p>
                   )}
                 </div>
 
+                {/* ── Step 1: Advertiser picker ── */}
+                {!scenarioAdvertiser && (
+                  <>
+                    <div className="id-scenario__avail-bar">
+                      <span className="id-scenario__avail-label">Total Available Incremental</span>
+                      <span className="id-scenario__avail-value">{formatBudget(availableIncremental)}</span>
+                    </div>
+                    <div className="id-client__breakdown-list">
+                      {advertiserBreakdown.map(([advertiser, totalIncr]) => (
+                        <button
+                          key={advertiser}
+                          className="id-client__breakdown-item id-client__breakdown-item--nav"
+                          style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          onClick={() => setScenarioAdvertiser(advertiser)}
+                        >
+                          <div className="id-client__breakdown-info">
+                            <span className="id-client__breakdown-name">{advertiser}</span>
+                            <span className="id-client__breakdown-meta">
+                              <span style={{ color: '#AEF33E' }}>{formatBudget(totalIncr)} available</span>
+                            </span>
+                          </div>
+                          <span style={{ color: 'rgba(249,249,249,0.35)', fontSize: '0.9rem', flexShrink: 0 }}>→</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* ── Step 2+: Option menu + A/B/C views (after advertiser selected) ── */}
+
                 {/* ── Menu ── */}
-                {scenarioView === 'menu' && (
+                {scenarioAdvertiser && scenarioView === 'menu' && (
                   <div className="id-scenario__menu">
                     <button className="id-scenario__option-card" onClick={() => setScenarioView('a')}>
                       <span className="id-scenario__option-label">A</span>
