@@ -83,7 +83,7 @@ export function HomePage({ onViewSelect, activeIdx, onIdxChange }: Props) {
       <GlobeBackground />
 
       <div className="id-home__header">
-        <h1 className="id-home__title">Incremental Suite</h1>
+        <h1 className="id-home__title">IncreMax</h1>
         <p className="id-home__subtitle">Select a view to get started</p>
       </div>
 
