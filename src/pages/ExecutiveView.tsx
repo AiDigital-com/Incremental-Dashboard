@@ -45,6 +45,23 @@ const TOTAL_INCREMENTAL = TOTAL_INCREMENTAL_NUM >= 1_000_000
   ? `$${(TOTAL_INCREMENTAL_NUM / 1_000_000).toFixed(1)}M`
   : `$${Math.round(TOTAL_INCREMENTAL_NUM / 1000)}K`
 
+// Current month index (May = 4, 0-based)
+const CURRENT_MONTH_IDX = 4
+
+function fmtK(k: number) {
+  return k >= 1000 ? `$${(k / 1000).toFixed(1)}M` : `$${k}K`
+}
+
+// YTD = Jan–May sum across all regions (values stored in $K)
+const TOTAL_YTD_K = Object.values(REGION_MONTHLY_DATA)
+  .reduce((sum, months) => sum + months.slice(0, CURRENT_MONTH_IDX + 1).reduce((s, v) => s + v, 0), 0)
+const TOTAL_YTD = fmtK(TOTAL_YTD_K)
+
+// MTD = May only across all regions
+const TOTAL_MTD_K = Object.values(REGION_MONTHLY_DATA)
+  .reduce((sum, months) => sum + (months[CURRENT_MONTH_IDX] ?? 0), 0)
+const TOTAL_MTD = fmtK(TOTAL_MTD_K)
+
 // Incremental available by region — computed from real campaign data
 function buildRegionIncrementalTotals(): Record<string, string> {
   const result: Record<string, string> = {}
@@ -358,6 +375,16 @@ export function ExecutiveView({ onBack }: Props) {
           <h2 className="id-exec__title">Executive View</h2>
           <p className="id-exec__subtitle">Regional Incremental Performance</p>
         </div>
+        <div className="id-exec__header-stats">
+          <div className="id-exec__header-stat">
+            <span className="id-exec__header-stat-label">Incremental Won YTD</span>
+            <span className="id-exec__header-stat-value">{TOTAL_YTD}</span>
+          </div>
+          <div className="id-exec__header-stat">
+            <span className="id-exec__header-stat-label">Incremental Won MTD</span>
+            <span className="id-exec__header-stat-value">{TOTAL_MTD}</span>
+          </div>
+        </div>
       </div>
 
       {/* Body: metrics sidebar + map/legend */}
@@ -585,6 +612,11 @@ export function ExecutiveView({ onBack }: Props) {
                 : allSellers
               const maxYtd = Math.max(...allSellers.map(s => s.ytdK), 1)
 
+              const regionYtdK = (REGION_MONTHLY_DATA[openRegion] ?? [])
+                .slice(0, CURRENT_MONTH_IDX + 1)
+                .reduce((s, v) => s + v, 0)
+              const regionYtdLabel = fmtK(regionYtdK)
+
               const rawClients = selectedSeller
                 ? (SELLER_TOP_CLIENTS[openRegion]?.[selectedSeller] ?? []).map(c => ({ ...c, gd: selectedSeller }))
                 : (REGION_TOP_CLIENTS[openRegion] ?? [])
@@ -613,7 +645,13 @@ export function ExecutiveView({ onBack }: Props) {
                 <div className="id-exec__panel-body">
                   {/* Monthly bar chart */}
                   <div className="id-exec__panel-chart">
-                    <div className="id-exec__panel-section-label">Incremental Won by Month</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div className="id-exec__panel-section-label" style={{ marginBottom: 0 }}>Incremental Won by Month</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="id-exec__panel-section-label" style={{ marginBottom: 2 }}>Won YTD</div>
+                        <div style={{ fontFamily: "'Barlow Semi Condensed', sans-serif", fontSize: '1.05rem', fontWeight: 700, color, letterSpacing: '0.02em', lineHeight: 1 }}>{regionYtdLabel}</div>
+                      </div>
+                    </div>
                     <div style={{ marginTop: 30 }}>
                       <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} />
                     </div>
