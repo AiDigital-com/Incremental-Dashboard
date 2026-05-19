@@ -6,7 +6,7 @@ import maxHeadImg from '../assets/max-head.png'
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const FUR  = '#D4903A'
-const PAW  = '#F0B842'   // lighter gold to match head image
+const PAW  = '#F5C455'   // lighter gold to match head image
 const SUIT = '#1B3560'
 const SHIRT = '#EEEEFF'
 const TIE  = '#CC1A1A'
@@ -151,7 +151,7 @@ function MaxScene() {
       {/* ── HEAD — image sprite (148×84px → 1.762:1 ratio, so w=0.95 h=0.54)
           Positioned so the chin alpha-fade overlaps the neck sphere rather
           than leaving a gap — chin solid content starts ~15% from plane bottom */}
-      <group ref={headRef} position={[0, 1.35, 0]}>
+      <group ref={headRef} position={[-0.03, 1.35, 0]}>
         <mesh position={[0, 0, 0.10]}>
           <planeGeometry args={[0.95, 0.54]} />
           <meshBasicMaterial map={headTexture} transparent alphaTest={0.05} />
