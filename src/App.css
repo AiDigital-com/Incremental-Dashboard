@@ -1624,7 +1624,7 @@
 
 .id-client__cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   flex: 1;
   min-height: 0;
@@ -1748,6 +1748,17 @@
 .id-client__card--reach       .id-client__card-cta { color: #8263FF; }
 .id-client__card--attribution .id-client__card-cta { color: #8EE7F1; }
 .id-client__card--audit       .id-client__card-cta { color: #AEF33E; }
+
+.id-client__card-graphic {
+  width: 100%;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 12px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.id-client__card--attribution .id-client__card-graphic { color: #8EE7F1; }
+.id-client__card--audit       .id-client__card-graphic { color: #AEF33E; }
 
 /* ── Client View — modal ──────────────────────────────────────────────────── */
 
@@ -3096,3 +3107,4 @@
   line-height: 1.35;
 }
 .id-max__apply-btn:hover { background: rgba(174, 243, 62, 0.18); }
+
