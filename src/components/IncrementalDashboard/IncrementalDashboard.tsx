@@ -86,23 +86,6 @@ function openGmailCompose(c: Campaign) {
   window.open(url, '_blank')
 }
 
-function openGmailComposeAllClients(groups: Array<{ name: string; count: number; totalIncremental: number }>) {
-  const total = groups.reduce((s, g) => s + g.totalIncremental, 0)
-  const lines = groups.map(g =>
-    `• ${g.name}: ${formatBudget(g.totalIncremental)} across ${g.count} campaign${g.count !== 1 ? 's' : ''}`
-  ).join('\n')
-  const subject = 'Incremental Opportunities — Client Portfolio Overview'
-  const body = [
-    `I wanted to reach out regarding incremental media investment opportunities across our portfolio.`,
-    '',
-    `The following clients have campaigns currently exceeding performance benchmarks, with a combined ${formatBudget(total)} in incremental availability:`,
-    '',
-    lines,
-    '',
-    `I'd love to connect to discuss how we can capitalize on this momentum before these flight windows close!`,
-  ].join('\n')
-  window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank')
-}
 
 function openGmailComposeAllCampaigns(campaigns: Campaign[], clientName: string) {
   const total = campaigns.reduce((s, c) => s + c.incrementalDollars, 0)
@@ -336,8 +319,8 @@ export function IncrementalDashboard({ planName, campaigns, onBack, selectedRegi
             <h2 className="id-dashboard__title-text">
               {clientDetail ? clientDetail : 'Campaign Overview'}
             </h2>
-            {!clientDetail && clientGroups.length > 0 && (
-              <button className="id-send-email-btn" onClick={() => openGmailComposeAllClients(clientGroups)}>
+            {!clientDetail && selectedClient && activeCampaigns.length > 0 && (
+              <button className="id-send-email-btn" onClick={() => openGmailComposeAllCampaigns(activeCampaigns, selectedClient)}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
