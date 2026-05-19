@@ -45,23 +45,6 @@ const TOTAL_INCREMENTAL = TOTAL_INCREMENTAL_NUM >= 1_000_000
   ? `$${(TOTAL_INCREMENTAL_NUM / 1_000_000).toFixed(1)}M`
   : `$${Math.round(TOTAL_INCREMENTAL_NUM / 1000)}K`
 
-// Current month index (May = 4, 0-based)
-const CURRENT_MONTH_IDX = 4
-
-function fmtK(k: number) {
-  return k >= 1000 ? `$${(k / 1000).toFixed(1)}M` : `$${k}K`
-}
-
-// YTD = Jan–May sum across all regions (values stored in $K)
-const TOTAL_YTD_K = Object.values(REGION_MONTHLY_DATA)
-  .reduce((sum, months) => sum + months.slice(0, CURRENT_MONTH_IDX + 1).reduce((s, v) => s + v, 0), 0)
-const TOTAL_YTD = fmtK(TOTAL_YTD_K)
-
-// MTD = May only across all regions
-const TOTAL_MTD_K = Object.values(REGION_MONTHLY_DATA)
-  .reduce((sum, months) => sum + (months[CURRENT_MONTH_IDX] ?? 0), 0)
-const TOTAL_MTD = fmtK(TOTAL_MTD_K)
-
 // Incremental available by region — computed from real campaign data
 function buildRegionIncrementalTotals(): Record<string, string> {
   const result: Record<string, string> = {}
@@ -138,6 +121,23 @@ const REGION_MONTHLY_DATA: Record<string, number[]> = {
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Current month index (May = 4, 0-based)
+const CURRENT_MONTH_IDX = 4
+
+function fmtK(k: number) {
+  return k >= 1000 ? `$${(k / 1000).toFixed(1)}M` : `$${k}K`
+}
+
+// YTD = Jan–May sum across all regions (values stored in $K)
+const TOTAL_YTD_K = Object.values(REGION_MONTHLY_DATA)
+  .reduce((sum, months) => sum + months.slice(0, CURRENT_MONTH_IDX + 1).reduce((s, v) => s + v, 0), 0)
+const TOTAL_YTD = fmtK(TOTAL_YTD_K)
+
+// MTD = May only across all regions
+const TOTAL_MTD_K = Object.values(REGION_MONTHLY_DATA)
+  .reduce((sum, months) => sum + (months[CURRENT_MONTH_IDX] ?? 0), 0)
+const TOTAL_MTD = fmtK(TOTAL_MTD_K)
 
 // YTD incremental by seller — computed from real campaign data
 function buildRegionGdYtd(): Record<string, { name: string; ytdK: number }[]> {
