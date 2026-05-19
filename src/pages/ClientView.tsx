@@ -527,6 +527,28 @@ export function ClientView({ onBack }: Props) {
             Know exactly what you want? Select campaigns, review available incremental, and relay your plan directly to your Growth and CS team.
           </span>
           <span className="id-client__card-cta">Select Campaigns →</span>
+
+          {/* Illustration: campaign rows (selected) → arrow → envelope */}
+          <svg className="id-client__card-graphic" viewBox="0 0 320 66" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="2" y="8" width="7" height="7" rx="2" fill="currentColor" fillOpacity="0.55"/>
+            <rect x="16" y="9" width="128" height="6" rx="3" fill="currentColor" fillOpacity="0.12"/>
+            <rect x="16" y="9" width="90" height="6" rx="3" fill="currentColor" fillOpacity="0.40"/>
+            <circle cx="156" cy="12" r="8" fill="currentColor" fillOpacity="0.18"/>
+            <path d="M152.5 12l2.5 3 5-6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="2" y="29" width="7" height="7" rx="2" fill="currentColor" fillOpacity="0.18"/>
+            <rect x="16" y="30" width="128" height="6" rx="3" fill="currentColor" fillOpacity="0.12"/>
+            <rect x="16" y="30" width="48" height="6" rx="3" fill="currentColor" fillOpacity="0.18"/>
+            <circle cx="156" cy="33" r="8" fill="currentColor" fillOpacity="0.07"/>
+            <rect x="2" y="50" width="7" height="7" rx="2" fill="currentColor" fillOpacity="0.55"/>
+            <rect x="16" y="51" width="128" height="6" rx="3" fill="currentColor" fillOpacity="0.12"/>
+            <rect x="16" y="51" width="110" height="6" rx="3" fill="currentColor" fillOpacity="0.40"/>
+            <circle cx="156" cy="54" r="8" fill="currentColor" fillOpacity="0.18"/>
+            <path d="M152.5 54l2.5 3 5-6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <line x1="178" y1="33" x2="206" y2="33" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.45"/>
+            <path d="M199 27l7 6-7 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.45"/>
+            <rect x="216" y="16" width="58" height="38" rx="6" fill="currentColor" fillOpacity="0.09" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.30"/>
+            <path d="M216 22l29 17 29-17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.50"/>
+          </svg>
         </button>
 
         {/* Scenario Explorer */}
@@ -550,6 +572,27 @@ export function ClientView({ onBack }: Props) {
             Not sure where to start? Explore audience expansion opportunities, understand your channel options, and build allocation scenarios for your incremental budget.
           </span>
           <span className="id-client__card-cta">Explore Options →</span>
+
+          {/* Illustration: single origin node branching to A / B / C paths */}
+          <svg className="id-client__card-graphic" viewBox="0 0 320 66" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="22" cy="33" r="9" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45"/>
+            <circle cx="22" cy="33" r="3" fill="currentColor" fillOpacity="0.70"/>
+            <path d="M31 33 L80 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.35"/>
+            <path d="M31 33 L80 33" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.50"/>
+            <path d="M31 33 L80 55" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.35"/>
+            <circle cx="88" cy="11" r="8" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.38"/>
+            <circle cx="88" cy="33" r="8" fill="currentColor" fillOpacity="0.24" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.55"/>
+            <circle cx="88" cy="55" r="8" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.38"/>
+            <text x="88" y="15" fontFamily="sans-serif" fontSize="8" fontWeight="700" fill="currentColor" fillOpacity="0.75" textAnchor="middle">A</text>
+            <text x="88" y="37" fontFamily="sans-serif" fontSize="8" fontWeight="700" fill="currentColor" fillOpacity="0.75" textAnchor="middle">B</text>
+            <text x="88" y="59" fontFamily="sans-serif" fontSize="8" fontWeight="700" fill="currentColor" fillOpacity="0.75" textAnchor="middle">C</text>
+            <line x1="97" y1="11" x2="186" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3.5" strokeOpacity="0.22"/>
+            <line x1="97" y1="33" x2="218" y2="33" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3.5" strokeOpacity="0.32"/>
+            <line x1="97" y1="55" x2="198" y2="55" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3.5" strokeOpacity="0.22"/>
+            <rect x="186" y="5" width="48" height="12" rx="6" fill="currentColor" fillOpacity="0.13"/>
+            <rect x="218" y="27" width="66" height="12" rx="6" fill="currentColor" fillOpacity="0.18"/>
+            <rect x="198" y="49" width="56" height="12" rx="6" fill="currentColor" fillOpacity="0.13"/>
+          </svg>
         </button>
 
       </div>
