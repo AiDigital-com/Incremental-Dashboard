@@ -313,7 +313,6 @@
   font-size: 0.76rem;
   /* Fixed layout ensures column widths are consistent on every page */
   table-layout: fixed;
-  height: 100%;
 }
 
 .id-table th {
@@ -463,6 +462,8 @@
   text-transform: uppercase;
   color: #0009DC;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme="dark"] .id-table__client,
