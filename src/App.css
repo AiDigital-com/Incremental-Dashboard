@@ -840,7 +840,7 @@
   font-weight: 900;
   font-size: 5.5rem;
   letter-spacing: -0.025em;
-  text-transform: uppercase;
+  text-transform: none;
   color: rgba(255, 255, 255, 0.92);
   line-height: 1;
   margin: 0;
