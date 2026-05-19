@@ -107,17 +107,17 @@ const REGION_ZOOM_PARAMS: Record<string, { scale: number; origin: string }> = {
   'Retail Solutions': { scale: 5.0, origin: '8%  12%' },
 }
 
-// Monthly incremental data — full year 2026 ($K); May–Dec not yet occurred
+// Monthly incremental data — full year 2026 ($K); May partial (day 19/31); Jun–Dec not yet occurred
 const REGION_MONTHLY_DATA: Record<string, number[]> = {
-  Northeast:          [ 400,  450,  590,  560, 0, 0, 0, 0, 0, 0, 0, 0],
-  Southeast:          [1650, 1750, 2100, 2000, 0, 0, 0, 0, 0, 0, 0, 0],
-  Midwest:            [1700, 1800, 2200, 2000, 0, 0, 0, 0, 0, 0, 0, 0],
-  Central:            [1900, 1950, 2250, 2200, 0, 0, 0, 0, 0, 0, 0, 0],
-  West:               [1200, 1350, 1550, 1500, 0, 0, 0, 0, 0, 0, 0, 0],
-  Political:          [ 105,  110,  130,  133, 0, 0, 0, 0, 0, 0, 0, 0],
-  'Regional Majors':  [ 100,  112,  125,  125, 0, 0, 0, 0, 0, 0, 0, 0],
-  'Retail Solutions': [ 165,  180,  210,  213, 0, 0, 0, 0, 0, 0, 0, 0],
-  House:              [3200, 3600, 4100, 4400, 0, 0, 0, 0, 0, 0, 0, 0],
+  Northeast:          [ 400,  450,  590,  560,  355, 0, 0, 0, 0, 0, 0, 0],
+  Southeast:          [1650, 1750, 2100, 2000, 1260, 0, 0, 0, 0, 0, 0, 0],
+  Midwest:            [1700, 1800, 2200, 2000, 1270, 0, 0, 0, 0, 0, 0, 0],
+  Central:            [1900, 1950, 2250, 2200, 1390, 0, 0, 0, 0, 0, 0, 0],
+  West:               [1200, 1350, 1550, 1500,  950, 0, 0, 0, 0, 0, 0, 0],
+  Political:          [ 105,  110,  130,  133,   84, 0, 0, 0, 0, 0, 0, 0],
+  'Regional Majors':  [ 100,  112,  125,  125,   79, 0, 0, 0, 0, 0, 0, 0],
+  'Retail Solutions': [ 165,  180,  210,  213,  135, 0, 0, 0, 0, 0, 0, 0],
+  House:              [3200, 3600, 4100, 4400, 2780, 0, 0, 0, 0, 0, 0, 0],
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
