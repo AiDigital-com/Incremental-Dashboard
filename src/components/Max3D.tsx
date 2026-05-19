@@ -6,6 +6,7 @@ import maxHeadImg from '../assets/max-head.png'
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const FUR  = '#D4903A'
+const PAW  = '#F0B842'   // lighter gold to match head image
 const SUIT = '#1B3560'
 const SHIRT = '#EEEEFF'
 const TIE  = '#CC1A1A'
@@ -96,8 +97,8 @@ function MaxScene() {
     <group ref={rootRef}>
 
       {/* ── FEET ─────────────────────────────────────────────────────────── */}
-      <Sp p={[-0.12, 0.07, 0.04]} r={0.080} c={FUR} s={[1.30, 0.70, 1.10]} />
-      <Sp p={[ 0.12, 0.07, 0.04]} r={0.080} c={FUR} s={[1.30, 0.70, 1.10]} />
+      <Sp p={[-0.12, 0.07, 0.04]} r={0.080} c={PAW} s={[1.30, 0.70, 1.10]} />
+      <Sp p={[ 0.12, 0.07, 0.04]} r={0.080} c={PAW} s={[1.30, 0.70, 1.10]} />
 
       {/* ── LEGS ─────────────────────────────────────────────────────────── */}
       <mesh position={[-0.100, 0.37, 0]}>
@@ -130,7 +131,7 @@ function MaxScene() {
         <capsuleGeometry args={[0.048, 0.240, 4, 12]} />
         <meshStandardMaterial color={SUIT} roughness={0.70} />
       </mesh>
-      <Sp p={[0.300, 0.770, 0]} r={0.063} c={FUR} />
+      <Sp p={[0.300, 0.770, 0]} r={0.063} c={PAW} />
 
       {/* Right arm + paw — pivots at shoulder for wave */}
       <group ref={armRRef} position={[-0.159, 1.089, 0]} rotation={[0, 0, -0.42]}>
@@ -140,17 +141,17 @@ function MaxScene() {
         </mesh>
         <mesh position={[0, -0.36, 0]}>
           <sphereGeometry args={[0.063, 16, 12]} />
-          <meshStandardMaterial color={FUR} roughness={0.72} />
+          <meshStandardMaterial color={PAW} roughness={0.72} />
         </mesh>
       </group>
 
       {/* ── NECK FUR ─────────────────────────────────────────────────────── */}
       <Sp p={[0, 1.160, 0]} r={0.090} c={FUR} />
 
-      {/* ── HEAD — image sprite (carries subtle tilt animation) ──────────── */}
+      {/* ── HEAD — image sprite (148×84px → 1.762:1 ratio, so w=0.95 h=0.54) */}
       <group ref={headRef} position={[0, 1.45, 0]}>
-        <mesh position={[0, 0.02, 0.10]}>
-          <planeGeometry args={[0.76, 0.76]} />
+        <mesh position={[0, 0.04, 0.10]}>
+          <planeGeometry args={[0.95, 0.54]} />
           <meshBasicMaterial map={headTexture} transparent alphaTest={0.05} />
         </mesh>
       </group>
