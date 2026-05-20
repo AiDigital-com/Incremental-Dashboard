@@ -1,4 +1,5 @@
-import { useState, useEffect, memo } from 'react'
+import { useEffect, memo } from 'react'
+import { useState } from 'react'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 
 function useIsDark() {
@@ -25,20 +26,7 @@ const ZOOM_ORIGINS = [
   '50% 94%',  // 6 - Antarctica
 ]
 
-// Brand secondary colors — Brand Guidelines p.19
-const BRAND_SECONDARY = [
-  '#8EE7F1',  // Bright Aqua    → North America
-  '#DDA7EF',  // Digital Lilac  → South America
-  '#A9BEF8',  // Skywave        → Europe
-  '#38b6ff',  // Neon Azure     → Africa
-  '#8263FF',  // Violet Pulse   → Asia
-  '#aef33e',  // Neon Lime      → Oceania
-  '#d6eeff',  // Ice White-Blue → Antarctica
-]
-
-const CONTINENT_COUNT = BRAND_SECONDARY.length
-
-// ISO 3166-1 numeric → continent index
+// ISO 3166-1 numeric → continent index (used to identify continent-mapped countries)
 const CC: Record<number, number> = {
   // North America (0)
   124:0, 840:0, 484:0, 304:0, 320:0, 340:0, 222:0, 558:0, 188:0, 591:0,
@@ -76,32 +64,13 @@ const CC: Record<number, number> = {
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
 interface GlobeBackgroundProps {
-  onActiveChange?: (idx: number) => void
   zoomContinent?: number | null
 }
 
 export const GlobeBackground = memo(function GlobeBackground({
-  onActiveChange,
   zoomContinent,
 }: GlobeBackgroundProps) {
   const isDark = useIsDark()
-  const [activeIdx, setActiveIdx] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIdx(prev => {
-        let next: number
-        do { next = Math.floor(Math.random() * CONTINENT_COUNT) }
-        while (next === prev)
-        return next
-      })
-    }, 4000)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    onActiveChange?.(activeIdx)
-  }, [activeIdx, onActiveChange])
 
   const zoomStyle = zoomContinent !== null && zoomContinent !== undefined
     ? {
@@ -127,7 +96,7 @@ export const GlobeBackground = memo(function GlobeBackground({
       >
         <defs>
           <filter id="globe-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="1.8" result="blur" />
+            <feGaussianBlur stdDeviation="2.2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -140,25 +109,31 @@ export const GlobeBackground = memo(function GlobeBackground({
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
             geographies.map(geo => {
-              const contIdx = CC[+geo.id] ?? -1
-              const isActive = contIdx === activeIdx
-              const color = contIdx >= 0 ? BRAND_SECONDARY[contIdx] : (isDark ? '#0d1b30' : 'rgba(0,7,219,0.06)')
+              const hasCont = CC[+geo.id] !== undefined
+
+              const fill   = hasCont ? '#0007db' : (isDark ? '#0d1b30' : '#e8eeff')
+              const fillOp = hasCont ? (isDark ? 0.30 : 0.16) : (isDark ? 0.25 : 1)
+              const stroke = hasCont
+                ? (isDark ? 'rgba(0,7,219,0.65)' : 'rgba(0,7,219,0.40)')
+                : (isDark ? 'rgba(80,120,200,0.2)' : 'rgba(0,7,219,0.15)')
+
+              const geoStyle = {
+                fill,
+                fillOpacity: fillOp,
+                stroke,
+                strokeWidth: 0.4,
+                filter: hasCont ? 'url(#globe-glow)' : undefined,
+                outline: 'none',
+              }
 
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
                   style={{
-                    default: {
-                      fill: isActive ? color : (isDark ? '#0d1b30' : 'rgba(0,7,219,0.06)'),
-                      fillOpacity: isActive ? (isDark ? 0.38 : 0.60) : (isDark ? 0.25 : 1),
-                      stroke: isActive ? color : (isDark ? 'rgba(80,120,200,0.2)' : 'rgba(0,7,219,0.18)'),
-                      strokeWidth: 0.4,
-                      transition: 'fill 1.4s ease, fill-opacity 1.4s ease, stroke 1.4s ease',
-                      outline: 'none',
-                    },
-                    hover: { outline: 'none' },
-                    pressed: { outline: 'none' },
+                    default: geoStyle,
+                    hover:   geoStyle,
+                    pressed: { ...geoStyle, outline: 'none' },
                   }}
                 />
               )

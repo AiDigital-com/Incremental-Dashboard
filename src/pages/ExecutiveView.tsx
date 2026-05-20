@@ -370,6 +370,7 @@ export function ExecutiveView({ onBack }: Props) {
   const [selectedSeller,   setSelectedSeller]   = useState<string | null>(null)
   const [hoveredSellerRow, setHoveredSellerRow] = useState<string | null>(null)
   const [campaignPage,     setCampaignPage]     = useState(0)
+  const [sellerPage,       setSellerPage]       = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [nationFeature,  setNationFeature]  = useState<any>(null)
 
@@ -386,8 +387,8 @@ export function ExecutiveView({ onBack }: Props) {
       })
   }, [])
 
-  // Reset seller drill-down and campaign page whenever the region or seller changes
-  useEffect(() => { setSelectedSeller(null) }, [openRegion])
+  // Reset drill-down and pages whenever region or seller changes
+  useEffect(() => { setSelectedSeller(null); setSellerPage(0) }, [openRegion])
   useEffect(() => { setCampaignPage(0) }, [selectedSeller])
 
   const handleRegionClick = (region: string) => {
@@ -646,9 +647,12 @@ export function ExecutiveView({ onBack }: Props) {
                 : REGION_MONTHLY_DATA[openRegion]
 
               const allSellers = REGION_GD_YTD[openRegion] ?? []
+              const SELLER_PAGE_SIZE = 5
+              const totalSellerPages = Math.ceil(allSellers.length / SELLER_PAGE_SIZE)
+              const safeSellerPage = Math.min(sellerPage, Math.max(0, totalSellerPages - 1))
               const visibleSellers = selectedSeller
                 ? allSellers.filter(s => s.name === selectedSeller)
-                : allSellers
+                : allSellers.slice(safeSellerPage * SELLER_PAGE_SIZE, (safeSellerPage + 1) * SELLER_PAGE_SIZE)
               const maxYtd = Math.max(...allSellers.map(s => s.ytdK), 1)
 
               const regionYtdK = (REGION_MONTHLY_DATA[openRegion] ?? [])
@@ -730,7 +734,36 @@ export function ExecutiveView({ onBack }: Props) {
                         </>
                       ) : (
                         <>
-                          <div className="id-exec__panel-section-label">Seller YTD</div>
+                          <div className="id-exec__panel-section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>Seller YTD</span>
+                            {totalSellerPages > 1 && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setSellerPage(p => Math.max(0, p - 1)) }}
+                                  disabled={safeSellerPage === 0}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: safeSellerPage === 0 ? 'default' : 'pointer',
+                                    color: safeSellerPage === 0 ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(10,10,10,0.25)') : color,
+                                    fontSize: 14, padding: '0 4px', lineHeight: 1,
+                                  }}
+                                  aria-label="Previous sellers"
+                                >←</button>
+                                <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(10,10,10,0.45)', minWidth: 32, textAlign: 'center' }}>
+                                  {safeSellerPage + 1} / {totalSellerPages}
+                                </span>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setSellerPage(p => Math.min(totalSellerPages - 1, p + 1)) }}
+                                  disabled={safeSellerPage === totalSellerPages - 1}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: safeSellerPage === totalSellerPages - 1 ? 'default' : 'pointer',
+                                    color: safeSellerPage === totalSellerPages - 1 ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(10,10,10,0.25)') : color,
+                                    fontSize: 14, padding: '0 4px', lineHeight: 1,
+                                  }}
+                                  aria-label="Next sellers"
+                                >→</button>
+                              </span>
+                            )}
+                          </div>
                           {visibleSellers.map(seller => (
                             <div
                               key={seller.name}
