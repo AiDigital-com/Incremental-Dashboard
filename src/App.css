@@ -1820,6 +1820,8 @@
   padding-top: 12px;
   pointer-events: none;
   flex-shrink: 0;
+  max-height: 52px;
+  overflow: hidden;
 }
 .id-client__card--attribution .id-client__card-graphic { color: #8EE7F1; }
 .id-client__card--audit       .id-client__card-graphic { color: #AEF33E; }
@@ -2633,7 +2635,7 @@
 .id-max__character {
   position: fixed;
   right: 24px;
-  bottom: 62px;
+  bottom: 72px;
   width: 200px;
   z-index: 1000;
   cursor: pointer;
