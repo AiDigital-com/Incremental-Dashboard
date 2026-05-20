@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import ReactDOM from 'react-dom/client'
 import { ClerkProvider, useAuth } from '@clerk/react'
-import { applyTheme, resolveTheme } from '@AiDigital-com/design-system'
+import { applyTheme, aiLabsTheme } from '@AiDigital-com/design-system'
 import '@AiDigital-com/design-system/style.css'
 import App from './App'
 import { CoverPage } from './pages/CoverPage'
@@ -10,7 +10,24 @@ import './index.css'
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string
 const isHelpPage = window.location.pathname === '/help'
 
-applyTheme(resolveTheme())
+// Light theme uses white · #0a0a0a · #0007db. Dark tokens are untouched.
+applyTheme({
+  ...aiLabsTheme,
+  colors: { ...aiLabsTheme.colors, blue: '#0007db', black: '#0a0a0a' },
+  light: {
+    ...aiLabsTheme.light,
+    bg:           '#ffffff',
+    surface:      '#ffffff',
+    surface2:     '#f0f3ff',
+    text:         '#0a0a0a',
+    textMuted:    '#555555',
+    accent:       '#0007db',
+    accentHover:  '#0005b8',
+    accentDim:    'rgba(0, 7, 219, 0.06)',
+    accentBorder: 'rgba(0, 7, 219, 0.20)',
+    userMsgBg:    aiLabsTheme.light.userMsgBg,
+  },
+})
 
 // Holds the CoverPage until both its animation is done AND Clerk has loaded,
 // so the "AI Labs — Incremental Dashboard" loading screen is never visible.

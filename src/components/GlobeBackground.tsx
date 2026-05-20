@@ -1,6 +1,20 @@
 import { useState, useEffect, memo } from 'react'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 
+function useIsDark() {
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.dataset.theme !== 'light'
+  )
+  useEffect(() => {
+    const obs = new MutationObserver(() => {
+      setIsDark(document.documentElement.dataset.theme !== 'light')
+    })
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => obs.disconnect()
+  }, [])
+  return isDark
+}
+
 const ZOOM_ORIGINS = [
   '14% 22%',  // 0 - North America
   '26% 64%',  // 1 - South America
@@ -70,6 +84,7 @@ export const GlobeBackground = memo(function GlobeBackground({
   onActiveChange,
   zoomContinent,
 }: GlobeBackgroundProps) {
+  const isDark = useIsDark()
   const [activeIdx, setActiveIdx] = useState(0)
 
   useEffect(() => {
@@ -120,14 +135,14 @@ export const GlobeBackground = memo(function GlobeBackground({
           </filter>
         </defs>
 
-        <rect x="0" y="0" width="1000" height="520" fill="#030810" />
+        <rect x="0" y="0" width="1000" height="520" fill={isDark ? '#030810' : '#f0f4ff'} />
 
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
             geographies.map(geo => {
               const contIdx = CC[+geo.id] ?? -1
               const isActive = contIdx === activeIdx
-              const color = contIdx >= 0 ? BRAND_SECONDARY[contIdx] : '#0d1b30'
+              const color = contIdx >= 0 ? BRAND_SECONDARY[contIdx] : (isDark ? '#0d1b30' : 'rgba(0,7,219,0.06)')
 
               return (
                 <Geography
@@ -135,9 +150,9 @@ export const GlobeBackground = memo(function GlobeBackground({
                   geography={geo}
                   style={{
                     default: {
-                      fill: isActive ? color : '#0d1b30',
-                      fillOpacity: isActive ? 0.38 : 0.25,
-                      stroke: isActive ? color : 'rgba(80,120,200,0.2)',
+                      fill: isActive ? color : (isDark ? '#0d1b30' : 'rgba(0,7,219,0.06)'),
+                      fillOpacity: isActive ? (isDark ? 0.38 : 0.60) : (isDark ? 0.25 : 1),
+                      stroke: isActive ? color : (isDark ? 'rgba(80,120,200,0.2)' : 'rgba(0,7,219,0.18)'),
                       strokeWidth: 0.4,
                       transition: 'fill 1.4s ease, fill-opacity 1.4s ease, stroke 1.4s ease',
                       outline: 'none',

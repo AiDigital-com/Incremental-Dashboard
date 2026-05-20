@@ -22,6 +22,19 @@ const REGION_COLORS: Record<string, string> = {
   House:              '#FF9F43',  // Warm Orange
 }
 
+// Bolder regional colors for white (light) background — higher saturation/darkness
+const LIGHT_REGION_COLORS: Record<string, string> = {
+  Northeast:          '#0094A8',  // Deep Teal
+  Southeast:          '#8A32B5',  // Rich Violet
+  Midwest:            '#2952D4',  // Bold Royal Blue
+  Central:            '#0077BB',  // Ocean Blue
+  West:               '#4422C8',  // Bold Indigo
+  Political:          '#3D7800',  // Forest Green
+  'Regional Majors':  '#B06800',  // Dark Amber
+  'Retail Solutions': '#BC18A8',  // Magenta
+  House:              '#BC4200',  // Rust
+}
+
 // Geographic centroids for region name labels [longitude, latitude]
 const REGION_CENTROIDS: Record<string, [number, number]> = {
   Northeast:          [-67.5, 45.5],
@@ -206,12 +219,18 @@ const SELLER_TOP_CLIENTS = buildSellerTopClients()
 
 // ── Inline bar chart component ────────────────────────────────────────────────
 
-function IncrementalBarChart({ data, color, useK }: { data: number[]; color: string; useK?: boolean }) {
+function IncrementalBarChart({ data, color, useK, isDark }: { data: number[]; color: string; useK?: boolean; isDark: boolean }) {
   const max = Math.max(...data, 1)
   const H = 175
   const barW = 46
   const gap = 10
   const totalW = (barW + gap) * data.length - gap
+
+  const trackFill   = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,7,219,0.05)'
+  const valueFill   = (isPeak: boolean) => isPeak ? color : (isDark ? 'rgba(255,255,255,0.72)' : 'rgba(10,10,10,0.65)')
+  const monthFill   = (hasVal: boolean) => isDark
+    ? (hasVal ? 'rgba(255,255,255,0.68)' : 'rgba(255,255,255,0.28)')
+    : (hasVal ? 'rgba(10,10,10,0.65)'    : 'rgba(10,10,10,0.28)')
 
   return (
     <svg
@@ -227,8 +246,7 @@ function IncrementalBarChart({ data, color, useK }: { data: number[]; color: str
         const isPeak = val > 0 && val === max
         return (
           <g key={i}>
-            <rect x={x} y={0} width={barW} height={H} rx={4}
-              fill="rgba(255,255,255,0.05)" />
+            <rect x={x} y={0} width={barW} height={H} rx={4} fill={trackFill} />
             {val > 0 && (
               <rect x={x} y={y} width={barW} height={barH} rx={4}
                 fill={isPeak ? color : `${color}88`} />
@@ -237,7 +255,7 @@ function IncrementalBarChart({ data, color, useK }: { data: number[]; color: str
               <text x={x + barW / 2} y={y - 6} textAnchor="middle"
                 style={{
                   fontSize: '10px',
-                  fill: isPeak ? color : 'rgba(255,255,255,0.72)',
+                  fill: valueFill(isPeak),
                   fontFamily: "'Barlow Semi Condensed',sans-serif",
                   fontWeight: 700,
                 }}>
@@ -249,7 +267,7 @@ function IncrementalBarChart({ data, color, useK }: { data: number[]; color: str
             <text x={x + barW / 2} y={H + 20} textAnchor="middle"
               style={{
                 fontSize: '10px',
-                fill: val > 0 ? 'rgba(255,255,255,0.68)' : 'rgba(255,255,255,0.28)',
+                fill: monthFill(val > 0),
                 fontFamily: "'Barlow Semi Condensed',sans-serif",
                 fontWeight: 700,
                 letterSpacing: '0.06em',
@@ -334,6 +352,19 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function ExecutiveView({ onBack }: Props) {
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.dataset.theme !== 'light'
+  )
+  useEffect(() => {
+    const obs = new MutationObserver(() => {
+      setIsDark(document.documentElement.dataset.theme !== 'light')
+    })
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => obs.disconnect()
+  }, [])
+
+  const regionColors = isDark ? REGION_COLORS : LIGHT_REGION_COLORS
+
   const [hoveredRegion,  setHoveredRegion]  = useState<string | null>(null)
   const [openRegion,     setOpenRegion]     = useState<string | null>(null)
   const [selectedSeller,   setSelectedSeller]   = useState<string | null>(null)
@@ -394,7 +425,7 @@ export function ExecutiveView({ onBack }: Props) {
         <div className="id-exec__metrics">
           <div className="id-exec__metrics-total-label">Available Incremental</div>
           <div className="id-exec__metrics-total-value">{TOTAL_INCREMENTAL}</div>
-          {Object.entries(REGION_COLORS).map(([region, color]) => {
+          {Object.entries(regionColors).map(([region, color]) => {
             const isHovered = hoveredRegion === region
             const isOpen    = openRegion   === region
             return (
@@ -481,13 +512,13 @@ export function ExecutiveView({ onBack }: Props) {
               projection="geoAlbersUsa"
               style={{ width: '100%', height: '100%' }}
             >
-              {/* Nation outer boundary — white perimeter outline only (no interior state lines) */}
+              {/* Nation outer boundary — perimeter outline only (no interior state lines) */}
               {nationFeature && (
                 <Geography
                   geography={nationFeature}
                   style={{
-                    default: { fill: 'none', stroke: 'rgba(255,255,255,0.80)', strokeWidth: 1.5, outline: 'none' },
-                    hover:   { fill: 'none', stroke: 'rgba(255,255,255,0.80)', strokeWidth: 1.5, outline: 'none' },
+                    default: { fill: 'none', stroke: isDark ? 'rgba(255,255,255,0.80)' : 'rgba(10,10,10,0.65)', strokeWidth: 1.5, outline: 'none' },
+                    hover:   { fill: 'none', stroke: isDark ? 'rgba(255,255,255,0.80)' : 'rgba(10,10,10,0.65)', strokeWidth: 1.5, outline: 'none' },
                     pressed: { outline: 'none' },
                   }}
                 />
@@ -499,8 +530,10 @@ export function ExecutiveView({ onBack }: Props) {
                   geographies.map(geo => {
                     const stateName: string = geo.properties?.name ?? ''
                     const region = STATE_REGIONS[stateName]
-                    const color = region ? REGION_COLORS[region] : '#2a2a3a'
+                    const color = region ? regionColors[region] : (isDark ? '#2a2a3a' : 'rgba(0,7,219,0.08)')
                     const isRegionHovered = !!region && hoveredRegion === region
+                    const baseFill   = isDark ? `${color}38` : `${color}b8`
+                    const hoverFill  = isDark ? `${color}70` : color
 
                     return (
                       <Geography
@@ -511,7 +544,7 @@ export function ExecutiveView({ onBack }: Props) {
                         onMouseLeave={() => setHoveredRegion(null)}
                         style={{
                           default: {
-                            fill: isRegionHovered ? `${color}70` : `${color}38`,
+                            fill: isRegionHovered ? hoverFill : baseFill,
                             stroke: isRegionHovered ? color : `${color}99`,
                             strokeWidth: isRegionHovered ? 1 : 0.5,
                             filter: isRegionHovered
@@ -521,7 +554,7 @@ export function ExecutiveView({ onBack }: Props) {
                             transition: 'fill 0.15s, stroke 0.15s, filter 0.15s',
                           },
                           hover: {
-                            fill: isRegionHovered ? `${color}70` : `${color}38`,
+                            fill: isRegionHovered ? hoverFill : baseFill,
                             stroke: isRegionHovered ? color : `${color}99`,
                             strokeWidth: isRegionHovered ? 1 : 0.5,
                             filter: isRegionHovered
@@ -540,7 +573,7 @@ export function ExecutiveView({ onBack }: Props) {
 
               {/* Region name labels — always at full hover brightness */}
               {Object.entries(REGION_CENTROIDS).map(([region, coords]) => {
-                const color = REGION_COLORS[region]
+                const color = regionColors[region]
                 return (
                   <Marker key={region} coordinates={coords}>
                     <text
@@ -565,7 +598,7 @@ export function ExecutiveView({ onBack }: Props) {
 
               {/* Inset / small-area region markers (Hawaii, Alaska) */}
               {INSET_MARKERS.map(({ coords, label, region }) => {
-                const color = REGION_COLORS[region]
+                const color = regionColors[region]
                 return (
                   <Marker
                     key={region}
@@ -600,7 +633,7 @@ export function ExecutiveView({ onBack }: Props) {
 
             {/* Region info panel — slides up when a region is selected */}
             {openRegion && (() => {
-              const color = REGION_COLORS[openRegion]
+              const color = regionColors[openRegion]
               // Resolve data sources based on drill-down state
               const chartData = selectedSeller
                 ? (SELLER_MONTHLY_DATA[openRegion]?.[selectedSeller] ?? REGION_MONTHLY_DATA[openRegion])
@@ -653,7 +686,7 @@ export function ExecutiveView({ onBack }: Props) {
                       </div>
                     </div>
                     <div style={{ marginTop: 30 }}>
-                      <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} />
+                      <IncrementalBarChart data={chartData} color={color} useK={!!selectedSeller} isDark={isDark} />
                     </div>
                   </div>
 
@@ -753,12 +786,12 @@ export function ExecutiveView({ onBack }: Props) {
                                     disabled={page === 0}
                                     style={{
                                       background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer',
-                                      color: page === 0 ? 'rgba(255,255,255,0.2)' : color,
+                                      color: page === 0 ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(10,10,10,0.25)') : color,
                                       fontSize: 14, padding: '0 4px', lineHeight: 1,
                                     }}
                                     aria-label="Previous campaigns"
                                   >←</button>
-                                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', minWidth: 32, textAlign: 'center' }}>
+                                  <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(10,10,10,0.45)', minWidth: 32, textAlign: 'center' }}>
                                     {page + 1} / {totalPages}
                                   </span>
                                   <button
@@ -766,7 +799,7 @@ export function ExecutiveView({ onBack }: Props) {
                                     disabled={page === totalPages - 1}
                                     style={{
                                       background: 'none', border: 'none', cursor: page === totalPages - 1 ? 'default' : 'pointer',
-                                      color: page === totalPages - 1 ? 'rgba(255,255,255,0.2)' : color,
+                                      color: page === totalPages - 1 ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(10,10,10,0.25)') : color,
                                       fontSize: 14, padding: '0 4px', lineHeight: 1,
                                     }}
                                     aria-label="Next campaigns"
@@ -838,7 +871,7 @@ export function ExecutiveView({ onBack }: Props) {
 
           {/* Legend */}
           <div className="id-exec__legend">
-            {Object.entries(REGION_COLORS).map(([region, color]) => (
+            {Object.entries(regionColors).map(([region, color]) => (
               <div
                 key={region}
                 className={`id-exec__legend-item${hoveredRegion === region ? ' id-exec__legend-item--hovered' : ''}`}
