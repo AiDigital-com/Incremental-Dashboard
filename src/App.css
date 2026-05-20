@@ -3610,24 +3610,20 @@
   color: #1a3bbf;
 }
 
-/* ── Client card graphic strip — dark base in light mode for illustration contrast ── */
+/* ── Client card graphic — darker accent colors in light mode for visibility ── */
 
 [data-theme="light"] .id-client__card-graphic {
-  border-top: none;
-  background: #030810;
-  border-radius: 0 0 14px 14px;
-  margin: 4px -28px -24px;
-  padding: 14px 28px 16px;
+  border-top: 1px solid rgba(0, 7, 219, 0.10);
 }
 
 [data-theme="light"] .id-client__card--attribution .id-client__card-graphic {
-  color: #8EE7F1;
+  color: #0068A8;
 }
 
 [data-theme="light"] .id-client__card--audit .id-client__card-graphic {
-  color: #AEF33E;
+  color: #4A8000;
 }
 
 [data-theme="light"] .id-client__card--reach .id-client__card-graphic {
-  color: #8263FF;
+  color: #4422C8;
 }
