@@ -1820,7 +1820,7 @@
   padding-top: 12px;
   pointer-events: none;
   flex-shrink: 0;
-  max-height: 52px;
+  max-height: 62px;
   overflow: hidden;
 }
 .id-client__card--attribution .id-client__card-graphic { color: #8EE7F1; }
@@ -3643,4 +3643,22 @@
 
 [data-theme="light"] .id-client__card--reach .id-client__card-graphic {
   color: #4422C8;
+}
+
+/* ── Max — green glow in light mode ─────────────────────────────────────── */
+
+[data-theme="light"] .id-max__character {
+  filter: drop-shadow(0 0 16px rgba(174, 243, 62, 0.55));
+}
+
+[data-theme="light"] .id-max__character:hover {
+  filter: drop-shadow(0 0 28px rgba(174, 243, 62, 0.80));
+}
+
+[data-theme="light"] .id-max__character--active {
+  filter: drop-shadow(0 0 20px rgba(174, 243, 62, 0.65));
+}
+
+[data-theme="light"] .id-max__character-label {
+  box-shadow: 0 0 18px rgba(174, 243, 62, 0.55), 0 0 6px rgba(174, 243, 62, 0.35);
 }
