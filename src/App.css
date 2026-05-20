@@ -3562,3 +3562,50 @@
   color: rgba(10, 10, 10, 0.52);
 }
 
+/* ── Fix: Apply Incremental card → blue accent in light mode (issue 1) ── */
+
+[data-theme="light"] .id-client__card--attribution::before {
+  background: linear-gradient(90deg, transparent, #0007db 40%, transparent);
+}
+
+[data-theme="light"] .id-client__card--attribution {
+  box-shadow: 0 2px 18px rgba(0, 7, 219, 0.08), inset 0 0 20px rgba(0,0,0,0.01);
+}
+
+[data-theme="light"] .id-client__card--attribution:hover {
+  border-color: rgba(0, 7, 219, 0.40);
+  box-shadow: 0 0 48px rgba(0, 7, 219, 0.22), 0 8px 28px rgba(0,0,0,0.09);
+}
+
+[data-theme="light"] .id-client__card--attribution .id-client__card-icon {
+  background: rgba(0, 7, 219, 0.10);
+  color: #0007db;
+}
+
+[data-theme="light"] .id-client__card--attribution .id-client__card-kicker {
+  color: rgba(0, 7, 219, 0.80);
+}
+
+[data-theme="light"] .id-client__card--attribution .id-client__card-cta {
+  color: #0007db;
+}
+
+/* ── Fix: Send Email button invisible in light mode dashboard (issue 4) ── */
+
+[data-theme="light"] .id-dashboard .id-send-email-btn {
+  border-color: rgba(0, 7, 219, 0.28);
+  color: #0007db;
+}
+
+[data-theme="light"] .id-dashboard .id-send-email-btn:hover {
+  background: rgba(0, 7, 219, 0.07);
+  border-color: #0007db;
+  box-shadow: 0 0 0 2px rgba(0, 7, 219, 0.10);
+}
+
+/* ── Fix: Avg Performance badge readable in light mode (issue 3) ── */
+
+[data-theme="light"] .id-perf-badge--above {
+  background: rgba(0, 7, 219, 0.09);
+  color: #1a3bbf;
+}
