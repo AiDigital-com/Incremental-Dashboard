@@ -2633,10 +2633,11 @@
 .id-max__character {
   position: fixed;
   right: 24px;
-  bottom: 82px;
+  bottom: 62px;
   width: 200px;
   z-index: 1000;
   cursor: pointer;
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.28));
   transition: filter 0.25s;
   outline: none;
 }
@@ -2648,11 +2649,11 @@
 }
 
 .id-max__character:hover {
-  filter: drop-shadow(0 0 20px rgba(174, 243, 62, 0.38));
+  filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.58));
 }
 
 .id-max__character--active {
-  filter: drop-shadow(0 0 14px rgba(174, 243, 62, 0.22));
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.38));
 }
 
 /* "Chat with Max" pill — separate fixed element above Max's feet */
@@ -2674,6 +2675,7 @@
   backdrop-filter: blur(4px);
   z-index: 1001;
   cursor: pointer;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.32), 0 0 6px rgba(255, 255, 255, 0.20);
 }
 
 /* ── Speech-bubble panel (left of Max, slightly elevated) ── */
