@@ -1820,8 +1820,6 @@
   padding-top: 12px;
   pointer-events: none;
   flex-shrink: 0;
-  max-height: 62px;
-  overflow: hidden;
 }
 .id-client__card--attribution .id-client__card-graphic { color: #8EE7F1; }
 .id-client__card--audit       .id-client__card-graphic { color: #AEF33E; }
