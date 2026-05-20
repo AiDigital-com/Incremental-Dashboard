@@ -537,14 +537,14 @@ export function ExecutiveView({ onBack }: Props) {
                     // Light mode: subtle per-region color tint so regional borders are visible;
                     // hover turns blue. Dark mode: colored fills unchanged.
                     const fill   = isDark
-                      ? (isRegionHovered ? `${color}70` : `${color}38`)
+                      ? (isRegionHovered ? `${color}70` : `${color}28`)
                       : region
                         ? (isRegionHovered ? 'rgba(0,7,219,0.18)' : `${color}28`)
                         : (isRegionHovered ? 'rgba(0,7,219,0.18)' : '#e6e6ee')
                     const stroke = isDark
-                      ? (isRegionHovered ? color : `${color}99`)
+                      ? (isRegionHovered ? color : `${color}90`)
                       : (isRegionHovered ? '#0007db' : `${color}90`)
-                    const strokeW = isDark ? (isRegionHovered ? 1 : 0.5) : (isRegionHovered ? 1.2 : 0.8)
+                    const strokeW = isDark ? (isRegionHovered ? 1 : 0.8) : (isRegionHovered ? 1.2 : 0.8)
                     const shadow  = isDark
                       ? (isRegionHovered ? `drop-shadow(0 0 12px ${color}cc)` : `drop-shadow(0 0 4px ${color}66)`)
                       : (isRegionHovered ? 'drop-shadow(0 0 10px rgba(0,7,219,0.28))' : 'none')
