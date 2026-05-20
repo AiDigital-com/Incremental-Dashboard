@@ -534,20 +534,12 @@ export function ExecutiveView({ onBack }: Props) {
                     const color = region ? regionColors[region] : (isDark ? '#2a2a3a' : '#ccccda')
                     const isRegionHovered = !!region && hoveredRegion === region
 
-                    // Light mode: subtle per-region color tint so regional borders are visible;
-                    // hover turns blue. Dark mode: colored fills unchanged.
-                    const fill   = isDark
-                      ? (isRegionHovered ? `${color}70` : `${color}28`)
-                      : region
-                        ? (isRegionHovered ? 'rgba(0,7,219,0.18)' : `${color}28`)
-                        : (isRegionHovered ? 'rgba(0,7,219,0.18)' : '#e6e6ee')
-                    const stroke = isDark
-                      ? (isRegionHovered ? color : `${color}90`)
-                      : (isRegionHovered ? '#0007db' : `${color}90`)
-                    const strokeW = isDark ? (isRegionHovered ? 1 : 0.8) : (isRegionHovered ? 1.2 : 0.8)
-                    const shadow  = isDark
-                      ? (isRegionHovered ? `drop-shadow(0 0 12px ${color}cc)` : `drop-shadow(0 0 4px ${color}66)`)
-                      : (isRegionHovered ? 'drop-shadow(0 0 10px rgba(0,7,219,0.28))' : 'none')
+                    const fill    = isRegionHovered ? `${color}70` : (region ? `${color}28` : (isDark ? '#2a2a3a28' : '#e6e6ee'))
+                    const stroke  = isRegionHovered ? color : `${color}90`
+                    const strokeW = isRegionHovered ? 1 : 0.8
+                    const shadow  = isRegionHovered
+                      ? `drop-shadow(0 0 12px ${color}cc)`
+                      : (isDark ? `drop-shadow(0 0 4px ${color}66)` : 'none')
 
                     return (
                       <Geography
@@ -588,9 +580,9 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: isDark ? '#ffffff' : (isLabelHovered ? '#0007db' : '#333333'),
-                        stroke: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.90)',
-                        strokeWidth: 5,
+                        fill: isDark ? '#ffffff' : (isLabelHovered ? color : '#333333'),
+                        stroke: isDark ? 'rgba(0,0,0,0.80)' : 'rgba(255,255,255,0.90)',
+                        strokeWidth: isDark ? 2 : 5,
                         paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
@@ -623,9 +615,9 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: isDark ? '#ffffff' : (isLabelHovered ? '#0007db' : '#333333'),
-                        stroke: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.90)',
-                        strokeWidth: 5,
+                        fill: isDark ? '#ffffff' : (isLabelHovered ? color : '#333333'),
+                        stroke: isDark ? 'rgba(0,0,0,0.80)' : 'rgba(255,255,255,0.90)',
+                        strokeWidth: isDark ? 2 : 5,
                         paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
