@@ -532,8 +532,8 @@ export function ExecutiveView({ onBack }: Props) {
                     const region = STATE_REGIONS[stateName]
                     const color = region ? regionColors[region] : (isDark ? '#2a2a3a' : 'rgba(0,7,219,0.08)')
                     const isRegionHovered = !!region && hoveredRegion === region
-                    const baseFill   = isDark ? `${color}38` : `${color}b8`
-                    const hoverFill  = isDark ? `${color}70` : color
+                    const baseFill   = isDark ? `${color}38` : `${color}55`
+                    const hoverFill  = isDark ? `${color}70` : `${color}99`
 
                     return (
                       <Geography
@@ -583,7 +583,10 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: color,
+                        fill: isDark ? color : '#ffffff',
+                        stroke: isDark ? 'none' : color,
+                        strokeWidth: isDark ? 0 : 6,
+                        paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
                         userSelect: 'none',
@@ -614,7 +617,10 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: color,
+                        fill: isDark ? color : '#ffffff',
+                        stroke: isDark ? 'none' : color,
+                        strokeWidth: isDark ? 0 : 6,
+                        paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
                         userSelect: 'none',
