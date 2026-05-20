@@ -1797,16 +1797,16 @@
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.50);
   line-height: 1.62;
-  flex: 1;
 }
 
 .id-client__card-cta {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 1.15rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .id-client__card--reach       .id-client__card-cta { color: #8263FF; }
