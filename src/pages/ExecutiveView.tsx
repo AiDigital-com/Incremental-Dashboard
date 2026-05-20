@@ -531,10 +531,20 @@ export function ExecutiveView({ onBack }: Props) {
                   geographies.map(geo => {
                     const stateName: string = geo.properties?.name ?? ''
                     const region = STATE_REGIONS[stateName]
-                    const color = region ? regionColors[region] : (isDark ? '#2a2a3a' : 'rgba(0,7,219,0.08)')
+                    const color = region ? regionColors[region] : (isDark ? '#2a2a3a' : '#d8d8e2')
                     const isRegionHovered = !!region && hoveredRegion === region
-                    const baseFill   = isDark ? `${color}38` : `${color}55`
-                    const hoverFill  = isDark ? `${color}70` : `${color}99`
+
+                    // Light mode: uniform gray → blue on hover. Dark mode: colored fills unchanged.
+                    const fill   = isDark
+                      ? (isRegionHovered ? `${color}70` : `${color}38`)
+                      : (isRegionHovered ? 'rgba(0,7,219,0.18)' : '#e6e6ee')
+                    const stroke = isDark
+                      ? (isRegionHovered ? color : `${color}99`)
+                      : (isRegionHovered ? '#0007db' : '#888888')
+                    const strokeW = isDark ? (isRegionHovered ? 1 : 0.5) : (isRegionHovered ? 1.2 : 0.6)
+                    const shadow  = isDark
+                      ? (isRegionHovered ? `drop-shadow(0 0 12px ${color}cc)` : `drop-shadow(0 0 4px ${color}66)`)
+                      : (isRegionHovered ? 'drop-shadow(0 0 10px rgba(0,7,219,0.28))' : 'none')
 
                     return (
                       <Geography
@@ -545,22 +555,12 @@ export function ExecutiveView({ onBack }: Props) {
                         onMouseLeave={() => setHoveredRegion(null)}
                         style={{
                           default: {
-                            fill: isRegionHovered ? hoverFill : baseFill,
-                            stroke: isRegionHovered ? color : `${color}99`,
-                            strokeWidth: isRegionHovered ? 1 : 0.5,
-                            filter: isRegionHovered
-                              ? `drop-shadow(0 0 12px ${color}cc)`
-                              : `drop-shadow(0 0 4px ${color}66)`,
+                            fill, stroke, strokeWidth: strokeW, filter: shadow,
                             outline: 'none',
                             transition: 'fill 0.15s, stroke 0.15s, filter 0.15s',
                           },
                           hover: {
-                            fill: isRegionHovered ? hoverFill : baseFill,
-                            stroke: isRegionHovered ? color : `${color}99`,
-                            strokeWidth: isRegionHovered ? 1 : 0.5,
-                            filter: isRegionHovered
-                              ? `drop-shadow(0 0 12px ${color}cc)`
-                              : `drop-shadow(0 0 4px ${color}66)`,
+                            fill, stroke, strokeWidth: strokeW, filter: shadow,
                             outline: 'none',
                             cursor: region ? 'pointer' : 'default',
                           },
@@ -572,9 +572,10 @@ export function ExecutiveView({ onBack }: Props) {
                 }
               </Geographies>
 
-              {/* Region name labels — always at full hover brightness */}
+              {/* Region name labels */}
               {Object.entries(REGION_CENTROIDS).map(([region, coords]) => {
                 const color = regionColors[region]
+                const isLabelHovered = hoveredRegion === region
                 return (
                   <Marker key={region} coordinates={coords}>
                     <text
@@ -584,14 +585,14 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: isDark ? color : '#ffffff',
-                        stroke: isDark ? 'none' : color,
-                        strokeWidth: isDark ? 0 : 6,
+                        fill: isDark ? color : (isLabelHovered ? '#0007db' : '#333333'),
+                        stroke: isDark ? 'none' : 'rgba(255,255,255,0.90)',
+                        strokeWidth: isDark ? 0 : 5,
                         paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        transition: 'filter 0.15s',
+                        transition: 'fill 0.15s',
                       }}
                     >
                       {region.toUpperCase()}
@@ -603,6 +604,7 @@ export function ExecutiveView({ onBack }: Props) {
               {/* Inset / small-area region markers (Hawaii, Alaska) */}
               {INSET_MARKERS.map(({ coords, label, region }) => {
                 const color = regionColors[region]
+                const isLabelHovered = hoveredRegion === region
                 return (
                   <Marker
                     key={region}
@@ -618,14 +620,14 @@ export function ExecutiveView({ onBack }: Props) {
                         fontFamily: "'Barlow Semi Condensed', sans-serif",
                         fontWeight: 700,
                         fontSize: '33px',
-                        fill: isDark ? color : '#ffffff',
-                        stroke: isDark ? 'none' : color,
-                        strokeWidth: isDark ? 0 : 6,
+                        fill: isDark ? color : (isLabelHovered ? '#0007db' : '#333333'),
+                        stroke: isDark ? 'none' : 'rgba(255,255,255,0.90)',
+                        strokeWidth: isDark ? 0 : 5,
                         paintOrder: 'stroke',
                         letterSpacing: '0.14em',
                         pointerEvents: 'none',
                         userSelect: 'none',
-                        transition: 'filter 0.15s',
+                        transition: 'fill 0.15s',
                       }}
                     >
                       {label}
