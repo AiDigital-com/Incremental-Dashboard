@@ -920,6 +920,11 @@
   transform: translateX(-50%) scale(1) translateY(0);
   z-index: 3;
   opacity: 1;
+  box-shadow:
+    0 0 90px var(--card-glow),
+    0 0 28px var(--card-glow),
+    0 0 8px var(--card-glow-subtle),
+    inset 0 0 20px rgba(255, 255, 255, 0.04);
 }
 
 .id-home__card--center:hover {
@@ -3208,11 +3213,19 @@
     inset 0 0 20px rgba(0, 0, 0, 0.01);
 }
 
+[data-theme="light"] .id-home__card--center {
+  box-shadow:
+    0 0 90px var(--card-glow),
+    0 0 28px var(--card-glow),
+    0 0 8px var(--card-glow-subtle),
+    inset 0 0 20px rgba(0, 0, 0, 0.01);
+}
+
 [data-theme="light"] .id-home__card--center:hover {
   background: rgba(255, 255, 255, 0.97);
   box-shadow:
-    0 0 60px var(--card-glow),
-    0 0 18px var(--card-glow),
+    0 0 120px var(--card-glow),
+    0 0 36px var(--card-glow),
     inset 0 0 28px rgba(0, 0, 0, 0.02);
 }
 
