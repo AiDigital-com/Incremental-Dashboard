@@ -1,4 +1,4 @@
-import { createLogger } from '@AiDigital-com/design-system/logger';
+import { createLogger } from '@AiDigital-com/design-system-sdk/server';
 import { supabase } from './supabase.js';
 
 // TODO: Change 'incremental-dashboard' to your app's tool ID

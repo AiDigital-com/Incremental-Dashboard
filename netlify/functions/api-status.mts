@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { handleApiStatus } from '@boriskulakhmetov-aidigital/design-system/server';
+import { handleApiStatus } from '@AiDigital-com/design-system-sdk/server';
 
 const APP_NAME = 'incremental-dashboard'; // TODO: Replace with your app name
 
